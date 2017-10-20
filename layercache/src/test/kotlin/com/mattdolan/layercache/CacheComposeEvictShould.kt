@@ -4,6 +4,7 @@ import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.coroutines.experimental.runBlocking
 import org.hamcrest.core.Is
 import org.hamcrest.core.StringStartsWith
@@ -61,12 +62,12 @@ class CacheComposeEvictShould {
 
             // given we have two caches with a long running job to evict a value
             Mockito.`when`(firstCache.evict(anyString())).then {
-                async(CommonPool) {
+                async(newSingleThreadContext("1")) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
             Mockito.`when`(secondCache.evict(anyString())).then {
-                async(CommonPool) {
+                async(newSingleThreadContext("2")) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.yield
 import org.hamcrest.core.Is
@@ -87,12 +88,12 @@ class CacheComposeSetShould {
 
             // given we have two caches with a long running job to set a value
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                async(newSingleThreadContext("1")) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                async(newSingleThreadContext("2")) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
