@@ -2,8 +2,12 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="layercache-ehcache_main" target="1.7" />
+      <module name="layercache-ehcache_test" target="1.7" />
       <module name="layercache-layercache_main" target="1.7" />
       <module name="layercache-layercache_test" target="1.7" />
+      <module name="layercache-serializer_main" target="1.7" />
+      <module name="layercache-serializer_test" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

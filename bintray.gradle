@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.5.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    bintrayUser = System.getenv('BINTRAY_USER') ?: System.getProperty('BINTRAY_USER') ?: "unknown"
+    bintrayKey = System.getenv('BINTRAY_KEY') ?: System.getProperty('BINTRAY_KEY') ?: "unknown"
+
+    userOrg = 'appmattus'
+    groupId = 'com.appmattus'
+    artifactId = project.name
+    publishVersion = System.getenv('TRAVIS_TAG') ?: System.getProperty('TRAVIS_TAG') ?: "unknown"
+    desc = 'Making caching easy with a library for Android and Java'
+    website = 'https://github.com/appmattus/layercache'
+
+    dryRun = false
+}
