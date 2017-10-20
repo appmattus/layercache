@@ -23,7 +23,7 @@ dependencies {
 ```
 
 ## Contributing
-Please fork this repository and contribute back using [pull requests][pr].
+Please fork this repository and contribute back using [pull requests](https://github.com/appmattus/layercache/pulls).
 
 All contributions, large or small, major features, bug fixes, additional language translations, unit/integration tests are welcomed.
 
