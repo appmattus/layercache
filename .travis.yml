@@ -20,12 +20,12 @@ android:
 script:
 - "./gradlew check"
 
-#deploy:
-#  skip_cleanup: true
-#  provider: script
-#  script: ./gradlew bintrayUpload
-#  on:
-#    tags: true
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: ./gradlew bintrayUpload
+  on:
+    tags: true
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

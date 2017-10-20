@@ -1,11 +1,12 @@
 //apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'jacoco'
+apply plugin: 'com.novoda.bintray-release'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.18"
-    
+
     compileOnly "com.android.support:support-annotations:26.0.2"
 
     testCompile "junit:junit:4.12"
@@ -26,3 +27,17 @@ check { //noinspection GroovyAssignabilityCheck
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
+
+publish {
+    bintrayUser = System.getenv('BINTRAY_USER') ?: System.getProperty('BINTRAY_USER') ?: "unknown"
+    bintrayKey = System.getenv('BINTRAY_KEY') ?: System.getProperty('BINTRAY_KEY') ?: "unknown"
+
+    userOrg = 'appmattus'
+    groupId = 'com.appmattus'
+    artifactId = 'layercache'
+    publishVersion = System.getenv('TRAVIS_TAG') ?: System.getProperty('TRAVIS_TAG') ?: "unknown"
+    desc = 'Making caching easy with a library for Android and Java'
+    website = 'https://github.com/appmattus/layercache'
+
+    dryRun = false
+}
