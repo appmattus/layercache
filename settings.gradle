@@ -1,1 +1,3 @@
 include ':layercache'
+include ':layercache-ehcache'
+include ':layercache-serializer'

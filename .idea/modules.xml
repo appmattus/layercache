@@ -3,9 +3,15 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/layercache.iml" filepath="$PROJECT_DIR$/layercache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" group="layercache-ehcache" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache_main.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache_main.iml" group="layercache-ehcache" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache_test.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache_test.iml" group="layercache-ehcache" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" group="layercache" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache_main.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache_main.iml" group="layercache" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache_test.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache_test.iml" group="layercache" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer.iml" group="layercache-serializer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer_main.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer_main.iml" group="layercache-serializer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer_test.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer_test.iml" group="layercache-serializer" />
     </modules>
   </component>
 </project>
