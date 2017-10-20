@@ -1,0 +1,36 @@
+language: android
+android:
+  components:
+    - tools
+    - platform-tools
+    - tools
+
+    - build-tools-26.0.2
+    - android-26
+
+#    - sys-img-armeabi-v7a-android-17
+#    - sys-img-armeabi-v7a-android-18
+#    - sys-img-armeabi-v7a-android-19
+#    - sys-img-armeabi-v7a-android-21
+#    - sys-img-armeabi-v7a-android-22
+#    - sys-img-armeabi-v7a-android-23
+#    - sys-img-armeabi-v7a-android-24
+#    - sys-img-armeabi-v7a-android-25
+
+script:
+- "./gradlew check"
+
+#deploy:
+#  skip_cleanup: true
+#  provider: script
+#  script: ./gradlew bintrayUpload
+#  on:
+#    tags: true
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
