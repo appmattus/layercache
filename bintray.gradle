@@ -21,7 +21,7 @@ publish {
     groupId = 'com.appmattus'
     artifactId = project.name
     publishVersion = System.getenv('TRAVIS_TAG') ?: System.getProperty('TRAVIS_TAG') ?: "unknown"
-    desc = 'Making caching easy with a library for Android and Java'
+    desc = 'Caching made simple for Android and Java'
     website = 'https://github.com/appmattus/layercache'
 
     dryRun = false
