@@ -8,8 +8,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
-    testCompile "junit:junit:4.12"
-    testCompile 'org.mockito:mockito-core:2.8.47'
+    testCompile project(':testutils')
 }
 
 kotlin {
