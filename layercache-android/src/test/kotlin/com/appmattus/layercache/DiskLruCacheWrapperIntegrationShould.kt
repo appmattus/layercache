@@ -1,0 +1,122 @@
+package com.appmattus.layercache
+
+import com.jakewharton.disklrucache.DiskLruCache
+import kotlinx.coroutines.experimental.runBlocking
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import java.io.File
+
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
+class DiskLruCacheWrapperIntegrationShould {
+
+    private lateinit var diskCache: DiskLruCache
+    private lateinit var integratedCache: DiskLruCacheWrapper
+
+    @Before
+    fun before() {
+        diskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk"), 0, 1, 200)
+        integratedCache = DiskLruCacheWrapper(diskCache)
+    }
+
+    @After
+    fun after() {
+        diskCache.delete()
+    }
+
+    @Test
+    fun return_null_when_the_cache_is_empty() {
+        runBlocking {
+            // given we have an empty cache, integratedCache
+
+            // when we retrieve a value
+            val result = integratedCache.get("key").await()
+
+            // then it is null
+            Assert.assertNull(result)
+        }
+    }
+
+    @Test
+    fun return_value_when_cache_has_value() {
+        runBlocking {
+            // given we have a cache with a value
+            integratedCache.set("key", "value").await()
+
+            // when we retrieve a value
+            val result = integratedCache.get("key").await()
+
+            // then it is returned
+            Assert.assertEquals("value", result)
+        }
+    }
+
+    @Test
+    fun return_null_when_the_key_has_been_evicted() {
+        runBlocking {
+            // given we have a cache with a value
+            integratedCache.set("key", "value").await()
+
+            // when we evict the value
+            integratedCache.evict("key").await()
+
+            // then the value is null
+            Assert.assertNull(integratedCache.get("key").await())
+        }
+    }
+
+    @Test
+    fun remove_first_value_when_all_unused() {
+        runBlocking {
+            val singleEntryDiskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk2"), 0, 1, 6)
+
+            try {
+                // given we create a cache of size 1
+                val cache = DiskLruCacheWrapper(singleEntryDiskCache)
+
+                // when we set 2 values, and force flush the cache
+                cache.set("key1", "value1").await()
+                cache.set("key2", "value2").await()
+                singleEntryDiskCache.flush()
+
+                // then only the second value is available
+                Assert.assertNull(cache.get("key1").await())
+                Assert.assertEquals("value2", cache.get("key2").await())
+            } finally {
+                singleEntryDiskCache.delete()
+            }
+        }
+    }
+
+    @Test
+    fun remove_oldest_value_when_one_is_used() {
+        runBlocking {
+            val doubleEntryDiskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk2"), 0, 1, 12)
+
+            try {
+                // given we create and populate a cache of size 2
+                val cache = DiskLruCacheWrapper(doubleEntryDiskCache)
+                cache.set("key1", "value1").await()
+                cache.set("key2", "value2").await()
+
+                // when we get the 1st and add a 3rd value, and force flush the cache
+                cache.get("key1").await()
+                cache.set("key3", "value3").await()
+                doubleEntryDiskCache.flush()
+
+                // then the 2nd is removed leaving the 1st and 3rd values
+                Assert.assertNull(cache.get("key2").await())
+                Assert.assertEquals("value1", cache.get("key1").await())
+                Assert.assertEquals("value3", cache.get("key3").await())
+            } finally {
+                doubleEntryDiskCache.delete()
+            }
+        }
+    }
+}
