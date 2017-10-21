@@ -1,3 +1,5 @@
 include ':layercache'
 include ':layercache-ehcache'
 include ':layercache-serializer'
+
+include ':testutils'

@@ -5,10 +5,8 @@ dependencies {
     compile project(':layercache')
     compile "org.ehcache:ehcache:3.3.1"
 
-    testCompile project(':layercache')
+    testCompile project(':testutils')
     testCompile "org.slf4j:slf4j-nop:1.7.25"
-    testCompile "junit:junit:4.12"
-    testCompile 'org.mockito:mockito-core:2.8.47'
 }
 
 kotlin {
