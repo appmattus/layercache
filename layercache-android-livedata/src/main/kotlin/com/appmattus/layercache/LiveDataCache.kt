@@ -1,0 +1,76 @@
+/**
+ * Copyright 2017 Appmattus Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.appmattus.layercache
+
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
+import android.support.annotation.CheckResult
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+
+/**
+ * Convert a cache to return LiveData objects
+ */
+class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) {
+    /**
+     * Return the value associated with the key or null if not present
+     */
+    @CheckResult
+    fun get(key: Key): LiveData<LiveDataResult<Value?>> {
+        val liveData = MutableLiveData<LiveDataResult<Value?>>()
+        liveData.postValue(LiveDataResult.Loading())
+
+        cache.get(key).onCompletion {
+            when (it) {
+                is DeferredResult.Success -> LiveDataResult.Success<Value?>(it.value)
+                is DeferredResult.Failure -> LiveDataResult.Failure<Value?>(it.exception)
+                is DeferredResult.Cancelled -> LiveDataResult.Failure<Value?>(it.exception)
+            }.let {
+                liveData.postValue(it)
+            }
+        }
+
+
+        return liveData
+    }
+
+    /**
+     * Save the value against the key
+     */
+    fun set(key: Key, value: Value): LiveData<Unit> {
+        val liveData = MutableLiveData<Unit>()
+
+        async(CommonPool) {
+            liveData.postValue(cache.set(key, value).await())
+        }
+
+        return liveData
+    }
+
+    /**
+     * Remove the data associated with the key
+     */
+    fun evict(key: Key): LiveData<Unit> {
+        val liveData = MutableLiveData<Unit>()
+
+        async(CommonPool) {
+            liveData.postValue(cache.evict(key).await())
+        }
+
+        return liveData
+    }
+}

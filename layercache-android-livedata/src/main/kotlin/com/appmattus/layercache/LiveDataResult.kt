@@ -16,22 +16,22 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import retrofit2.Call
+/**
+ * Sealed class representing the status of a cache request, one of Success, Failure or Loading
+ */
+sealed class LiveDataResult<Value> {
+    /**
+     * Success, contains the value returned by the cache execution
+     */
+    class Success<Value>(val value: Value) : LiveDataResult<Value>()
 
-class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Value>) : Fetcher<Key, Value> {
+    /**
+     * Failure, contains the exception thrown by the cache execution
+     */
+    class Failure<Value>(val exception: Throwable) : LiveDataResult<Value>()
 
-    override fun get(key: Key): Deferred<Value?> {
-        return async(CommonPool) {
-            val response = retrofitCall(key).execute()
-
-            if (!response.isSuccessful) {
-                throw RetrofitException(response)
-            }
-
-            response.body()
-        }
-    }
+    /**
+     * Loading, when a cache execution is in progress and is not yet Success or Failure
+     */
+    class Loading<Value> : LiveDataResult<Value>()
 }
