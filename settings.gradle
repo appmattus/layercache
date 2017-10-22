@@ -3,6 +3,7 @@ include ':layercache-ehcache'
 include ':layercache-serializer'
 
 include ':layercache-android'
+include ':layercache-android-livedata'
 include ':layercache-android-retrofit'
 
 include ':testutils'
