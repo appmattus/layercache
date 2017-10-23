@@ -27,7 +27,6 @@ jobs:
             find . -type f -regex ".*/build/test-results/test/.*xml" -exec cp {} ~/junit/ \;
             find . -type f -regex ".*/build/test-results/testDebug*/.*xml" -exec cp {} ~/junit/ \;
           when: always
-
       - store_artifacts:
           path: layercache-android/build/reports
           destination: reports
