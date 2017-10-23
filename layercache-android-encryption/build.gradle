@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply from: "$rootDir/bintray.gradle"
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
+
+    publishNonDefault true
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            multiDexEnabled true
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+        androidTest.java.srcDirs += 'src/androidTest/kotlin'
+    }
+
+    testBuildType "debug"
+}
+
+dependencies {
+    compile project(':layercache-android')
+    compile "com.android.support:support-annotations:26.1.0"
+
+    testCompile project(':testutils')
+    testCompile "org.robolectric:robolectric:3.4.2"
+
+    androidTestCompile project(':testutils')
+    androidTestCompile files('testlibs/JUnitParams-1.1.0-custom.jar')
+    androidTestCompile('com.android.support.test:runner:1.0.1')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:3.0.1', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
+
+kotlin {
+    experimental {
+        coroutines 'enable'
+    }
+}
