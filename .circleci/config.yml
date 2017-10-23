@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-26-alpha
+    environment:
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew tasks
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: ./gradlew assembleRelease check
+      - run:
+          name: Save test results 
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/test/.*xml" -exec cp {} ~/junit/ \;
+            find . -type f -regex ".*/build/test-results/testDebug*/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+
+      - store_artifacts:
+          path: layercache-android/build/reports
+          destination: reports
+      - store_test_results:
+          path: ~/junit
+
+
