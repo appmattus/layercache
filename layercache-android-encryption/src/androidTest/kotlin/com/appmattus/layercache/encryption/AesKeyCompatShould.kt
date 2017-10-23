@@ -4,12 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.preference.PreferenceManager
 import android.support.test.InstrumentationRegistry
-import android.support.test.filters.SdkSuppress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExpectedException
 import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -17,6 +18,9 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
 class AesKeyCompatShould {
+
+    @get:Rule
+    var thrown = ExpectedException.none()
 
     private lateinit var aesKey: AesKeyCompat
 
@@ -41,70 +45,78 @@ class AesKeyCompatShould {
         }
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     @SuppressLint("NewApi")
-    @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun throw_exception_when_sdk_too_low() {
-        // when we create a new AesKeyCompat
-        val appContext = InstrumentationRegistry.getContext().applicationContext
-        AesKeyCompat(appContext, BlockMode.CBC, EncryptionPadding.PKCS7, false, IntegrityCheck.HMAC_SHA256)
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            thrown.expect(IllegalStateException::class.java)
 
-        // then an exception is thrown
+            // when we create a new AesKeyCompat
+            val appContext = InstrumentationRegistry.getContext().applicationContext
+            AesKeyCompat(appContext, BlockMode.CBC, EncryptionPadding.PKCS7, false, IntegrityCheck.HMAC_SHA256)
+
+            // then an exception is thrown
+        }
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun decrypt_text_using_second_requested_key() {
-        // given we retrieve a key
-        val secretKey = aesKey.retrieveConfidentialityKey("testAes")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            // given we retrieve a key
+            val secretKey = aesKey.retrieveConfidentialityKey("testAes")
 
-        // when we request the same key again
-        val anotherSecretKey = aesKey.retrieveConfidentialityKey("testAes")
+            // when we request the same key again
+            val anotherSecretKey = aesKey.retrieveConfidentialityKey("testAes")
 
-        // then they have the same private key - only possible to validate this by ensuring we can decrypt
-        val encrypted1 = encrypt(secretKey, "hello world")
-        assertEquals("hello world", decrypt(anotherSecretKey, encrypted1))
+            // then they have the same private key - only possible to validate this by ensuring we can decrypt
+            val encrypted1 = encrypt(secretKey, "hello world")
+            assertEquals("hello world", decrypt(anotherSecretKey, encrypted1))
+        }
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = Build.VERSION_CODES.JELLY_BEAN_MR2, maxSdkVersion = Build.VERSION_CODES.LOLLIPOP_MR1)
     fun return_the_same_key_when_requested_twice() {
-        // given we retrieve a key
-        val secretKey = aesKey.retrieveConfidentialityKey("testAes")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
 
-        // when we request the same key again
-        val anotherSecretKey = aesKey.retrieveConfidentialityKey("testAes")
+            // given we retrieve a key
+            val secretKey = aesKey.retrieveConfidentialityKey("testAes")
 
-        // then they have the same private key - only possible to validate this by ensuring we can decrypt
-        assertEquals(secretKey.encoded.encodeBase64(), anotherSecretKey.encoded.encodeBase64())
+            // when we request the same key again
+            val anotherSecretKey = aesKey.retrieveConfidentialityKey("testAes")
+
+            // then they have the same private key - only possible to validate this by ensuring we can decrypt
+            assertEquals(secretKey.encoded.encodeBase64(), anotherSecretKey.encoded.encodeBase64())
+        }
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = Build.VERSION_CODES.JELLY_BEAN_MR2, maxSdkVersion = Build.VERSION_CODES.LOLLIPOP_MR1)
     fun use_rsa() {
-        // given we have a key store
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            // given we have a key store
+            val keyStore = KeyStore.getInstance("AndroidKeyStore")
+            keyStore.load(null)
 
-        // when we retrieve a key
-        aesKey.retrieveConfidentialityKey("testAes")
+            // when we retrieve a key
+            aesKey.retrieveConfidentialityKey("testAes")
 
-        // then it contains an rsa key
-        assertTrue(keyStore.containsAlias("testAes:rsa"))
+            // then it contains an rsa key
+            assertTrue(keyStore.containsAlias("testAes:rsa"))
+        }
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = Build.VERSION_CODES.M)
     fun not_use_rsa() {
-        // given we have a key store
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // given we have a key store
+            val keyStore = KeyStore.getInstance("AndroidKeyStore")
+            keyStore.load(null)
 
-        // when we retrieve a key
-        aesKey.retrieveConfidentialityKey("testAes")
+            // when we retrieve a key
+            aesKey.retrieveConfidentialityKey("testAes")
 
-        // then it does not contain an rsa key
-        assertFalse(keyStore.containsAlias("testAes:rsa"))
+            // then it does not contain an rsa key
+            assertFalse(keyStore.containsAlias("testAes:rsa"))
+        }
     }
 
     private fun encrypt(secretKey: SecretKey, value: String): String {
