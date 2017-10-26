@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JSON
 /**
  * Two-way transform to serialise and deserialise data class objects to String
  */
-class JSONSerializer<Value : Any>(private val serializer: KSerializer<Value>) : TwoWayTransform<String, Value> {
+internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<Value>) : TwoWayTransform<String, Value> {
     override fun transform(value: String): Value {
         return JSON.parse(serializer, value)
     }
@@ -31,3 +31,6 @@ class JSONSerializer<Value : Any>(private val serializer: KSerializer<Value>) : 
         return JSON.stringify(serializer, mappedValue)
     }
 }
+
+@Suppress("unused", "USELESS_CAST")
+fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.mapValues(JSONSerializer(serializer))
