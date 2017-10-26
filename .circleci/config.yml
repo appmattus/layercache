@@ -9,14 +9,14 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-android-retrofit/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
           name: Download Dependencies
           command: ./gradlew tasks
       - save_cache:
           paths:
             - ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-android-retrofit/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
           name: Run Tests
           command: ./gradlew assembleRelease check
