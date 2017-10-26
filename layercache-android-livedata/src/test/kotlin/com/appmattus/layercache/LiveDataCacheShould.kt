@@ -53,7 +53,7 @@ class LiveDataCacheShould {
         // given value available in first cache only
         Mockito.`when`(lruCache.get("key")).then { "value" }
 
-        val liveDataCache = LiveDataCache(LruCacheWrapper(lruCache))
+        val liveDataCache = Cache.fromLruCache(lruCache).toLiveData()
 
         val liveData = liveDataCache.get("key")
 

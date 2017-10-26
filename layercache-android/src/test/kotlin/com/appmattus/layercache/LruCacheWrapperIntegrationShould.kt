@@ -16,7 +16,6 @@
 
 package com.appmattus.layercache
 
-import android.util.LruCache
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -31,11 +30,11 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE)
 class LruCacheWrapperIntegrationShould {
 
-    private lateinit var integratedCache: LruCacheWrapper<String, String>
+    private lateinit var integratedCache: Cache<String, String>
 
     @Before
     fun before() {
-        integratedCache = LruCacheWrapper(LruCache(10))
+        integratedCache = Cache.createLruCache(10)
     }
 
     @Test

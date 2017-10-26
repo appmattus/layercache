@@ -37,7 +37,7 @@ class EhcacheWrapperShould {
 
     private lateinit var wrappedCache: Cache<String, String>
 
-    private lateinit var integratedCache: EhcacheWrapper<String, String>
+    private lateinit var integratedCache: Cache<String, String>
 
     @Before
     fun before() {
@@ -45,7 +45,7 @@ class EhcacheWrapperShould {
         wrappedCache = EhcacheWrapper(ehcache)
 
         val cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true)
-        integratedCache = EhcacheWrapper(cacheManager.createCache("myCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))))
+        integratedCache = Cache.fromEhcache(cacheManager.createCache("myCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))))
     }
 
     // get

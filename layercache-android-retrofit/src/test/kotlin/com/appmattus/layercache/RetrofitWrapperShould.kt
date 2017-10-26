@@ -14,30 +14,76 @@
  * limitations under the License.
  */
 
+@file:Suppress("IllegalIdentifier")
+
 package com.appmattus.layercache
 
+import kotlinx.coroutines.experimental.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.mock.BehaviorDelegate
+import retrofit2.mock.MockRetrofit
+import retrofit2.mock.NetworkBehavior
 
 class RetrofitWrapperShould {
-    interface GitHubService {
-        @GET("users/{user}/repos")
-        fun listRepos(@Path("user") user: String): Call<List<String>>
+
+    interface RetrofitService {
+        @GET("name")
+        fun listName(@Path("name") name: String): Call<String>
     }
 
-    fun testIt() {
-        val retrofit: Retrofit = TestUtils.uninitialized()
+    class MockRetrofitService(private val serviceDelegate: BehaviorDelegate<RetrofitService>) : RetrofitService {
+        override fun listName(name: String): Call<String> {
+            return serviceDelegate.returningResponse("${name}-a").listName(name)
+        }
+    }
 
-        val service = retrofit.create(GitHubService::class.java)
+    private lateinit var service: RetrofitService
 
-        val x = RetrofitWrapper({ key: String ->
-            service.listRepos(key)
-        })
+    @Before
+    fun before() {
+        val retrofit = Retrofit.Builder().baseUrl("http://example.com").build()
+        val networkBehavior = NetworkBehavior.create().apply {
+            setFailurePercent(0)
+        }
 
-        val y = RetrofitWrapper { key: String ->
-            service.listRepos(key)
+        val mockRetrofit = MockRetrofit.Builder(retrofit).networkBehavior(networkBehavior).build()
+
+        service = MockRetrofitService(mockRetrofit.create(RetrofitService::class.java))
+    }
+
+    @Test
+    fun `return value from service`() {
+        runBlocking {
+            val cache = Cache.fromRetrofit { key: String ->
+                service.listName(key)
+            }
+
+            assertEquals("key-a", cache.get("key").await())
+
+            assertEquals("key2-a", cache.get("key2").await())
+        }
+    }
+
+    @Test
+    fun `chain in memory cache with retrofit`() {
+        runBlocking {
+            val memoryCache = MapCache()
+            val networkCache = Cache.fromRetrofit { key: String ->
+                service.listName(key)
+            }
+
+            assertEquals(null, memoryCache.get("key").await())
+
+            val cache = memoryCache.compose(networkCache)
+
+            assertEquals("key-a", cache.get("key").await())
+            assertEquals("key-a", memoryCache.get("key").await())
         }
     }
 }

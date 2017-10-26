@@ -27,7 +27,7 @@ import kotlinx.coroutines.experimental.async
  * Wrapper around Android's built in LruCache
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-class LruCacheWrapper<Key : Any, Value : Any>(val cache: LruCache<Key, Value>) : Cache<Key, Value> {
+internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCache<Key, Value>) : Cache<Key, Value> {
     constructor(maxSize: Int) : this(LruCache(maxSize))
 
     override fun evict(key: Key): Deferred<Unit> {
@@ -54,3 +54,10 @@ class LruCacheWrapper<Key : Any, Value : Any>(val cache: LruCache<Key, Value>) :
         }
     }
 }
+
+@Suppress("unused", "USELESS_CAST")
+@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+fun <Key : Any, Value : Any> Cache.Companion.fromLruCache(cache: LruCache<Key, Value>) = LruCacheWrapper(cache) as Cache<Key, Value>
+
+@Suppress("unused")
+fun <Key : Any, Value : Any> Cache.Companion.createLruCache(maxSize: Int) = Cache.fromLruCache(LruCache<Key, Value>(maxSize))

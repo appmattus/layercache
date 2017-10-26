@@ -38,7 +38,7 @@ class DiskLruCacheWrapperShould {
     @Before
     fun before() {
         MockitoAnnotations.initMocks(this)
-        wrappedCache = DiskLruCacheWrapper(lruCache)
+        wrappedCache = Cache.fromDiskLruCache(lruCache)
     }
 
     // get

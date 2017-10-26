@@ -33,12 +33,12 @@ import java.io.File
 class DiskLruCacheWrapperIntegrationShould {
 
     private lateinit var diskCache: DiskLruCache
-    private lateinit var integratedCache: DiskLruCacheWrapper
+    private lateinit var integratedCache: Cache<String, String>
 
     @Before
     fun before() {
         diskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk"), 0, 1, 200)
-        integratedCache = DiskLruCacheWrapper(diskCache)
+        integratedCache = Cache.fromDiskLruCache(diskCache)
     }
 
     @After
