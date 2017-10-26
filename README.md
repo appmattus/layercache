@@ -1,9 +1,10 @@
 # layercache [![Build Status](https://travis-ci.org/appmattus/layercache.svg?branch=master)](https://travis-ci.org/appmattus/layercache) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
 
-Caching made simple for Android and Java.
+Caching made simple for Android and Kotlin.
 
 
 ## Getting started
+
 
 
 
@@ -17,8 +18,20 @@ dependencies {
     // To use with the Kotlin serializer
     compile 'com.appmattus:layercache-serializer:<latest-version>'
     
-    // To use with ehcache
+    // Provides support for ehcache
     compile 'com.appmattus:layercache-ehcache:<latest-version>'
+    
+    // Provides LruCache & DiskLruCache support for Android
+    compile 'com.appmattus:layercache-android:<latest-version>'
+    
+    // Provides one-line String encryption for Android
+    compile 'com.appmattus:layercache-android-encryption:<latest-version>'
+
+    // Provides conversion from Cache into LiveData for Android
+    compile 'com.appmattus:layercache-android-livedata:<latest-version>'
+    
+    // Enables converting Retrofit calls to Cache for Android
+    compile 'com.appmattus:layercache-android-retrofit:<latest-version>'
 }
 ```
 
