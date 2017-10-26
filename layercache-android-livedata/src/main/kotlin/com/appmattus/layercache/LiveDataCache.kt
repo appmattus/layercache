@@ -44,7 +44,6 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
             }
         }
 
-
         return liveData
     }
 
@@ -74,3 +73,6 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
         return liveData
     }
 }
+
+@Suppress("unused")
+fun <Key : Any, Value : Any> Cache<Key, Value>.toLiveData() = LiveDataCache(this)

@@ -26,6 +26,8 @@ import kotlinx.coroutines.experimental.async
  */
 @Suppress("TooManyFunctions")
 interface Cache<Key : Any, Value : Any> {
+    //Declaring an empty companion object here
+    companion object Companion
 
     /**
      * Return the value associated with the key or null if not present

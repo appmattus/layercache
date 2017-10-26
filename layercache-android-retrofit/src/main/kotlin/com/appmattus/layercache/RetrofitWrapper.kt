@@ -21,7 +21,7 @@ import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import retrofit2.Call
 
-class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Value>) : Fetcher<Key, Value> {
+internal class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Value>) : Fetcher<Key, Value> {
 
     override fun get(key: Key): Deferred<Value?> {
         return async(CommonPool) {
@@ -35,3 +35,6 @@ class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Va
         }
     }
 }
+
+@Suppress("unused", "USELESS_CAST")
+fun <Key : Any, Value : Any> Cache.Companion.fromRetrofit(retrofitCall: (Key) -> Call<Value>) = RetrofitWrapper(retrofitCall) as Fetcher<Key, Value>

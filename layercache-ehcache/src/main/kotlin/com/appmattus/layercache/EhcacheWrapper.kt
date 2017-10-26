@@ -23,7 +23,7 @@ import kotlinx.coroutines.experimental.async
 /**
  * Wrapper around EhCache (http://www.ehcache.org/)
  */
-class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) :
+internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) :
         Cache<Key, Value> {
     override fun evict(key: Key): Deferred<Unit> {
         return async(CommonPool) {
@@ -49,3 +49,6 @@ class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cach
         }
     }
 }
+
+@Suppress("unused", "USELESS_CAST")
+fun <Key : Any, Value : Any> Cache.Companion.fromEhcache(cache: org.ehcache.Cache<Key, Value>) = EhcacheWrapper(cache) as Cache<Key, Value>

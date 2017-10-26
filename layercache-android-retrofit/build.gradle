@@ -43,11 +43,10 @@ repositories {
 
 dependencies {
     compile project(':layercache-android')
-
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
 
     testCompile project(':testutils')
-    testCompile "org.robolectric:robolectric:3.4.2"
+    testCompile 'com.squareup.retrofit2:retrofit-mock:2.3.0'
 }
 
 kotlin {

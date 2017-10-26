@@ -24,7 +24,7 @@ import kotlinx.coroutines.experimental.async
 /**
  * Wrapper around DiskLruCache (https://github.com/jakeWharton/DiskLruCache/)
  */
-class DiskLruCacheWrapper(val cache: DiskLruCache) : Cache<String, String> {
+internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<String, String> {
 
     override fun evict(key: String): Deferred<Unit> {
         return async<Unit>(CommonPool) {
@@ -58,3 +58,6 @@ class DiskLruCacheWrapper(val cache: DiskLruCache) : Cache<String, String> {
         }
     }
 }
+
+@Suppress("unused", "USELESS_CAST")
+fun Cache.Companion.fromDiskLruCache(cache: DiskLruCache) = DiskLruCacheWrapper(cache) as Cache<String, String>
