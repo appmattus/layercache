@@ -21,17 +21,17 @@ dependencies {
     // Provides support for ehcache
     compile 'com.appmattus:layercache-ehcache:<latest-version>'
     
+    // Enables converting Retrofit calls to Cache
+    compile 'com.appmattus:layercache-retrofit:<latest-version>'
+    
     // Provides LruCache & DiskLruCache support for Android
     compile 'com.appmattus:layercache-android:<latest-version>'
     
     // Provides one-line String encryption for Android
     compile 'com.appmattus:layercache-android-encryption:<latest-version>'
-
+    
     // Provides conversion from Cache into LiveData for Android
     compile 'com.appmattus:layercache-android-livedata:<latest-version>'
-    
-    // Enables converting Retrofit calls to Cache for Android
-    compile 'com.appmattus:layercache-android-retrofit:<latest-version>'
 }
 ```
 

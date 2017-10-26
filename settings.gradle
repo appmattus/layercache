@@ -1,10 +1,10 @@
 include ':layercache'
 include ':layercache-ehcache'
+include ':layercache-retrofit'
 include ':layercache-serializer'
 
 include ':layercache-android'
 include ':layercache-android-encryption'
 include ':layercache-android-livedata'
-include ':layercache-android-retrofit'
 
 include ':testutils'
