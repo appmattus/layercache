@@ -43,19 +43,19 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
     @Deprecated("evictAll does nothing on a Fetcher")
     override fun evictAll(): Deferred<Unit> = async(CommonPool) {}
     
-    @Deprecated("Use mapValues(transform) on a Fetcher", ReplaceWith("mapValues(transform)"))
-    override fun <MappedValue : Any> mapValues(transform: (Value) -> MappedValue,
-                                               inverseTransform: (MappedValue) -> Value): Fetcher<Key, MappedValue> {
-        return mapValues(transform)
+    @Deprecated("Use valueTransform(transform) on a Fetcher", ReplaceWith("valueTransform(transform)"))
+    override fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue,
+                                                    inverseTransform: (MappedValue) -> Value): Fetcher<Key, MappedValue> {
+        return valueTransform(transform)
     }
 
-    override fun <MappedKey : Any> mapKeys(transform: (MappedKey) -> Key): Fetcher<MappedKey, Value> {
+    override fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Fetcher<MappedKey, Value> {
         @Suppress("EmptyClassBlock")
         return object : Fetcher<MappedKey, Value>, MapKeysCache<Key, Value, MappedKey>(this@Fetcher, transform) {}
     }
 
-    override fun <MappedKey : Any> mapKeys(transform: OneWayTransform<MappedKey, Key>): Fetcher<MappedKey, Value> =
-            mapKeys(transform::transform)
+    override fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Fetcher<MappedKey, Value> =
+            keyTransform(transform::transform)
 
     override fun reuseInflight(): Fetcher<Key, Value> {
         @Suppress("EmptyClassBlock")

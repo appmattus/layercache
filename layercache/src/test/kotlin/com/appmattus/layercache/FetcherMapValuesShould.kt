@@ -47,13 +47,13 @@ class FetcherMapValuesShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(cache.mapValues(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
-        Mockito.`when`(cache.mapValues(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java))).thenCallRealMethod()
 
-        mappedValuesCache = cache.mapValues(function, functionInverse)
+        mappedValuesCache = cache.valueTransform(function, functionInverse)
 
-        Mockito.verify(cache, atLeastOnce()).mapValues(MockitoKotlin.any<(String) -> Any>())
-        Mockito.verify(cache, atLeastOnce()).mapValues(MockitoKotlin.any(), MockitoKotlin.any())
+        Mockito.verify(cache, atLeastOnce()).valueTransform(MockitoKotlin.any<(String) -> Any>())
+        Mockito.verify(cache, atLeastOnce()).valueTransform(MockitoKotlin.any(), MockitoKotlin.any())
     }
 
     // get

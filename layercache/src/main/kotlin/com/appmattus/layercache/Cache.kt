@@ -113,7 +113,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map keys from one type to another.
      */
     @Suppress("ReturnCount")
-    fun <MappedKey : Any> mapKeys(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
+    fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
         return object : MapKeysCache<Key, Value, MappedKey>(this@Cache, transform) {
             override fun evict(key: MappedKey): Deferred<Unit> {
                 return async(CommonPool) {
@@ -140,13 +140,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map keys from one type to another.
      */
-    fun <MappedKey : Any> mapKeys(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
-            mapKeys(transform::transform)
+    fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
+            keyTransform(transform::transform)
 
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
-    fun <MappedValue : Any> mapValues(transform: (Value) -> MappedValue): Fetcher<Key, MappedValue> {
+    fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue): Fetcher<Key, MappedValue> {
         @Suppress("EmptyClassBlock")
         return object : Fetcher<Key, MappedValue>, MapValuesCache<Key, Value, MappedValue>(this, transform) {}
     }
@@ -154,13 +154,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
-    fun <MappedValue : Any> mapValues(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
-            mapValues(transform::transform)
+    fun <MappedValue : Any> valueTransform(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
+            valueTransform(transform::transform)
 
     /**
      * Map values from one type to another and vice-versa.
      */
-    fun <MappedValue : Any> mapValues(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
+    fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
             Cache<Key, MappedValue> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
             override fun evict(key: Key) = this@Cache.evict(key)
@@ -178,8 +178,8 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map values from one type to another and vice-versa.
      */
-    fun <MappedValue : Any> mapValues(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
-            mapValues(transform::transform, transform::inverseTransform)
+    fun <MappedValue : Any> valueTransform(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
+            valueTransform(transform::transform, transform::inverseTransform)
 
     /**
      * If a get request is already in flight then this ensures the original request is returned

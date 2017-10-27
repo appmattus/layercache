@@ -42,13 +42,13 @@ class CacheMapValuesShould {
         MockitoAnnotations.initMocks(this)
         val f: (String) -> Int = { str: String -> str.toInt() }
         val fInv: (Int) -> String = { int: Int -> int.toString() }
-        Mockito.`when`(cache.mapValues(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
-        mappedValuesCache = cache.mapValues(f, fInv)
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
+        mappedValuesCache = cache.valueTransform(f, fInv)
 
         val errorF: (String) -> Int = { _: String -> throw TestException() }
         val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.mapValues(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java))).thenCallRealMethod()
-        mappedValuesCacheWithError = cache.mapValues(errorF, errorFInv)
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java))).thenCallRealMethod()
+        mappedValuesCacheWithError = cache.valueTransform(errorF, errorFInv)
     }
 
     // get

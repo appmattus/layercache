@@ -51,16 +51,16 @@ class CacheMapKeysShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
         val fInv: (Int) -> String = { int: Int -> int.toString() }
-        Mockito.`when`(cache.mapKeys(fInv)).thenCallRealMethod()
-        mappedKeysCache = cache.mapKeys(fInv)
+        Mockito.`when`(cache.keyTransform(fInv)).thenCallRealMethod()
+        mappedKeysCache = cache.keyTransform(fInv)
 
         val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.mapKeys(errorFInv)).thenCallRealMethod()
-        mappedKeysCacheWithError = cache.mapKeys(errorFInv)
+        Mockito.`when`(cache.keyTransform(errorFInv)).thenCallRealMethod()
+        mappedKeysCacheWithError = cache.keyTransform(errorFInv)
 
         val nullFInv: (Int) -> String = { _: Int -> TestUtils.uninitialized() }
-        Mockito.`when`(cache.mapKeys(nullFInv)).thenCallRealMethod()
-        mappedKeysCacheWithNull = cache.mapKeys(nullFInv)
+        Mockito.`when`(cache.keyTransform(nullFInv)).thenCallRealMethod()
+        mappedKeysCacheWithNull = cache.keyTransform(nullFInv)
 
     }
 

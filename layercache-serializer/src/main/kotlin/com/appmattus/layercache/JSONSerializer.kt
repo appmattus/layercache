@@ -33,4 +33,4 @@ internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<V
 }
 
 @Suppress("unused", "USELESS_CAST")
-fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.mapValues(JSONSerializer(serializer))
+fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.valueTransform(JSONSerializer(serializer))

@@ -5,7 +5,6 @@ import android.os.Build
 import android.preference.PreferenceManager
 import android.support.annotation.RequiresApi
 import android.support.test.InstrumentationRegistry
-import android.util.LruCache
 import com.appmattus.layercache.encryption.EncryptionFactory
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
@@ -87,8 +86,8 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             runBlocking {
                 // given we have a cache where we map the values using encryption
-                val cache = LruCacheWrapper<String, String>(LruCache(10))
-                val mappedCache = cache.mapValues(encryptor::transform, encryptor::inverseTransform)
+                val cache = Cache.createLruCache<String, String>(10)
+                val mappedCache = cache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
                 // when we set a value and retrieve it
                 mappedCache.set("key", "value").await()
@@ -107,12 +106,12 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             runBlocking {
 
-                val networkCache = LruCacheWrapper<String, String>(LruCache(10))
+                val networkCache = Cache.createLruCache<String, String>(10)
                 networkCache.set("key", "value")
 
 
-                val diskCache = LruCacheWrapper<String, String>(LruCache(10))
-                val encryptedDiskCache = diskCache.mapValues(encryptor::transform, encryptor::inverseTransform)
+                val diskCache = Cache.createLruCache<String, String>(10)
+                val encryptedDiskCache = diskCache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
 
                 val chained = encryptedDiskCache.compose(networkCache)

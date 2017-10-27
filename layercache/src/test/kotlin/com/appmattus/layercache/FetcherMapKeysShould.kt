@@ -50,11 +50,11 @@ class FetcherMapKeysShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(cache.mapKeys(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.keyTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
 
-        mappedKeysCache = cache.mapKeys(function)
+        mappedKeysCache = cache.keyTransform(function)
 
-        Mockito.verify(cache, Mockito.atLeastOnce()).mapKeys(MockitoKotlin.any(function::class.java))
+        Mockito.verify(cache, Mockito.atLeastOnce()).keyTransform(MockitoKotlin.any(function::class.java))
     }
 
     @Test

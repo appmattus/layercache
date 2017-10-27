@@ -45,11 +45,11 @@ class CacheMapValuesOneWayShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(cache.mapValues(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
 
-        mappedValuesCache = cache.mapValues(function)
+        mappedValuesCache = cache.valueTransform(function)
 
-        Mockito.verify(cache, Mockito.atLeastOnce()).mapValues(MockitoKotlin.any<(String) -> Any>())
+        Mockito.verify(cache, Mockito.atLeastOnce()).valueTransform(MockitoKotlin.any<(String) -> Any>())
     }
 
     // get

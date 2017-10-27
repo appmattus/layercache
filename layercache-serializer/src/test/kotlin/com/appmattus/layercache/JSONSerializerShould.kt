@@ -40,7 +40,7 @@ class JSONSerializerShould {
     @Test
     fun `allow mapping data class into json through a cache`() {
         runBlocking {
-            // given we create a simple cache and mapValues with a serializer
+            // given we create a simple cache and valueTransform with a serializer
             val initialCache = object : Cache<String, String> {
                 var lastValue: String? = null
 

@@ -109,7 +109,7 @@ class CacheComposeShould {
         thrown.expect(IllegalArgumentException::class.java)
         thrown.expectMessage("Cache creates a circular reference")
 
-        val c = firstCache.compose(secondCache).reuseInflight().mapKeys<String> { it }.mapValues({ it }, { it }).reuseInflight()
+        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
         c.compose(secondCache)
     }
 
@@ -118,7 +118,7 @@ class CacheComposeShould {
         thrown.expect(IllegalArgumentException::class.java)
         thrown.expectMessage("Cache creates a circular reference")
 
-        val c = firstCache.compose(secondCache).reuseInflight().mapKeys<String> { it }.mapValues({ it }, { it }).reuseInflight()
+        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
         c.compose(firstCache)
     }
 
