@@ -39,7 +39,7 @@ class FetcherMapKeysShould {
     var thrown = ExpectedException.none()
 
     @Mock
-    private lateinit var cache: AbstractFetcherCache<String, Any>
+    private lateinit var cache: AbstractFetcher<String, Any>
 
     @Mock
     private lateinit var function: (Int) -> String

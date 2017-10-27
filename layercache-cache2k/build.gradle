@@ -1,11 +1,15 @@
 apply plugin: 'kotlin'
 apply plugin: 'jacoco'
+apply from: "$rootDir/bintray.gradle"
 
 dependencies {
     compile project(':layercache')
-    compile "com.android.support:support-annotations:26.0.2"
-    compile "junit:junit:4.12"
-    compile 'org.mockito:mockito-core:2.8.47'
+    compile 'org.cache2k:cache2k-api:1.0.1.Final'
+    runtime 'org.cache2k:cache2k-all:1.0.1.Final'
+// compileOnly
+
+    testCompile project(':testutils')
+    testCompile "org.slf4j:slf4j-nop:1.7.25"
 }
 
 kotlin {
@@ -15,10 +19,6 @@ kotlin {
 }
 
 test { finalizedBy jacocoTestReport }
-
-check { //noinspection GroovyAssignabilityCheck
-    finalizedBy rootProject.detektCheck
-}
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"

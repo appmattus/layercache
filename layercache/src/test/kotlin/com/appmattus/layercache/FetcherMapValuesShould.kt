@@ -31,7 +31,7 @@ import org.mockito.MockitoAnnotations
 class FetcherMapValuesShould {
 
     @Mock
-    private lateinit var cache: AbstractFetcherCache<Any, String>
+    private lateinit var cache: AbstractFetcher<Any, String>
 
     @Mock
     private lateinit var function: (String) -> Int

@@ -1,4 +1,5 @@
 include ':layercache'
+include ':layercache-cache2k'
 include ':layercache-ehcache'
 include ':layercache-retrofit'
 include ':layercache-serializer'

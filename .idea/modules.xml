@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/layercache-android/layercache-android.iml" filepath="$PROJECT_DIR$/layercache-android/layercache-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/layercache-android-encryption/layercache-android-encryption.iml" filepath="$PROJECT_DIR$/layercache-android-encryption/layercache-android-encryption.iml" />
       <module fileurl="file://$PROJECT_DIR$/layercache-android-livedata/layercache-android-livedata.iml" filepath="$PROJECT_DIR$/layercache-android-livedata/layercache-android-livedata.iml" />
+      <module fileurl="file://$PROJECT_DIR$/layercache-cache2k/layercache-cache2k.iml" filepath="$PROJECT_DIR$/layercache-cache2k/layercache-cache2k.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" />
       <module fileurl="file://$PROJECT_DIR$/layercache-retrofit/layercache-retrofit.iml" filepath="$PROJECT_DIR$/layercache-retrofit/layercache-retrofit.iml" />

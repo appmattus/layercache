@@ -38,7 +38,7 @@ class FetcherReuseInflightShould {
     var thrown = ExpectedException.none()
 
     @Mock
-    private lateinit var cache: AbstractFetcherCache<Any, Any>
+    private lateinit var cache: AbstractFetcher<Any, Any>
 
     private lateinit var reuseInflightCache: Fetcher<Any, Any>
 
