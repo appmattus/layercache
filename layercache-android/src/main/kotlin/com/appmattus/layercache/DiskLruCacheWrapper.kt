@@ -20,6 +20,7 @@ import com.jakewharton.disklrucache.DiskLruCache
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
+import java.io.File
 
 /**
  * Wrapper around DiskLruCache (https://github.com/jakeWharton/DiskLruCache/)
@@ -61,3 +62,6 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
 
 @Suppress("unused", "USELESS_CAST")
 fun Cache.Companion.fromDiskLruCache(cache: DiskLruCache) = DiskLruCacheWrapper(cache) as Cache<String, String>
+
+@Suppress("unused", "USELESS_CAST")
+fun Cache.Companion.createDiskLruCache(directory: File, maxSize: Long) = fromDiskLruCache(DiskLruCache.open(directory, 1, 1, maxSize))
