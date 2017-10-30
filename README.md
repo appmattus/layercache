@@ -158,21 +158,21 @@ compile 'com.appmattus:layercache-android:<latest-version>'
 #### LruCache
 
 ```kotlin
-memoryCache = Cache.createLruCache(maxSize: Int)
+val memoryCache: Cache<Key, Value> = Cache.createLruCache(maxSize: Int)
 
 // or
 
-memoryCache = Cache.fromLruCache(...)
+val memoryCache: Cache<Key, Value> = Cache.fromLruCache(...)
 ```
 
 #### DiskLruCache
 
 ```kotlin
-memoryCache = Cache.createDiskLruCache(directory: File, maxSize: Long)
+val memoryCache: Cache<String, String> = Cache.createDiskLruCache(directory: File, maxSize: Long)
 
 // or
 
-memoryCache = Cache.fromDiskLruCache(...)
+val memoryCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 ```
 
 ### Android LiveData module
