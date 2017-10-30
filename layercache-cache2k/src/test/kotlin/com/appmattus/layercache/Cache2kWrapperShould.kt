@@ -52,8 +52,6 @@ class Cache2kWrapperShould {
         val cache2k = object : Cache2kBuilder<String, String>() {}
                 // expire/refresh after 5 minutes
                 .expireAfterWrite(5, TimeUnit.MINUTES)
-                // cope with at most 30 seconds outage before propagating exceptions
-                .resilienceDuration(30, TimeUnit.SECONDS)
                 .build()
         integratedCache = Cache.fromCache2k(cache2k)
 
@@ -200,7 +198,7 @@ class Cache2kWrapperShould {
         runBlocking {
             // given we have an empty cache
             // integratedCacheWithLoader
-            
+
             // when we retrieve a value
             val result = integratedCacheWithLoader.get("key").await()
 
