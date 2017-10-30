@@ -62,7 +62,6 @@ class Cache2kWrapperShould {
 
         val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
                 .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
-                .resilienceDuration(30, TimeUnit.SECONDS) // cope with at most 30 seconds outage before propagating
                 // exceptions
                 .refreshAhead(true)                       // keep fresh when expiring
                 .loader(loaderFetcher.toCache2kLoader())         // auto populating function

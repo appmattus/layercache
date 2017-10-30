@@ -10,7 +10,7 @@ android:
 
 script:
     # Run the build
-  - "./gradlew assembleRelease check"
+  - "./gradlew assembleRelease check --info"
 
 deploy:
   skip_cleanup: true

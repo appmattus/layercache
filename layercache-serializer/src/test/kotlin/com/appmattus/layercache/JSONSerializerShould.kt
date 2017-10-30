@@ -49,8 +49,7 @@ class JSONSerializerShould {
                 override fun evict(key: String): Deferred<Unit> = TODO("not implemented")
                 override fun evictAll(): Deferred<Unit> = TODO("not implemented")
             }
-            val cache = initialCache.jsonSerializer(ValueClass::class.serializer())
-
+            val cache: Cache<String, ValueClass> = initialCache.jsonSerializer()
 
             // when we set a data class into it
             cache.set("a", ValueClass(4)).await()

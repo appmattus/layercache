@@ -18,6 +18,7 @@ package com.appmattus.layercache
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JSON
+import kotlinx.serialization.serializer
 
 /**
  * Two-way transform to serialise and deserialise data class objects to String
@@ -34,3 +35,6 @@ internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<V
 
 @Suppress("unused", "USELESS_CAST")
 fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.valueTransform(JSONSerializer(serializer))
+
+@Suppress("unused", "USELESS_CAST")
+inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer() = jsonSerializer(Value::class.serializer())
