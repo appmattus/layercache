@@ -9,10 +9,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-android-retrofit/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
-      - run:
-          name: Download Build Tools
-          command: if [ ! -d "/usr/local/android-sdk-linux/build-tools/26.0.2" ]; then echo y | android update sdk --no-ui --all --filter "build-tools-26.0.2"; fi
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-retrofit/build.gradle" }}-{{ checksum  "layercache-cache2k/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
           name: Download Dependencies
           command: ./gradlew tasks
@@ -20,7 +17,7 @@ jobs:
           paths:
             - ~/.gradle
             - ~/.m2
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-android-retrofit/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-retrofit/build.gradle" }}-{{ checksum  "layercache-cache2k/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
           name: Run Tests
           command: ./gradlew assembleRelease check
@@ -36,5 +33,3 @@ jobs:
           destination: reports
       - store_test_results:
           path: ~/junit
-
-
