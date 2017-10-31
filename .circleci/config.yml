@@ -14,16 +14,13 @@ jobs:
       - restore_cache:
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-retrofit/build.gradle" }}-{{ checksum  "layercache-cache2k/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
-          name: Download Dependencies
-          command: ./gradlew tasks
+          name: Run Tests
+          command: ./gradlew assembleRelease check
       - save_cache:
           paths:
             - ~/.gradle
             - ~/.m2
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-retrofit/build.gradle" }}-{{ checksum  "layercache-cache2k/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
-      - run:
-          name: Run Tests
-          command: ./gradlew assembleRelease check
       - run:
           name: Save test results 
           command: |
@@ -45,6 +42,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ./
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "layercache/build.gradle" }}-{{ checksum  "layercache-android/build.gradle" }}-{{ checksum  "layercache-android-encryption/build.gradle" }}-{{ checksum  "layercache-android-livedata/build.gradle" }}-{{ checksum  "layercache-retrofit/build.gradle" }}-{{ checksum  "layercache-cache2k/build.gradle" }}-{{ checksum  "layercache-ehcache/build.gradle" }}-{{ checksum  "layercache-serializer/build.gradle" }}-{{ checksum  "testutils/build.gradle" }}
       - run:
           name: Upload build
           command: ./gradlew bintrayUpload

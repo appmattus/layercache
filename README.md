@@ -1,4 +1,5 @@
-# layercache [![Build Status](https://travis-ci.org/appmattus/layercache.svg?branch=master)](https://travis-ci.org/appmattus/layercache) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
+# layercache [![CircleCI](https://circleci.com/gh/appmattus/layercache/tree/master.svg?style=svg)](https://circleci.com/gh/appmattus/layercache/tree/master) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
+
 
 Caching made simple for Android and Kotlin.
 
