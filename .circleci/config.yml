@@ -53,12 +53,12 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build
+      - build:
           context: org-global
           filters:
             tags:
               only: /.*/
-      - deploy
+      - deploy:
           requires:
             - build
           context: org-global
