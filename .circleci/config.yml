@@ -1,11 +1,14 @@
+defaults: &defaults
+  working_directory: ~/code
+  docker:
+    - image: circleci/android:api-26-alpha
+  environment:
+    JVM_OPTS: -Xmx3200m
+
 version: 2
 jobs:
   build:
-    working_directory: ~/code
-    docker:
-      - image: circleci/android:api-26-alpha
-    environment:
-      JVM_OPTS: -Xmx3200m
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -33,3 +36,34 @@ jobs:
           destination: reports
       - store_test_results:
           path: ~/junit
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Upload build
+          command: ./gradlew bintrayUpload
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+          context: org-global
+          filters:
+            tags:
+              only: /.*/
+      - deploy
+          requires:
+            - build
+          context: org-global
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
