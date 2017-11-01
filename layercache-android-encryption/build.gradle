@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply from: "$rootDir/jacoco-android.gradle"
 apply from: "$rootDir/bintray.gradle"
 
 android {
@@ -20,6 +21,7 @@ android {
     buildTypes {
         debug {
             multiDexEnabled true
+            testCoverageEnabled true
         }
 
         release {

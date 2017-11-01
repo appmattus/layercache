@@ -1,5 +1,5 @@
 apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+apply from: "$rootDir/jacoco.gradle"
 apply from: "$rootDir/bintray.gradle"
 
 dependencies {
@@ -15,8 +15,6 @@ kotlin {
         coroutines 'enable'
     }
 }
-
-test { finalizedBy jacocoTestReport }
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"

@@ -1,5 +1,5 @@
 apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+apply from: "$rootDir/jacoco.gradle"
 apply from: "$rootDir/bintray.gradle"
 
 dependencies {
@@ -16,8 +16,6 @@ kotlin {
         coroutines 'enable'
     }
 }
-
-test { finalizedBy jacocoTestReport }
 
 check { //noinspection GroovyAssignabilityCheck
     finalizedBy rootProject.detektCheck
