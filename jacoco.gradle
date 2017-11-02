@@ -9,3 +9,7 @@ jacocoTestReport {
         csv.enabled false
     }
 }
+
+check { finalizedBy jacocoTestReport }
+
+jacocoTestReport { finalizedBy rootProject.jacocoTestReport }

@@ -10,11 +10,11 @@ buildscript {
         maven { url "https://kotlin.bintray.com/kotlinx" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serialization_version"
         classpath "gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detekt_version"
-        classpath 'com.novoda:bintray-release:0.5.0'
+        classpath 'com.novoda:bintray-release:0.7.0'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.2'
     }
 }
@@ -42,5 +42,54 @@ detekt {
         filters = ".*test.*,.*androidTest.*,.*/resources/.*,.*/tmp/.*"
         output = "$buildDir/reports/detekt"
         config = "$projectDir/detekt.yml"
+    }
+}
+
+apply plugin: 'jacoco'
+
+task jacocoTestReport(type: JacocoReport) {
+    sourceDirectories = files()
+    classDirectories = files()
+    executionData = files()
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+
+    // Work-around to allow us to build list of executionData files in doFirst
+    onlyIf = {
+        true
+    }
+
+    /*
+     * Builds list of source dirs, class dirs, and executionData files
+     * when task is run, not at script evaluation time
+     */
+    doFirst {
+        subprojects.findAll { subproject ->
+            subproject.pluginManager.hasPlugin('jacoco')
+        }.each { subproject ->
+            subproject.tasks.findAll { task ->
+                task instanceof JacocoReport
+            }.each { JacocoReport task ->
+                additionalSourceDirs task.sourceDirectories
+                additionalClassDirs task.classDirectories
+                executionData task.executionData
+            }
+        }
+
+        executionData = files(executionData.findAll {
+            it.exists()
+        })
+
+        additionalSourceDirs = files(additionalSourceDirs.findAll {
+            it.exists()
+        })
+
+        additionalClassDirs = files(additionalClassDirs.findAll {
+            it.exists()
+        })
     }
 }
