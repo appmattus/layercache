@@ -93,11 +93,12 @@ task jacocoTestReport(type: JacocoReport) {
         additionalClassDirs = files(additionalClassDirs.findAll {
             it.exists()
         })
+
+        coveralls.sourceDirs = additionalSourceDirs.findAll()
     }
 }
 
 coveralls {
-    sourceDirs = jacocoTestReport.allSourceDirs.findAll()
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 }
 
