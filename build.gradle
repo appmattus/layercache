@@ -16,6 +16,7 @@ buildscript {
         classpath "gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detekt_version"
         classpath 'com.novoda:bintray-release:0.7.0'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.2'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
     }
 }
 
@@ -46,6 +47,7 @@ detekt {
 }
 
 apply plugin: 'jacoco'
+apply plugin: 'com.github.kt3k.coveralls'
 
 task jacocoTestReport(type: JacocoReport) {
     sourceDirectories = files()
@@ -92,4 +94,15 @@ task jacocoTestReport(type: JacocoReport) {
             it.exists()
         })
     }
+}
+
+coveralls {
+    sourceDirs = jacocoTestReport.allSourceDirs.findAll()
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+}
+
+jacocoTestReport { finalizedBy tasks.coveralls }
+
+tasks.coveralls {
+    onlyIf { System.env.'CI' }
 }
