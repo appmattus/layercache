@@ -16,9 +16,6 @@ jobs:
       - run:
           name: Run Tests
           command: ./gradlew assembleRelease check
-      - run:
-          name: Coverage Reports
-          command: bash <(curl -s https://codecov.io/bash)
       - save_cache:
           paths:
             - ~/.gradle
