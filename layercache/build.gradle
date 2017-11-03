@@ -4,9 +4,9 @@ apply from: "$rootDir/bintray.gradle"
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.18"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
 
-    compileOnly "com.android.support:support-annotations:26.0.2"
+    compileOnly "com.android.support:support-annotations:27.0.0"
 
     testCompile project(':testutils')
 }

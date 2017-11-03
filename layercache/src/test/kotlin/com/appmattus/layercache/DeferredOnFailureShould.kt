@@ -21,8 +21,10 @@ import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
+import org.hamcrest.core.Is.isA
 import org.junit.Assert
 import org.junit.Test
+import org.junit.internal.matchers.ThrowableCauseMatcher.hasCause
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -76,7 +78,7 @@ class DeferredOnFailureShould {
 
             // when we attach a listener and wait for the result
             job.onFailure {
-                if (it is TestException) {
+                if (hasCause<Throwable>(isA(TestException::class.java)).matches(it)) {
                     latch.countDown()
                 }
             }

@@ -22,12 +22,13 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.coroutines.experimental.runBlocking
-import org.hamcrest.core.Is
+import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.internal.matchers.ThrowableCauseMatcher.hasCause
 import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -122,7 +123,8 @@ class CacheComposeEvictShould {
             // expect exception and successful execution of secondCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evict failed for firstCache")
-            thrown.expectCause(Is.isA(TestException::class.java))
+            thrown.expectCause(hasCause(isA(TestException::class.java)))
+
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -152,7 +154,7 @@ class CacheComposeEvictShould {
             // expect exception and successful execution of firstCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evict failed for secondCache")
-            thrown.expectCause(Is.isA(TestException::class.java))
+            thrown.expectCause(hasCause(isA(TestException::class.java)))
             executions.expect(1)
 
             // given the second cache throws an exception
@@ -182,7 +184,7 @@ class CacheComposeEvictShould {
             // expect exception
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evict failed for firstCache, evict failed for secondCache")
-            thrown.expectCause(Is.isA(TestException::class.java))
+            thrown.expectCause(hasCause(isA(TestException::class.java)))
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.evict(anyString())).then {

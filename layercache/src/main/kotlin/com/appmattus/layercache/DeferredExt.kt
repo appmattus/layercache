@@ -50,8 +50,8 @@ fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Val
 
         @Suppress("RemoveExplicitTypeArguments")
         when {
-            isCancelled -> DeferredResult.Cancelled<Value>(getCompletionException())
-            isCompletedExceptionally -> DeferredResult.Failure<Value>(getCompletionException())
+            isCancelled -> DeferredResult.Cancelled<Value>(getCancellationException())
+            isCompletedExceptionally -> DeferredResult.Failure<Value>(getCancellationException())
             else -> DeferredResult.Success<Value>(getCompleted())
         }.let {
             completion(it)
@@ -84,7 +84,7 @@ fun <Value> Deferred<Value>.onFailure(failure: (exception: Throwable) -> Unit): 
         join()
 
         if (!isCancelled && isCompletedExceptionally) {
-            failure(getCompletionException())
+            failure(getCancellationException())
         }
     }
 
@@ -99,7 +99,7 @@ fun <Value> Deferred<Value>.onCancel(cancelled: (exception: Throwable) -> Unit):
         join()
 
         if (isCancelled) {
-            cancelled(getCompletionException())
+            cancelled(getCancellationException())
         }
     }
 

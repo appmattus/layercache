@@ -226,7 +226,7 @@ interface Cache<Key : Any, Value : Any> {
         if (jobsWithExceptions.isNotEmpty()) {
             val errorMessage = jobsWithExceptions.map { "${lazyMessage(jobs.indexOf(it))}" }.joinToString()
 
-            val exceptions = jobsWithExceptions.map { it.getCompletionException() }
+            val exceptions = jobsWithExceptions.map { it.getCancellationException() }
 
             throw CacheException(errorMessage, exceptions)
         }

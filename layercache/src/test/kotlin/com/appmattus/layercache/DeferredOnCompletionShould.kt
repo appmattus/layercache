@@ -22,8 +22,10 @@ import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
+import org.hamcrest.core.Is.isA
 import org.junit.Assert
 import org.junit.Test
+import org.junit.internal.matchers.ThrowableCauseMatcher.hasCause
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -43,7 +45,11 @@ class DeferredOnCompletionShould {
                 when (it) {
                     is DeferredResult.Success -> Unit
                     is DeferredResult.Cancelled -> Unit
-                    is DeferredResult.Failure -> if (it.exception is TestException) latch.countDown()
+                    is DeferredResult.Failure -> {
+                        if (hasCause<Throwable>(isA(TestException::class.java)).matches(it.exception)) {
+                            latch.countDown()
+                        }
+                    }
                 }
             }
             job.completeAndWait(250, TimeUnit.MILLISECONDS)
