@@ -58,15 +58,15 @@ android {
 
 dependencies {
     compile project(':layercache-android')
-    compile "com.android.support:support-annotations:27.0.0"
+    compileOnly "com.android.support:support-annotations:27.0.0"
 
-    testCompile project(':testutils')
-    testCompile "org.robolectric:robolectric:3.4.2"
+    testImplementation project(':testutils')
+    testImplementation "org.robolectric:robolectric:3.5.1"
 
-    androidTestCompile project(':testutils')
-    androidTestCompile files('testlibs/JUnitParams-1.1.0-custom.jar')
-    androidTestCompile('com.android.support.test:runner:1.0.1')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:3.0.1', {
+    androidTestImplementation project(':testutils')
+    androidTestImplementation files('testlibs/JUnitParams-1.1.0-custom.jar')
+    androidTestImplementation('com.android.support.test:runner:1.0.1')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 }

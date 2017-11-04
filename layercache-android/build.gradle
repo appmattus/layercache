@@ -63,8 +63,8 @@ dependencies {
     compile project(':layercache')
     compile 'com.jakewharton:disklrucache:2.0.2'
 
-    testCompile project(':testutils')
-    testCompile 'org.robolectric:robolectric:3.4.2'
+    testImplementation project(':testutils')
+    testImplementation 'org.robolectric:robolectric:3.5.1'
 }
 
 kotlin {

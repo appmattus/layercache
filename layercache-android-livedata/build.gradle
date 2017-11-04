@@ -61,13 +61,11 @@ repositories {
 
 dependencies {
     compile project(':layercache-android')
-
-    compile 'com.android.support:appcompat-v7:26.1.0'
     compile "android.arch.lifecycle:runtime:1.0.3"
     compile "android.arch.lifecycle:extensions:1.0.0-rc1"
 
-    testCompile project(':testutils')
-    testCompile "org.robolectric:robolectric:3.4.2"
+    testImplementation project(':testutils')
+    testImplementation "org.robolectric:robolectric:3.5.1"
 }
 
 kotlin {

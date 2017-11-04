@@ -21,7 +21,7 @@ dependencies {
     compile project(':layercache')
     compile "com.android.support:support-annotations:27.0.0"
     compile "junit:junit:4.12"
-    compile 'org.mockito:mockito-core:2.8.47'
+    compile 'org.mockito:mockito-core:2.11.0'
 }
 
 kotlin {
