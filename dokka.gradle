@@ -1,0 +1,26 @@
+apply plugin: 'org.jetbrains.dokka'
+
+dokka {
+    outputFormat = 'html'
+    //noinspection GroovyAssignabilityCheck
+    outputDirectory = javadoc.destinationDir
+
+    cacheRoot = 'default'
+    skipDeprecated = true
+
+    linkMapping {
+        dir = "$rootDir"
+        url = "https://github.com/appmattus/layercache/blob/master/"
+        suffix = "#L"
+    }
+}
+
+task dokkaJar(type: Jar, dependsOn: dokka) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+afterEvaluate {
+    mavenJavadocJar.enabled false
+    bintrayUpload.dependsOn(dokkaJar)
+}

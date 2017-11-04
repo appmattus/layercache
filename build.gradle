@@ -2,6 +2,7 @@ buildscript {
     ext.kotlin_version = '1.1.51'
     ext.serialization_version = '0.2'
     ext.detekt_version = '1.0.0.RC5'
+    ext.dokka_version = '0.9.15'
 
     repositories {
         google()
@@ -17,6 +18,8 @@ buildscript {
         classpath 'com.novoda:bintray-release:0.7.0'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.2'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:${dokka_version}"
     }
 }
 
@@ -45,7 +48,6 @@ detekt {
         config = "$projectDir/detekt.yml"
     }
 }
-
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 
@@ -107,3 +109,35 @@ jacocoTestReport { finalizedBy tasks.coveralls }
 tasks.coveralls {
     onlyIf { System.env.'CI' }
 }
+
+apply plugin: 'org.jetbrains.dokka-android'
+
+dokka {
+    outputFormat = "html"
+    outputDirectory = "$buildDir/docs/dokka"
+
+    skipDeprecated = true
+
+    kotlinTasks {
+        defaultKotlinTasks() + [
+                ':layercache:compileKotlin',
+                ':layercache-cache2k:compileKotlin',
+                ':layercache-ehcache:compileKotlin',
+                ':layercache-retrofit:compileKotlin',
+                ':layercache-serializer:compileKotlin',
+                ':layercache-android:compileReleaseKotlin',
+                ':layercache-android-encryption:compileReleaseKotlin',
+                ':layercache-android-livedata:compileReleaseKotlin'
+        ]
+    }
+
+    linkMapping {
+        dir = "$rootDir"
+        url = "https://github.com/appmattus/layercache/blob/master/"
+        suffix = "#L"
+    }
+}
+
+task check {}
+
+check { finalizedBy dokka }

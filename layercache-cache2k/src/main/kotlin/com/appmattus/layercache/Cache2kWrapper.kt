@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2017 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import org.cache2k.integration.FunctionalCacheLoader
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
+ * @property cache  Cache2k cache
  */
 internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) :
         Cache<Key, Value> {
@@ -54,11 +55,17 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
     }
 }
 
+/**
+ * Wrapper around Cache2k (https://cache2k.org/)
+ * @property cache  Cache2k cache
+ * @return Cache
+ */
 @Suppress("unused", "USELESS_CAST")
 fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cache<Key, Value>) = Cache2kWrapper(cache) as Cache<Key, Value>
 
 /**
- * TODO: Note: Fetcher should not return null
+ * Convert a Fetcher into a Cache2k loader. Note the Fetcher should not return null
+ * @return Cache2k loader
  */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value> {

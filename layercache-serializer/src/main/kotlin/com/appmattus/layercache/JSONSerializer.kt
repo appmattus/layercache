@@ -33,8 +33,15 @@ internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<V
     }
 }
 
+/**
+ * Two-way transform to serialise and deserialise data class objects to String
+ * @property serializer    The Kotlin class serializer to use
+ */
 @Suppress("unused", "USELESS_CAST")
 fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.valueTransform(JSONSerializer(serializer))
 
+/**
+ * Two-way transform to serialise and deserialise data class objects to String
+ */
 @Suppress("unused", "USELESS_CAST")
 inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer() = jsonSerializer(Value::class.serializer())

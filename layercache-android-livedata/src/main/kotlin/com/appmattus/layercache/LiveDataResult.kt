@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2017 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,11 +22,13 @@ package com.appmattus.layercache
 sealed class LiveDataResult<Value> {
     /**
      * Success, contains the value returned by the cache execution
+     * @property value Result
      */
     class Success<Value>(val value: Value) : LiveDataResult<Value>()
 
     /**
      * Failure, contains the exception thrown by the cache execution
+     * @property exception  Thrown exception
      */
     class Failure<Value>(val exception: Throwable) : LiveDataResult<Value>()
 

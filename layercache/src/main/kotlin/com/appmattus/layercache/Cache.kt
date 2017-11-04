@@ -26,7 +26,9 @@ import kotlinx.coroutines.experimental.async
  */
 @Suppress("TooManyFunctions")
 interface Cache<Key : Any, Value : Any> {
-    //Declaring an empty companion object here
+    /**
+     * Companion object for 'static' extension functions
+     */
     companion object Companion
 
     /**

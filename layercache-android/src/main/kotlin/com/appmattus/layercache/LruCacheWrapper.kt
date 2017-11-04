@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2017 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,9 +55,17 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
     }
 }
 
+/**
+ * Create a Cache from Android's built in LruCache
+ * @property lruCache   An LruCache
+ */
 @Suppress("unused", "USELESS_CAST")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-fun <Key : Any, Value : Any> Cache.Companion.fromLruCache(cache: LruCache<Key, Value>) = LruCacheWrapper(cache) as Cache<Key, Value>
+fun <Key : Any, Value : Any> Cache.Companion.fromLruCache(lruCache: LruCache<Key, Value>) = LruCacheWrapper(lruCache) as Cache<Key, Value>
 
+/**
+ * Create a Cache from a newly created LruCache
+ * @property maxSize    Maximum number of entries
+ */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Cache.Companion.createLruCache(maxSize: Int) = Cache.fromLruCache(LruCache<Key, Value>(maxSize))

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2017 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import kotlinx.coroutines.experimental.async
 
 /**
  * Convert a cache to return LiveData objects
+ * @property cache  Cache to convert
  */
 class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) {
     /**
@@ -74,5 +75,8 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
     }
 }
 
+/**
+ * Convert a cache to return LiveData objects
+ */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Cache<Key, Value>.toLiveData() = LiveDataCache(this)

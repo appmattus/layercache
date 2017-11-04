@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply from: "$rootDir/jacoco-android.gradle"
 apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/dokka-android.gradle"
 
 android {
     compileSdkVersion 26
@@ -58,8 +59,4 @@ kotlin {
     experimental {
         coroutines 'enable'
     }
-}
-
-tasks.withType(Javadoc).all {
-    enabled = false
 }

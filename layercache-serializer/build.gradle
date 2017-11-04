@@ -2,6 +2,7 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
 apply from: "$rootDir/jacoco.gradle"
 apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/dokka.gradle"
 
 dependencies {
     compile project(':layercache')

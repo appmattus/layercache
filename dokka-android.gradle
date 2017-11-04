@@ -1,0 +1,26 @@
+apply plugin: 'org.jetbrains.dokka-android'
+
+dokka {
+    outputFormat = 'html'
+    //noinspection GroovyAssignabilityCheck
+    outputDirectory = "$buildDir/docs/javadoc"
+
+    cacheRoot = 'default'
+    skipDeprecated = true
+
+    linkMapping {
+        dir = "$rootDir"
+        url = "https://github.com/appmattus/layercache/blob/master/"
+        suffix = "#L"
+    }
+}
+
+task dokkaJar(type: Jar, dependsOn: dokka) {
+    classifier = 'javadoc'
+    from "$buildDir/docs/javadoc"
+}
+
+afterEvaluate {
+    releaseAndroidJavadocs.enabled false
+    bintrayUpload.dependsOn(dokkaJar)
+}
