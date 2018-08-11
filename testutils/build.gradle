@@ -19,9 +19,10 @@ apply plugin: 'jacoco'
 
 dependencies {
     compile project(':layercache')
-    compile "com.android.support:support-annotations:27.0.0"
+    compile "com.android.support:support-annotations:28.0.0-rc01"
     compile "junit:junit:4.12"
     compile 'org.mockito:mockito-core:2.11.0'
+    compile 'com.github.stefanbirkner:system-rules:1.18.0'
 }
 
 kotlin {

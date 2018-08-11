@@ -17,8 +17,11 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.DefaultDispatcher
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Sealed class representing the result of a deferred, one of Success, Failure or Cancelled
@@ -47,7 +50,7 @@ sealed class DeferredResult<Value> {
 /**
  * Executes completion handler with a DeferredResult when the Deferred completes, regardless of status
  */
-fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Value>) -> Unit): Deferred<Value> {
+fun <Value> Deferred<Value>.onCompletion(context: CoroutineContext = DefaultDispatcher, completion: (result: DeferredResult<Value>) -> Unit): Deferred<Value> {
     async(CommonPool) {
         join()
 
@@ -57,7 +60,9 @@ fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Val
             isCompletedExceptionally -> DeferredResult.Failure<Value>(getCancellationException())
             else -> DeferredResult.Success<Value>(getCompleted())
         }.let {
-            completion(it)
+            launch(context) {
+                completion(it)
+            }
         }
     }
 
@@ -67,12 +72,14 @@ fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Val
 /**
  * Executes success handler only when Deferred completes successfully returning its data
  */
-fun <Value> Deferred<Value>.onSuccess(success: (value: Value?) -> Unit): Deferred<Value> {
+fun <Value> Deferred<Value>.onSuccess(context: CoroutineContext = DefaultDispatcher, success: (value: Value?) -> Unit): Deferred<Value> {
     async(CommonPool) {
         join()
 
         if (!isCancelled && !isCompletedExceptionally) {
-            success(getCompleted())
+            launch(context) {
+                success(getCompleted())
+            }
         }
     }
 
@@ -82,12 +89,14 @@ fun <Value> Deferred<Value>.onSuccess(success: (value: Value?) -> Unit): Deferre
 /**
  * Executes failure handler only when Deferred throws an exception
  */
-fun <Value> Deferred<Value>.onFailure(failure: (exception: Throwable) -> Unit): Deferred<Value> {
+fun <Value> Deferred<Value>.onFailure(context: CoroutineContext = DefaultDispatcher, failure: (exception: Throwable) -> Unit): Deferred<Value> {
     async(CommonPool) {
         join()
 
         if (!isCancelled && isCompletedExceptionally) {
-            failure(getCancellationException())
+            launch(context) {
+                failure(getCancellationException())
+            }
         }
     }
 
@@ -97,12 +106,14 @@ fun <Value> Deferred<Value>.onFailure(failure: (exception: Throwable) -> Unit): 
 /**
  * Executes cancelled handler only when Deferred is cancelled by calling job.cancel()
  */
-fun <Value> Deferred<Value>.onCancel(cancelled: (exception: Throwable) -> Unit): Deferred<Value> {
+fun <Value> Deferred<Value>.onCancel(context: CoroutineContext = DefaultDispatcher, cancelled: (exception: Throwable) -> Unit): Deferred<Value> {
     async(CommonPool) {
         join()
 
         if (isCancelled) {
-            cancelled(getCancellationException())
+            launch(context) {
+                cancelled(getCancellationException())
+            }
         }
     }
 

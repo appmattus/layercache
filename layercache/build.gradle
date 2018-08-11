@@ -20,10 +20,10 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
-    compileOnly "com.android.support:support-annotations:27.0.0"
+    compileOnly "com.android.support:support-annotations:28.0.0-rc01"
 
     testCompile project(':testutils')
 }
@@ -40,3 +40,12 @@ check { //noinspection GroovyAssignabilityCheck
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
+
+task myProguardTask(type: proguard.gradle.ProGuardTask) {
+    configuration file("$rootDir/proguard-rules.pro")
+    injars file("$buildDir/libs/layercache.jar")
+    libraryjars configurations.runtime.files
+    libraryjars configurations.compileOnly.files
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    outjars file("$buildDir/libs/layercache_optimised.jar")
+}
