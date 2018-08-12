@@ -62,9 +62,9 @@ repositories {
 }
 
 dependencies {
-    compile project(':layercache')
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+    api project(':layercache')
+    implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     testImplementation project(':testutils')
     testImplementation 'org.robolectric:robolectric:3.8'
