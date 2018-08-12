@@ -23,7 +23,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
-    compileOnly "com.android.support:support-annotations:28.0.0-rc01"
+    compileOnly "androidx.annotation:annotation:1.0.0-rc01"
 
     testCompile project(':testutils')
 }

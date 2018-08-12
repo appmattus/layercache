@@ -19,8 +19,8 @@ package com.appmattus.layercache
 import android.annotation.SuppressLint
 import android.os.Build
 import android.preference.PreferenceManager
-import android.support.annotation.RequiresApi
-import android.support.test.InstrumentationRegistry
+import androidx.annotation.RequiresApi
+import androidx.test.InstrumentationRegistry
 import com.appmattus.layercache.encryption.EncryptionFactory
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters

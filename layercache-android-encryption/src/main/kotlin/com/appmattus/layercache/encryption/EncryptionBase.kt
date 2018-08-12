@@ -18,7 +18,7 @@ package com.appmattus.layercache.encryption
 
 import android.content.Context
 import android.os.Build
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import java.nio.charset.Charset
 import java.security.GeneralSecurityException
 import java.security.spec.AlgorithmParameterSpec

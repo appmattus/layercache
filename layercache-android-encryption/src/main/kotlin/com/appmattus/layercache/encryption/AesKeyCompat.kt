@@ -21,7 +21,7 @@ import android.os.Build
 import android.preference.PreferenceManager
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import com.appmattus.layercache.encryption.KeyProperties.KEY_ALGORITHM_RSA
 import java.math.BigInteger
 import java.security.KeyPair

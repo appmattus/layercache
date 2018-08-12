@@ -30,7 +30,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -60,16 +60,16 @@ tasks.withType(Test) {
 
 dependencies {
     implementation project(':layercache-android')
-    compileOnly "com.android.support:support-annotations:28.0.0-rc01"
+    compileOnly "androidx.annotation:annotation:1.0.0-rc01"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:3.8"
 
     androidTestImplementation project(':testutils')
     androidTestImplementation files('testlibs/JUnitParams-1.1.0-custom.jar')
-    androidTestImplementation('com.android.support.test:runner:1.0.2')
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
-        exclude group: 'com.android.support', module: 'support-annotations'
+    androidTestImplementation('androidx.test:runner:1.1.0-alpha4')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
+        exclude group: 'androidx.annotation', module: 'annotation'
     })
 }
 

@@ -18,7 +18,7 @@ package com.appmattus.layercache
 
 import android.content.Context
 import android.os.Build
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import com.appmattus.layercache.encryption.EncryptionFactory
 
 /**
