@@ -17,9 +17,12 @@
 package com.appmattus.layercache.encryption
 
 import android.content.Context
+import android.os.Build
+import android.support.annotation.RequiresApi
 import java.security.spec.AlgorithmParameterSpec
 
 @Suppress("UnnecessaryAbstractClass") // incorrectly reported
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 internal abstract class EncryptionDefaultIv(context: Context, keystoreAlias: String) :
         EncryptionBase(context, keystoreAlias) {
     override fun providesIv() = false

@@ -16,14 +16,14 @@
 
 package com.appmattus.layercache.encryption
 
+import android.os.Build
 import android.security.keystore.KeyProperties
 
-@Suppress("UseDataClass") // incorrectly reported
 internal enum class BlockMode(val mode: String) {
-    CBC(KeyProperties.BLOCK_MODE_CBC),
-    CTR(KeyProperties.BLOCK_MODE_CTR),
-    ECB(KeyProperties.BLOCK_MODE_ECB),
-    GCM(KeyProperties.BLOCK_MODE_GCM);
+    CBC(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_CBC else "CBC"),
+    CTR(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_CTR else "CTR"),
+    ECB(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_ECB else "ECB"),
+    GCM(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_GCM else "GCM");
 
     override fun toString() = mode
 }
