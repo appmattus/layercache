@@ -22,6 +22,7 @@ import android.preference.PreferenceManager
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.support.annotation.RequiresApi
+import com.appmattus.layercache.encryption.KeyProperties.KEY_ALGORITHM_RSA
 import java.math.BigInteger
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -103,10 +104,10 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 @Suppress("MagicNumber")
-                specBuilder.setKeySize(2048).setKeyType(KeyProperties.KEY_ALGORITHM_RSA)
+                specBuilder.setKeySize(2048).setKeyType(KEY_ALGORITHM_RSA)
             }
 
-            return KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, ANDROID_KEYSTORE_PROVIDER).apply {
+            return KeyPairGenerator.getInstance(KEY_ALGORITHM_RSA, ANDROID_KEYSTORE_PROVIDER).apply {
                 initialize(specBuilder.build())
             }.generateKeyPair()
         }
@@ -137,15 +138,13 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
                 init(256, SecureRandom())
             }.generateKey().apply {
                 val encryptedKey = rsaEncrypt(alias, this.encoded).encodeBase64()
-                PreferenceManager.getDefaultSharedPreferences(context).edit().
-                        putString("${alias}:confidentiality", encryptedKey).apply()
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("${alias}:confidentiality", encryptedKey).apply()
             }
         }
 
         private fun loadConfidentialityKey(alias: String): SecretKey? {
             return keyStore.getEntry("${alias}:rsa", null)?.let {
-                PreferenceManager.getDefaultSharedPreferences(context).
-                        getString("${alias}:confidentiality", null)?.let {
+                PreferenceManager.getDefaultSharedPreferences(context).getString("${alias}:confidentiality", null)?.let {
                     SecretKeySpec(rsaDecrypt(alias, it.decodeBase64()), AES_ALGORITHM)
                 }
             }
@@ -161,8 +160,7 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
 
         private fun loadIntegrityKey(alias: String): SecretKey? {
             return keyStore.getEntry("${alias}:rsa", null)?.let {
-                PreferenceManager.getDefaultSharedPreferences(context).
-                        getString("$alias:integrity", null)?.let {
+                PreferenceManager.getDefaultSharedPreferences(context).getString("$alias:integrity", null)?.let {
                     SecretKeySpec(rsaDecrypt(alias, it.decodeBase64()), AES_ALGORITHM)
                 }
             }
@@ -171,8 +169,7 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
         private fun generateIntegrityKey(alias: String): SecretKey {
             return KeyGenerator.getInstance(integrityCheck.algorithm).generateKey().apply {
                 val encryptedKey = rsaEncrypt(alias, this.encoded).encodeBase64()
-                PreferenceManager.getDefaultSharedPreferences(context).edit().
-                        putString("$alias:integrity", encryptedKey).apply()
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("$alias:integrity", encryptedKey).apply()
             }
         }
     }

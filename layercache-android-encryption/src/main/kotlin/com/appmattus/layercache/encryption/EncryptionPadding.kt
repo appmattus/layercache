@@ -16,14 +16,16 @@
 
 package com.appmattus.layercache.encryption
 
-import android.os.Build
-import android.security.keystore.KeyProperties
+import com.appmattus.layercache.encryption.KeyProperties.ENCRYPTION_PADDING_NONE
+import com.appmattus.layercache.encryption.KeyProperties.ENCRYPTION_PADDING_PKCS7
+import com.appmattus.layercache.encryption.KeyProperties.ENCRYPTION_PADDING_RSA_OAEP
+import com.appmattus.layercache.encryption.KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1
 
 internal enum class EncryptionPadding(val padding: String) {
-    NONE(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.ENCRYPTION_PADDING_NONE else "NoPadding"),
-    PKCS7(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.ENCRYPTION_PADDING_PKCS7 else "PKCS7Padding"),
-    RSA_OAEP(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.ENCRYPTION_PADDING_RSA_OAEP else "OAEPPadding"),
-    RSA_PKCS1(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1 else "PKCS1Padding");
+    NONE(ENCRYPTION_PADDING_NONE),
+    PKCS7(ENCRYPTION_PADDING_PKCS7),
+    RSA_OAEP(ENCRYPTION_PADDING_RSA_OAEP),
+    RSA_PKCS1(ENCRYPTION_PADDING_RSA_PKCS1);
 
     override fun toString() = padding
 }
