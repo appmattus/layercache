@@ -19,7 +19,7 @@ package com.appmattus.layercache.encryption
 import android.os.Build
 import android.security.keystore.KeyProperties
 
-object KeyProperties {
+internal object KeyProperties {
     val BLOCK_MODE_CBC = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_CBC else "CBC"
     val BLOCK_MODE_CTR = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_CTR else "CTR"
     val BLOCK_MODE_ECB = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) KeyProperties.BLOCK_MODE_ECB else "ECB"
