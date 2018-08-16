@@ -16,7 +16,7 @@
 
 package com.appmattus.layercache
 
-import android.support.annotation.NonNull
+import androidx.annotation.NonNull
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async

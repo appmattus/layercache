@@ -1,3 +1,10 @@
+import com.novoda.gradle.release.Artifacts
+import com.novoda.gradle.release.JavaArtifacts
+import org.gradle.api.capabilities.Capability
+import org.gradle.api.internal.DefaultDomainObjectSet
+import org.gradle.api.internal.component.SoftwareComponentInternal
+import org.gradle.api.internal.component.UsageContext
+
 /*
  * Copyright 2017 Appmattus Limited
  *
@@ -14,19 +21,216 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.novoda.bintray-release'
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://kotlin.bintray.com/kotlinx" }
+    }
 
-publish {
-    bintrayUser = System.getenv('BINTRAY_USER') ?: System.getProperty('BINTRAY_USER') ?: "unknown"
-    bintrayKey = System.getenv('BINTRAY_KEY') ?: System.getProperty('BINTRAY_KEY') ?: "unknown"
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.8.1'
+    }
+}
 
-    userOrg = 'appmattus'
-    groupId = 'com.appmattus'
-    artifactId = project.name
-    publishVersion = System.getenv('CIRCLE_TAG') ?: System.getProperty('CIRCLE_TAG') ?: System.getenv('TRAVIS_TAG') ?:
-            System.getProperty('TRAVIS_TAG') ?: "unknown"
-    desc = 'Caching made simple for Android and Java'
-    website = 'https://github.com/appmattus/layercache'
 
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+ext.publishVersion = System.getenv('CIRCLE_TAG') ?: System.getProperty('CIRCLE_TAG') ?: System.getenv('TRAVIS_TAG') ?:
+        System.getProperty('TRAVIS_TAG') ?: "unknown"
+ext.projectGroupId = 'com.appmattus'
+
+bintray {
+    user = System.getenv('BINTRAY_USER') ?: System.getProperty('BINTRAY_USER') ?: "unknown"
+    key = System.getenv('BINTRAY_KEY') ?: System.getProperty('BINTRAY_KEY') ?: "unknown"
+    publish = true
     dryRun = false
+    override = false
+
+    publications = project.plugins.hasPlugin('com.android.library') ? ['release'] : ['maven']
+
+    pkg {
+        repo = 'maven'
+        userOrg = 'appmattus'
+        name = project.name
+        desc = 'Caching made simple for Android and Java'
+        websiteUrl = 'https://github.com/appmattus/layercache'
+        issueTrackerUrl = 'https://github.com/appmattus/layercache/issues'
+        vcsUrl = 'https://github.com/appmattus/layercache.git'
+
+        licenses = ['Apache-2.0']
+        version {
+            name = publishVersion
+            attributes = [:]
+        }
+    }
+}
+
+// Portions below modified from https://github.com/novoda/bintray-release
+// Copyright 2014 Novoda Ltd
+// Apache 2.0 Licence
+
+if (project.plugins.hasPlugin('com.android.library')) {
+    project.android.libraryVariants.all { variant ->
+        def artifactId = project.name;
+        addArtifact(project, variant.name, artifactId, new AndroidArtifactsAppmattus(variant))
+    }
+} else {
+    addArtifact(project, 'maven', project.name, new JavaArtifacts())
+}
+
+void addArtifact(Project project, String name, String artifact, Artifacts artifacts) {
+    project.publishing.publications.create(name, MavenPublication) {
+        groupId projectGroupId
+        artifactId artifact
+        version = publishVersion
+
+        artifacts.all(it.name, project).each {
+            delegate.artifact it
+        }
+        from artifacts.from(project)
+    }
+}
+
+class AndroidArtifactsAppmattus implements Artifacts {
+
+    def variant
+
+    AndroidArtifactsAppmattus(variant) {
+        this.variant = variant
+    }
+
+    def all(String publicationName, Project project) {
+        [sourcesJar(project), javadocJar(project), mainJar(project)]
+    }
+
+    def sourcesJar(Project project) {
+        project.task(variant.name + 'AndroidSourcesJar', type: Jar) {
+            classifier = 'sources'
+            variant.sourceSets.each {
+                from it.java.srcDirs
+            }
+        }
+    }
+
+    def javadocJar(Project project) {
+        def androidJavadocs = project.task(variant.name + 'AndroidJavadocs', type: Javadoc) {
+            variant.sourceSets.each {
+                delegate.source it.java.srcDirs
+            }
+            classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+            classpath += variant.javaCompile.classpath
+            classpath += variant.javaCompile.outputs.files
+        }
+
+        project.task(variant.name + 'AndroidJavadocsJar', type: Jar, dependsOn: androidJavadocs) {
+            classifier = 'javadoc'
+            from androidJavadocs.destinationDir
+        }
+    }
+
+    def mainJar(Project project) {
+        def archiveBaseName = project.hasProperty("archivesBaseName") ? project.getProperty("archivesBaseName") : project.name
+        "$project.buildDir/outputs/aar/$archiveBaseName-${variant.baseName}.aar"
+    }
+
+    def from(Project project) {
+        project.components.add(new AndroidLibraryAppmattus(project))
+        project.components.android
+    }
+}
+
+
+class AndroidLibraryAppmattus implements SoftwareComponentInternal {
+
+    private final String CONF_COMPILE = "compile"
+    private final String CONF_API = "api"
+    private final String CONF_IMPLEMENTATION = "implementation"
+
+    private final Set<UsageContext> usages = new DefaultDomainObjectSet<UsageContext>(UsageContext)
+
+    AndroidLibraryAppmattus(Project project) {
+        ObjectFactory objectFactory = project.getObjects()
+
+        Usage api = objectFactory.named(Usage.class, Usage.JAVA_API)
+        Usage runtime = objectFactory.named(Usage.class, Usage.JAVA_RUNTIME)
+
+        addUsageContextFromConfiguration(project, CONF_COMPILE, api)
+        addUsageContextFromConfiguration(project, CONF_API, api)
+        addUsageContextFromConfiguration(project, CONF_IMPLEMENTATION, runtime)
+    }
+
+    String getName() {
+        return "android"
+    }
+
+    Set<UsageContext> getUsages() {
+        return usages
+    }
+
+    private addUsageContextFromConfiguration(Project project, String configuration, Usage usage) {
+        try {
+            def configurationObj = project.configurations.getByName(configuration)
+            def dependency = configurationObj.dependencies
+            if (!dependency.isEmpty()) {
+                def libraryUsage = new LibraryUsage(dependency, usage)
+                usages.add(libraryUsage)
+            }
+        } catch (UnknownDomainObjectException ignore) {
+            // cannot find configuration
+        }
+    }
+
+    private static class LibraryUsage implements UsageContext {
+
+        private final DomainObjectSet<Dependency> dependencies
+        private final Usage usage
+
+        LibraryUsage(DomainObjectSet<Dependency> dependencies, Usage usage) {
+            this.usage = usage
+            this.dependencies = dependencies
+        }
+
+        @Override
+        Usage getUsage() {
+            return usage
+        }
+
+        @Override
+        Set<? extends PublishArtifact> getArtifacts() {
+            new LinkedHashSet<PublishArtifact>()
+        }
+
+        @Override
+        Set<? extends ModuleDependency> getDependencies() {
+            dependencies.withType(ModuleDependency)
+        }
+
+        @Override
+        Set<? extends DependencyConstraint> getDependencyConstraints() {
+            return []
+        }
+
+        @Override
+        Set<? extends Capability> getCapabilities() {
+            return []
+        }
+
+        @Override
+        Set<ExcludeRule> getGlobalExcludes() {
+            return []
+        }
+
+        @Override
+        String getName() {
+            return "runtime"
+        }
+
+        @Override
+        AttributeContainer getAttributes() {
+            return null
+        }
+    }
 }

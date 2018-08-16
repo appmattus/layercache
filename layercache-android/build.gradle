@@ -21,20 +21,18 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka-android.gradle"
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
-
-    publishNonDefault true
+    compileSdkVersion 28
+    buildToolsVersion "28.0.2"
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         debug {
             multiDexEnabled true
@@ -42,7 +40,7 @@ android {
 
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "$rootDir/proguard-rules.pro"
         }
     }
 
@@ -55,16 +53,21 @@ android {
     testBuildType "debug"
 }
 
+tasks.withType(Test) {
+    systemProperty "kotlinx.coroutines.blocking.checker", "disable"
+}
+
 repositories {
     mavenLocal()
 }
 
 dependencies {
-    compile project(':layercache')
-    compile 'com.jakewharton:disklrucache:2.0.2'
+    api project(':layercache')
+    implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     testImplementation project(':testutils')
-    testImplementation 'org.robolectric:robolectric:3.5.1'
+    testImplementation 'org.robolectric:robolectric:3.8'
 }
 
 kotlin {

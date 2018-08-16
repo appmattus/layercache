@@ -21,18 +21,16 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka-android.gradle"
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
-
-    publishNonDefault true
+    compileSdkVersion 28
+    buildToolsVersion "28.0.2"
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -43,7 +41,7 @@ android {
 
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "$rootDir/proguard-rules.pro"
         }
     }
 
@@ -56,18 +54,22 @@ android {
     testBuildType "debug"
 }
 
+tasks.withType(Test) {
+    systemProperty "kotlinx.coroutines.blocking.checker", "disable"
+}
+
 dependencies {
-    compile project(':layercache-android')
-    compileOnly "com.android.support:support-annotations:27.0.0"
+    implementation project(':layercache-android')
+    compileOnly "androidx.annotation:annotation:1.0.0-rc01"
 
     testImplementation project(':testutils')
-    testImplementation "org.robolectric:robolectric:3.5.1"
+    testImplementation "org.robolectric:robolectric:3.8"
 
     androidTestImplementation project(':testutils')
     androidTestImplementation files('testlibs/JUnitParams-1.1.0-custom.jar')
-    androidTestImplementation('com.android.support.test:runner:1.0.1')
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
-        exclude group: 'com.android.support', module: 'support-annotations'
+    androidTestImplementation('androidx.test:runner:1.1.0-alpha4')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
+        exclude group: 'androidx.annotation', module: 'annotation'
     })
 }
 

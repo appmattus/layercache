@@ -21,8 +21,8 @@ apply from: "$rootDir/dokka.gradle"
 
 dependencies {
     compile project(':layercache')
-    compile 'org.cache2k:cache2k-api:1.0.1.Final'
-    runtime 'org.cache2k:cache2k-all:1.0.1.Final'
+    compile 'org.cache2k:cache2k-api:1.0.2.Final'
+    runtime 'org.cache2k:cache2k-all:1.0.2.Final'
 // compileOnly
 
     testCompile project(':testutils')

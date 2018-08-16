@@ -19,7 +19,7 @@ package com.appmattus.layercache.encryption
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 
 /**
  * Factory to generate an encryptor

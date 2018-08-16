@@ -21,18 +21,16 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka-android.gradle"
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
-
-    publishNonDefault true
+    compileSdkVersion 28
+    buildToolsVersion "28.0.2"
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -42,7 +40,7 @@ android {
 
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "$rootDir/proguard-rules.pro"
         }
     }
 
@@ -60,12 +58,12 @@ repositories {
 }
 
 dependencies {
-    compile project(':layercache-android')
-    compile "android.arch.lifecycle:runtime:1.0.3"
-    compile "android.arch.lifecycle:extensions:1.0.0-rc1"
+    implementation project(':layercache-android')
+    implementation "androidx.lifecycle:lifecycle-runtime:2.0.0-rc01"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0-rc01"
 
     testImplementation project(':testutils')
-    testImplementation "org.robolectric:robolectric:3.5.1"
+    testImplementation "org.robolectric:robolectric:3.8"
 }
 
 kotlin {
