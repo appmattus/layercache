@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit
 class CacheMapKeysShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var cache: AbstractCache<String, Any>
@@ -67,7 +67,7 @@ class CacheMapKeysShould {
     @Test
     fun `contain cache in composed parents`() {
         val localCache = mappedKeysCache
-        if (!(localCache is ComposedCache<Int, Any>)) {
+        if (localCache !is ComposedCache<Int, Any>) {
             Assert.fail()
             return
         }
@@ -275,6 +275,76 @@ class CacheMapKeysShould {
 
             // when we canel the job
             val job = mappedKeysCache.evict(1)
+            delay(50, TimeUnit.MILLISECONDS)
+            job.cancel()
+
+            // then an exception is thrown
+            job.await()
+        }
+    }
+
+    // evictAll
+    @Test
+    fun `call evictAll from cache`() {
+        runBlocking {
+            // given value available in first cache only
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
+
+            // when we evict the value
+            mappedKeysCache.evictAll().await()
+
+            // then we evictAll value
+            Mockito.verify(cache).evictAll()
+        }
+    }
+
+    @Test
+    fun `no exception when transform returns null during evictAll`() {
+        runBlocking {
+            // given evictAll is implemented
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { } }
+
+            // when the mapping function returns null and we evictAll
+            mappedKeysCacheWithNull.evictAll().await()
+
+            // then no exception is thrown
+        }
+    }
+
+    @Test
+    fun `no exception when transform throws during evictAll`() {
+        runBlocking {
+            // given evictAll is implemented
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { } }
+
+            // when the mapping function throws an exception and we evictAll
+            mappedKeysCacheWithError.evictAll().await()
+
+            // then no exception is thrown
+        }
+    }
+
+    @Test(expected = TestException::class)
+    fun `throw exception when evictAll throws`() {
+        runBlocking {
+            // given value available in first cache only
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+
+            // when we evictAll values
+            mappedKeysCache.evictAll().await()
+
+            // then we throw an exception
+        }
+    }
+
+    @Test(expected = CancellationException::class)
+    fun `throw exception when cancelled during evictAll`() {
+        runBlocking {
+            // given we have a long running job
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+
+            // when we canel the job
+            val job = mappedKeysCache.evictAll()
             delay(50, TimeUnit.MILLISECONDS)
             job.cancel()
 

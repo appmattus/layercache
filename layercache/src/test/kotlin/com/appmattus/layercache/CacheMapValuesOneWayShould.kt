@@ -162,4 +162,29 @@ class CacheMapValuesOneWayShould {
             Mockito.verifyZeroInteractions(function)
         }
     }
+
+    // evictAll
+    @Test
+    fun `not interact with parent evictAll`() {
+        runBlocking {
+            // when we set the value
+            @Suppress("DEPRECATION")
+            mappedValuesCache.evictAll().await()
+
+            // then the parent cache is not called
+            Mockito.verifyNoMoreInteractions(cache)
+        }
+    }
+
+    @Test
+    fun `not interact with transform during evictAll`() {
+        runBlocking {
+            // when we set the value
+            @Suppress("DEPRECATION")
+            mappedValuesCache.evictAll().await()
+
+            // then the parent cache is not called
+            Mockito.verifyZeroInteractions(function)
+        }
+    }
 }

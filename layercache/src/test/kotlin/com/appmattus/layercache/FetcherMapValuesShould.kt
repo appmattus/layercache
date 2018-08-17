@@ -166,4 +166,29 @@ class FetcherMapValuesShould {
             Mockito.verifyZeroInteractions(function)
         }
     }
+
+    // evictAll
+    @Test
+    fun `not interact with parent evictAll`() {
+        runBlocking {
+            // when we evictAll values
+            @Suppress("DEPRECATION")
+            mappedValuesCache.evictAll().await()
+
+            // then the parent cache is not called
+            Mockito.verifyNoMoreInteractions(cache)
+        }
+    }
+
+    @Test
+    fun `not interact with transform during evictAll`() {
+        runBlocking {
+            // when we evictAll values
+            @Suppress("DEPRECATION")
+            mappedValuesCache.evictAll().await()
+
+            // then the parent cache is not called
+            Mockito.verifyZeroInteractions(function)
+        }
+    }
 }

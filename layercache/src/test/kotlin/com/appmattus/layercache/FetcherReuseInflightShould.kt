@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class FetcherReuseInflightShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var cache: AbstractFetcher<Any, Any>
@@ -166,9 +166,22 @@ class FetcherReuseInflightShould {
     @Test
     fun `not interact with parent evict`() {
         runBlocking {
-            // when we set the value
+            // when we evict the value
             @Suppress("DEPRECATION")
             reuseInflightCache.evict("1").await()
+
+            // then the parent cache is not called
+            Mockito.verifyNoMoreInteractions(cache)
+        }
+    }
+
+    // evictAll
+    @Test
+    fun `not interact with parent evictAll`() {
+        runBlocking {
+            // when evictAll values
+            @Suppress("DEPRECATION")
+            reuseInflightCache.evictAll().await()
 
             // then the parent cache is not called
             Mockito.verifyNoMoreInteractions(cache)

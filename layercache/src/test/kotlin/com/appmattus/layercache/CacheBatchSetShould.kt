@@ -41,7 +41,7 @@ class CacheBatchSetShould {
     private val requestTimeInMills = 250L
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var cache: AbstractCache<String, String>

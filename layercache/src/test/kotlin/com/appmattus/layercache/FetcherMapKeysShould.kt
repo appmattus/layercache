@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit
 class FetcherMapKeysShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var cache: AbstractFetcher<String, Any>
@@ -60,7 +60,7 @@ class FetcherMapKeysShould {
     @Test
     fun `contain cache in composed parents`() {
         val localCache = mappedKeysCache
-        if (!(localCache is ComposedCache<*, *>)) {
+        if (localCache !is ComposedCache<*, *>) {
             Assert.fail()
             return
         }
@@ -188,6 +188,31 @@ class FetcherMapKeysShould {
             // when we set the value
             @Suppress("DEPRECATION")
             mappedKeysCache.evict(1).await()
+
+            // then the parent cache is not called
+            Mockito.verifyZeroInteractions(function)
+        }
+    }
+
+    // evictAll
+    @Test
+    fun `not interact with parent evictAll`() {
+        runBlocking {
+            // when we evictAll values
+            @Suppress("DEPRECATION")
+            mappedKeysCache.evictAll().await()
+
+            // then the parent cache is not called
+            Mockito.verifyNoMoreInteractions(cache)
+        }
+    }
+
+    @Test
+    fun `not interact with transform during evictAll`() {
+        runBlocking {
+            // when we evictAll values
+            @Suppress("DEPRECATION")
+            mappedKeysCache.evictAll().await()
 
             // then the parent cache is not called
             Mockito.verifyZeroInteractions(function)

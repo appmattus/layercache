@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class CacheReuseInflightShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var cache: AbstractCache<Any, Any>
@@ -188,6 +188,34 @@ class CacheReuseInflightShould {
 
             // when we get the value
             reuseInflightCache.evict("key").await()
+
+            // then we throw an exception
+        }
+    }
+
+    // evictAll
+    @Test
+    fun `call evictAll from cache`() {
+        runBlocking {
+            // given evictAll is implemented
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
+
+            // when we evictAll values
+            reuseInflightCache.evictAll().await()
+
+            // then evictAll is called
+            Mockito.verify(cache).evictAll()
+        }
+    }
+
+    @Test(expected = TestException::class)
+    fun `propagate exception on evictAll`() {
+        runBlocking {
+            // given evictAll throws an exception
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+
+            // when we evictAll values
+            reuseInflightCache.evictAll().await()
 
             // then we throw an exception
         }

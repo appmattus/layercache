@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit
 class CacheComposeEvictShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @get:Rule
     var executions = ExecutionExpectation()

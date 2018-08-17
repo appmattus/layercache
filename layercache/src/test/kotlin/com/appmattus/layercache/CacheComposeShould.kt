@@ -32,7 +32,7 @@ import org.mockito.MockitoAnnotations
 class CacheComposeShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Mock
     private lateinit var firstCache: AbstractCache<String, String>
@@ -124,7 +124,7 @@ class CacheComposeShould {
     @Test
     fun `contain both caches in composed parents`() {
         val cache = composedCache
-        if (!(cache is ComposedCache<String, String>)) {
+        if (cache !is ComposedCache<String, String>) {
             fail()
             return
         }
@@ -133,7 +133,7 @@ class CacheComposeShould {
     }
 
     @Test
-    fun `throw exception when parents not overidden?`() {
+    fun `throw exception when parents not overridden?`() {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {
             override fun get(key: String): Deferred<String?> = throw Exception("Unimplemented")
@@ -144,9 +144,9 @@ class CacheComposeShould {
 
         // expect an exception
         thrown.expect(IllegalStateException::class.java)
-        thrown.expectMessage("Not overidden")
+        thrown.expectMessage("Not overridden")
 
-        // when we get parents that has not been overidden
+        // when we get parents that has not been overridden
         cache.parents
     }
 }

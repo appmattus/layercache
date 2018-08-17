@@ -163,5 +163,31 @@ class CacheMapValuesShould {
         }
     }
 
+    // evictAll
+    @Test
+    fun `call evictAll from cache`() {
+        runBlocking {
+            // given evictAll is implemented
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
 
+            // when we evictAll values
+            mappedValuesCache.evictAll().await()
+
+            // then evictAll is called
+            Mockito.verify(cache).evictAll()
+        }
+    }
+
+    @Test(expected = TestException::class)
+    fun `propagate exception on evictAll`() {
+        runBlocking {
+            // given evictAll throws an exception
+            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+
+            // when we evictAll values
+            mappedValuesCache.evictAll().await()
+
+            // then we throw an exception
+        }
+    }
 }

@@ -19,7 +19,7 @@ package com.appmattus.layercache
 @Suppress("UnnecessaryAbstractClass") // incorrectly reported
 internal abstract class ComposedCache<Key : Any, Value : Any> : Cache<Key, Value> {
     open val parents: List<Cache<*, *>>
-        get() = throw IllegalStateException("Not overidden")
+        get() = throw IllegalStateException("Not overridden")
 
     /**
      * Iterates over parents to determine if there are any circular references

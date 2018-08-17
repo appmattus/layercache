@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
 class CacheComposeGetShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @get:Rule
     var executions = ExecutionExpectation()
@@ -66,7 +66,7 @@ class CacheComposeGetShould {
             thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
 
             // when key is null
-            composedCache.get(TestUtils.uninitialized<String>()).await()
+            composedCache.get(TestUtils.uninitialized()).await()
         }
     }
 
@@ -118,7 +118,7 @@ class CacheComposeGetShould {
     @Test(expected = TestException::class)
     fun `throw internal exception on get when the first cache throws`() {
         runBlocking {
-            // given the first cache throws an exception on evict
+            // given the first cache throws an exception on get
             Mockito.`when`(firstCache.get(anyString())).then { async(CommonPool) { throw TestException() } }
 
             // when we get the value
@@ -132,7 +132,7 @@ class CacheComposeGetShould {
     @Test(expected = TestException::class)
     fun `throw internal exception on get when first cache empty and second cache throws`() {
         runBlocking {
-            // given the second cache throws an exception on evict
+            // given the second cache throws an exception on get
             Mockito.`when`(firstCache.get(Mockito.anyString())).then { async(CommonPool) { null } }
             Mockito.`when`(secondCache.get(Mockito.anyString())).then { async(CommonPool) { throw TestException() } }
 

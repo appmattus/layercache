@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException
 class CacheExceptionShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Test
     fun `throw exception when exceptions is null`() {
