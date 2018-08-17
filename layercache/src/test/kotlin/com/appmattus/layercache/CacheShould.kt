@@ -109,6 +109,21 @@ class CacheShould {
         }
     }
 
+    @Test(expected = CancellationException::class)
+    fun `throw exception on evictAll when job cancelled`() {
+        runBlocking {
+            // given we call evictAll
+            val job = cache.evictAll()
+
+            // when we cancel the job
+            assertTrue(job.cancel())
+
+            // then the job is cancelled and exception returned
+            job.await()
+        }
+    }
+
+
     @Test
     fun `execute onSuccess when job completes as expected`() {
         runBlocking {
