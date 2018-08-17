@@ -29,13 +29,13 @@ class MapCache : Cache<String, String> {
 
     override fun get(key: String): Deferred<String?> {
         return async(CommonPool) {
-            map.get(key)
+            map[key]
         }
     }
 
     override fun set(key: String, value: String): Deferred<Unit> {
-        return async<Unit>(CommonPool) {
-            map.put(key, value)
+        return async(CommonPool) {
+            map[key] = value
         }
     }
 
@@ -46,7 +46,7 @@ class MapCache : Cache<String, String> {
     }
 
     override fun evictAll(): Deferred<Unit> {
-        return async<Unit>(CommonPool) {
+        return async(CommonPool) {
             map.clear()
         }
     }

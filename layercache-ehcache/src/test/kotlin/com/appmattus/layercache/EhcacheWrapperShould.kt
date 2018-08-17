@@ -96,7 +96,7 @@ class EhcacheWrapperShould {
             // given value available in first cache only
             Mockito.`when`(ehcache.put("key", "value")).then { throw TestException() }
 
-            // when we get the value
+            // when we set the value
             wrappedCache.set("key", "value").await()
 
             // then we throw an exception
@@ -109,11 +109,10 @@ class EhcacheWrapperShould {
         runBlocking {
             // given
 
-            // when we get the value
+            // when we evict the value
             wrappedCache.evict("key").await()
 
-            // then we return the value
-            //assertEquals("value", result)
+            // then remove is called
             Mockito.verify(ehcache).remove("key")
         }
     }
@@ -124,13 +123,41 @@ class EhcacheWrapperShould {
             // given value available in first cache only
             Mockito.`when`(ehcache.remove("key")).then { throw TestException() }
 
-            // when we get the value
+            // when we evict the value
             wrappedCache.evict("key").await()
 
             // then we throw an exception
         }
     }
 
+    // evictAll
+    @Test
+    fun `evictAll returns value from cache`() {
+        runBlocking {
+            // given
+
+            // when we evictAll values
+            wrappedCache.evictAll().await()
+
+            // then clear is called
+            Mockito.verify(ehcache).clear()
+        }
+    }
+
+    @Test(expected = TestException::class)
+    fun `evictAll throws`() {
+        runBlocking {
+            // given value available in first cache only
+            Mockito.`when`(ehcache.clear()).then { throw TestException() }
+
+            // when we evictAll values
+            wrappedCache.evictAll().await()
+
+            // then we throw an exception
+        }
+    }
+
+    // misc
     @Test
     fun `return null when the cache is empty`() {
         runBlocking {
