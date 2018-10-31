@@ -22,7 +22,7 @@ apply from: "$rootDir/dokka-android.gradle"
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.2"
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         minSdkVersion 17
@@ -68,10 +68,4 @@ dependencies {
 
     testImplementation project(':testutils')
     testImplementation 'org.robolectric:robolectric:3.8'
-}
-
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
 }

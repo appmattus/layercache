@@ -16,19 +16,17 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.TimeUnit
 
 class CacheShould {
 
@@ -39,28 +37,28 @@ class CacheShould {
 
         cache = object : Cache<String, String> {
             override fun get(key: String): Deferred<String?> {
-                return async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                return GlobalScope.async {
+                    delay(500)
 
                     "value"
                 }
             }
 
             override fun set(key: String, value: String): Deferred<Unit> {
-                return async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                return GlobalScope.async {
+                    delay(500)
                 }
             }
 
             override fun evict(key: String): Deferred<Unit> {
-                return async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                return GlobalScope.async {
+                    delay(500)
                 }
             }
 
             override fun evictAll(): Deferred<Unit> {
-                return async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                return GlobalScope.async {
+                    delay(500)
                 }
             }
         }
@@ -73,7 +71,7 @@ class CacheShould {
             val job = cache.get("key")
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.await()
@@ -88,7 +86,7 @@ class CacheShould {
             val job = cache.set("key", "value")
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.await()
@@ -102,7 +100,7 @@ class CacheShould {
             val job = cache.evict("key")
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.await()
@@ -116,7 +114,7 @@ class CacheShould {
             val job = cache.evictAll()
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.await()
@@ -132,13 +130,12 @@ class CacheShould {
 
             var called = false
             job.onSuccess { called = true }
-            job.onFailure { fail() }
             job.onCompletion { fail() }
 
             // when we wait for the job
             job.await()
 
-            delay(100, TimeUnit.MILLISECONDS)
+            delay(100)
 
             // then onSuccess is executed
             assertEquals(true, called)
@@ -150,26 +147,26 @@ class CacheShould {
         runBlocking {
             cache = object : Cache<String, String> {
                 override fun get(key: String): Deferred<String?> {
-                    return async(CommonPool) {
+                    return GlobalScope.async {
                         throw Exception("Forced failure")
                     }
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evict(key: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evictAll(): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
             }
@@ -179,7 +176,7 @@ class CacheShould {
             val job = cache.get("key")
 
             job.onSuccess { println("Result $it") }
-            job.onFailure { println("Exception $it") }
+            job.onCancel { println("Exception $it") }
 
             // when we cancel the job
             //assertTrue(job.cancel())
@@ -196,27 +193,27 @@ class CacheShould {
         runBlocking {
             cache = object : Cache<String, String> {
                 override fun get(key: String): Deferred<String?> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                         "value"
                     }
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evict(key: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evictAll(): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
             }
@@ -226,11 +223,10 @@ class CacheShould {
             val job = cache.get("key")
 
             job.onSuccess { result -> println("Result $result") }
-            job.onFailure { exception -> println("Exception $exception") }
             job.onCancel { exception -> println("Cancelled exception $exception") }
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.join()
@@ -245,27 +241,27 @@ class CacheShould {
         runBlocking {
             cache = object : Cache<String, String> {
                 override fun get(key: String): Deferred<String?> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                         "value"
                     }
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evict(key: String): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
 
                 override fun evictAll(): Deferred<Unit> {
-                    return async(CommonPool) {
-                        delay(500, TimeUnit.MILLISECONDS)
+                    return GlobalScope.async {
+                        delay(500)
                     }
                 }
             }
@@ -277,17 +273,15 @@ class CacheShould {
             job.onCompletion {
                 when (it) {
                     is DeferredResult.Success -> println("Result ${it.value}")
-                    is DeferredResult.Failure -> println("Exception ${it.exception}")
                     is DeferredResult.Cancelled -> println("Cancelled exception ${it.exception}")
                 }
             }
 
             job.onSuccess { value -> println("Result $value") }
-            job.onFailure { exception -> println("Exception $exception") }
             job.onCancel { exception -> println("Cancelled exception $exception") }
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.join()

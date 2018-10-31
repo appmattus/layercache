@@ -16,16 +16,16 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import org.hamcrest.core.Is.isA
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 class DeferredOnCancelShould {
 
@@ -34,32 +34,13 @@ class DeferredOnCancelShould {
         runBlocking {
             // given we have a job that successfully returns a value
             val latch = CountDownLatch(1)
-            val job = async(CommonPool) {
+            val job = GlobalScope.async {
                 "value"
             }
 
             // when we attach a listener and wait for the result
             job.onCancel { latch.countDown() }
-            job.completeAndWait(250, TimeUnit.MILLISECONDS)
-
-            // then onCancel is not called
-            Assert.assertEquals(1, latch.count)
-        }
-    }
-
-    @Test
-    fun `not call onCancel on failure`() {
-        runBlocking {
-            // given we have a job that throws an exception
-            val latch = CountDownLatch(1)
-            val job = async(CommonPool) {
-                throw TestException()
-            }
-
-            // when we attach a listener, cancel the request and wait for the result
-            job.onCancel { latch.countDown() }
-
-            job.completeAndWait(250, TimeUnit.MILLISECONDS)
+            job.completeAndWait(250)
 
             // then onCancel is not called
             Assert.assertEquals(1, latch.count)
@@ -71,8 +52,8 @@ class DeferredOnCancelShould {
         runBlocking {
             // given we have a job that does nothing
             val latch = CountDownLatch(1)
-            val job = async(CommonPool) {
-                delay(500, TimeUnit.MILLISECONDS)
+            val job = GlobalScope.async {
+                delay(500)
             }
 
             // when we attach a listener and wait for the result
@@ -82,16 +63,38 @@ class DeferredOnCancelShould {
                 }
             }
             job.cancel()
-            job.completeAndWait(250, TimeUnit.MILLISECONDS)
+            job.completeAndWait(250)
 
             // then onCancel is called supplying the exception
             Assert.assertEquals(0, latch.count)
         }
     }
 
-    private suspend fun Deferred<*>.completeAndWait(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) {
+    @Test
+    fun `call onFailure with exception on failure`() {
+        runBlocking {
+            // given we have a job that throws an exception
+            val latch = CountDownLatch(1)
+            val job = GlobalScope.async {
+                throw TestException()
+            }
+
+            // when we attach a listener and wait for the result
+            job.onCancel {
+                if (isA(TestException::class.java).matches(it)) {
+                    latch.countDown()
+                }
+            }
+            job.completeAndWait(250)
+
+            // then onFailure is called supplying the exception
+            Assert.assertEquals(0, latch.count)
+        }
+    }
+
+    private suspend fun Deferred<*>.completeAndWait(time: Long) {
         join()
         // yield to allow parallel jobs time to complete
-        delay(time, unit)
+        delay(time)
     }
 }

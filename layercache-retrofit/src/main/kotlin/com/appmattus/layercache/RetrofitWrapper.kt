@@ -16,15 +16,15 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import retrofit2.Call
 
 internal class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Value>) : Fetcher<Key, Value> {
 
     override fun get(key: Key): Deferred<Value?> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             val response = retrofitCall(key).execute()
 
             if (!response.isSuccessful) {

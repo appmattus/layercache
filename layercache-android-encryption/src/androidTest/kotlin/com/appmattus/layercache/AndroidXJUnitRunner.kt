@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2018 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-apply plugin: 'kotlin'
-apply from: "$rootDir/jacoco.gradle"
-apply from: "$rootDir/bintray.gradle"
-apply from: "$rootDir/dokka.gradle"
+package com.appmattus.layercache
 
-dependencies {
-    compile project(':layercache')
-    compile 'org.cache2k:cache2k-api:1.0.2.Final'
-    runtime 'org.cache2k:cache2k-all:1.0.2.Final'
-// compileOnly
+import android.os.Bundle
+import androidx.multidex.MultiDex
+import androidx.test.runner.AndroidJUnitRunner
 
-    testCompile project(':testutils')
-    testCompile "org.slf4j:slf4j-nop:1.7.25"
+// Used in build.gradle
+@Suppress("unused")
+class AndroidXJUnitRunner : AndroidJUnitRunner() {
+    override fun onCreate(arguments: Bundle?) {
+        MultiDex.installInstrumentation(context, targetContext)
+        super.onCreate(arguments)
+    }
 }
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"

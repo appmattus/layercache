@@ -16,26 +16,26 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.internal.matchers.ThrowableCauseMatcher.hasCause
 import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeSetShould {
@@ -70,7 +70,7 @@ class CacheComposeSetShould {
             thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
 
             // when key is null
-            composedCache.set(TestUtils.uninitialized<String>(), "value").await()
+            composedCache.set(TestUtils.uninitialized(), "value").await()
         }
     }
 
@@ -82,18 +82,18 @@ class CacheComposeSetShould {
             thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
 
             Mockito.`when`(firstCache.set(anyString(), MockitoKotlin.any())).then {
-                async(CommonPool) {
+                GlobalScope.async {
 
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), MockitoKotlin.any())).then {
-                async(CommonPool) {
+                GlobalScope.async {
 
                 }
             }
 
             // when value is null
-            composedCache.set("key", TestUtils.uninitialized<String>()).await()
+            composedCache.set("key", TestUtils.uninitialized()).await()
         }
     }
 
@@ -105,12 +105,12 @@ class CacheComposeSetShould {
 
             // given we have two caches with a long running job to set a value
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(newSingleThreadContext("1")) {
+                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(newSingleThreadContext("2")) {
+                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
@@ -129,8 +129,8 @@ class CacheComposeSetShould {
     fun `execute set for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { async(CommonPool) {} }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then { async(CommonPool) {} }
+            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async {} }
+            Mockito.`when`(secondCache.set(anyString(), anyString())).then { GlobalScope.async {} }
 
             // when we set the value
             composedCache.set("key", "value").await()
@@ -149,18 +149,18 @@ class CacheComposeSetShould {
             // expect exception and successful execution of secondCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("set failed for firstCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
@@ -180,18 +180,18 @@ class CacheComposeSetShould {
             // expect exception and successful execution of firstCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("set failed for secondCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the second cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
@@ -211,16 +211,16 @@ class CacheComposeSetShould {
             // expect exception
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("set failed for firstCache, set failed for secondCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
@@ -244,19 +244,19 @@ class CacheComposeSetShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(250, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(250)
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     executions.execute()
                 }
             }
 
             // when we set the value
             val job = composedCache.set("key", "value")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
             yield()
 
@@ -275,19 +275,19 @@ class CacheComposeSetShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(250, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(250)
                 }
             }
 
             // when we set the value
             val job = composedCache.set("key", "value")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
             yield()
 
@@ -306,21 +306,21 @@ class CacheComposeSetShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
 
             // when we set the value
             val job = composedCache.set("key", "value")
-            delay(25, TimeUnit.MILLISECONDS)
+            delay(25)
             job.cancel()
             yield()
 

@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
@@ -33,7 +33,6 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.MockitoAnnotations
-import java.util.concurrent.TimeUnit
 
 class CacheMapKeysShould {
 
@@ -80,7 +79,7 @@ class CacheMapKeysShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             val result = mappedKeysCache.get(1).await()
@@ -105,7 +104,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCacheWithError.get(1).await()
@@ -118,7 +117,7 @@ class CacheMapKeysShould {
     fun `throw exception when get throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value from a map
             mappedKeysCache.get(1).await()
@@ -131,11 +130,11 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during get`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { delay(250) } }
 
             // when we canel the job
             val job = mappedKeysCache.get(1)
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then an exception is thrown
@@ -174,7 +173,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { async(CommonPool) { } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCacheWithError.set(1, "1").await()
@@ -187,7 +186,7 @@ class CacheMapKeysShould {
     fun `throw exception when set throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { throw TestException() } }
 
             // when we set the value from a map
             mappedKeysCache.set(1, "1").await()
@@ -201,11 +200,11 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during set`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.set(anyString(), anyString())).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { delay(250) } }
 
             // when we canel the job
             val job = mappedKeysCache.set(1, "1")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then an exception is thrown
@@ -218,7 +217,7 @@ class CacheMapKeysShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evict("1")).then { GlobalScope.async {} }
 
             // when we get the value
             mappedKeysCache.evict(1).await()
@@ -245,7 +244,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { async(CommonPool) { } }
+            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { } }
 
             // when we get the value
             mappedKeysCacheWithError.evict(1).await()
@@ -258,7 +257,7 @@ class CacheMapKeysShould {
     fun `throw exception when evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             mappedKeysCache.evict(1).await()
@@ -271,11 +270,11 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evict`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evict("1")).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { delay(250) } }
 
             // when we canel the job
             val job = mappedKeysCache.evict(1)
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then an exception is thrown
@@ -288,7 +287,7 @@ class CacheMapKeysShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
 
             // when we evict the value
             mappedKeysCache.evictAll().await()
@@ -302,7 +301,7 @@ class CacheMapKeysShould {
     fun `no exception when transform returns null during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { } }
 
             // when the mapping function returns null and we evictAll
             mappedKeysCacheWithNull.evictAll().await()
@@ -315,7 +314,7 @@ class CacheMapKeysShould {
     fun `no exception when transform throws during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { } }
 
             // when the mapping function throws an exception and we evictAll
             mappedKeysCacheWithError.evictAll().await()
@@ -328,7 +327,7 @@ class CacheMapKeysShould {
     fun `throw exception when evictAll throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
 
             // when we evictAll values
             mappedKeysCache.evictAll().await()
@@ -341,11 +340,11 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evictAll`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { delay(250) } }
 
             // when we canel the job
             val job = mappedKeysCache.evictAll()
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then an exception is thrown

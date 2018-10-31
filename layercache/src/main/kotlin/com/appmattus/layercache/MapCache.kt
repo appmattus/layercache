@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * Simple cache that stores values associated with keys in a map with no expiration or cleanup logic. Use at your own
@@ -28,25 +28,25 @@ class MapCache : Cache<String, String> {
     private val map = mutableMapOf<String, String?>()
 
     override fun get(key: String): Deferred<String?> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             map[key]
         }
     }
 
     override fun set(key: String, value: String): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             map[key] = value
         }
     }
 
     override fun evict(key: String): Deferred<Unit> {
-        return async<Unit>(CommonPool) {
+        return GlobalScope.async<Unit> {
             map.remove(key)
         }
     }
 
     override fun evictAll(): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             map.clear()
         }
     }

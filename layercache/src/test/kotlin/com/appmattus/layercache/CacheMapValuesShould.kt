@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -56,7 +56,7 @@ class CacheMapValuesShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "1" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
 
             // when we get the value
             val result = mappedValuesCache.get("key").await()
@@ -71,7 +71,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "1" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
 
             // when we get the value from a map with exception throwing functions
             mappedValuesCacheWithError.get("key").await()
@@ -84,7 +84,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value from a map
             mappedValuesCache.get("key").await()
@@ -125,7 +125,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value from a map
             mappedValuesCache.set("key", 1).await()
@@ -139,7 +139,7 @@ class CacheMapValuesShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
 
             // when we get the value
             mappedValuesCache.evict("key").await()
@@ -154,7 +154,7 @@ class CacheMapValuesShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evict("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             mappedValuesCache.evict("key").await()
@@ -168,7 +168,7 @@ class CacheMapValuesShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
 
             // when we evictAll values
             mappedValuesCache.evictAll().await()
@@ -182,7 +182,7 @@ class CacheMapValuesShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
 
             // when we evictAll values
             mappedValuesCache.evictAll().await()

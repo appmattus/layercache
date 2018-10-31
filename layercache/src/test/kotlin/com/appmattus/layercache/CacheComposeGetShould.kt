@@ -16,12 +16,12 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
 import org.junit.Before
@@ -32,7 +32,6 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.MockitoAnnotations
-import java.util.concurrent.TimeUnit
 
 class CacheComposeGetShould {
 
@@ -74,7 +73,7 @@ class CacheComposeGetShould {
     fun `return value from first cache when available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(firstCache.get("key")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             val result = composedCache.get("key").await()
@@ -88,7 +87,7 @@ class CacheComposeGetShould {
     fun `not call get on second cache when value available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(firstCache.get("key")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             composedCache.get("key").await()
@@ -102,9 +101,9 @@ class CacheComposeGetShould {
     fun `return value from second cache when only available in second cache and set on first cache`() {
         runBlocking {
             // given value available in second cache only
-            Mockito.`when`(firstCache.get("key")).then { async(CommonPool) { null } }
-            Mockito.`when`(secondCache.get("key")).then { async(CommonPool) { "value" } }
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { async(CommonPool) {} }
+            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { null } }
+            Mockito.`when`(secondCache.get("key")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async {} }
 
             // when we get the value
             val result = composedCache.get("key").await()
@@ -119,7 +118,7 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when the first cache throws`() {
         runBlocking {
             // given the first cache throws an exception on get
-            Mockito.`when`(firstCache.get(anyString())).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             composedCache.get("key").await()
@@ -133,8 +132,8 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when first cache empty and second cache throws`() {
         runBlocking {
             // given the second cache throws an exception on get
-            Mockito.`when`(firstCache.get(Mockito.anyString())).then { async(CommonPool) { null } }
-            Mockito.`when`(secondCache.get(Mockito.anyString())).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(firstCache.get(Mockito.anyString())).then { GlobalScope.async { null } }
+            Mockito.`when`(secondCache.get(Mockito.anyString())).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             composedCache.get("key").await()
@@ -147,9 +146,9 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when first cache empty, second cache returns and set on first cache throws`() {
         runBlocking {
             // given value available in second cache only
-            Mockito.`when`(firstCache.get("key")).then { async(CommonPool) { null } }
-            Mockito.`when`(secondCache.get("key")).then { async(CommonPool) { "value" } }
-            Mockito.`when`(firstCache.set(Mockito.anyString(), Mockito.anyString())).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { null } }
+            Mockito.`when`(secondCache.get("key")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(firstCache.set(Mockito.anyString(), Mockito.anyString())).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             composedCache.get("key").await()
@@ -166,12 +165,12 @@ class CacheComposeGetShould {
             thrown.expectMessage("Job was cancelled")
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
-            Mockito.`when`(secondCache.get(anyString())).then { async(CommonPool) { executions.execute() } }
+            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { executions.execute() } }
 
             // when we get the value
             val job = composedCache.get("key")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
             yield()
 
@@ -188,12 +187,12 @@ class CacheComposeGetShould {
             thrown.expectMessage("Job was cancelled")
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { async(CommonPool) { null } }
-            Mockito.`when`(secondCache.get(anyString())).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { null } }
+            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { delay(250) } }
 
             // when we get the value
             val job = composedCache.get("key")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
             yield()
 
@@ -210,13 +209,13 @@ class CacheComposeGetShould {
             thrown.expectMessage("Job was cancelled")
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { async(CommonPool) { null } }
-            Mockito.`when`(secondCache.get(anyString())).then { async(CommonPool) { "value" } }
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { null } }
+            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { "value" } }
+            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async { delay(250) } }
 
             // when we get the value
             val job = composedCache.get("key")
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
             yield()
 

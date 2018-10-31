@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
@@ -31,7 +31,6 @@ import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import java.util.concurrent.TimeUnit
 
 class FetcherMapKeysShould {
 
@@ -74,7 +73,7 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             val result = mappedKeysCache.get(1).await()
@@ -118,7 +117,7 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value from a map
             mappedKeysCache.get(1).await()
@@ -132,11 +131,11 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a long running job
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { async(CommonPool) { delay(250, TimeUnit.MILLISECONDS) } }
+            Mockito.`when`(cache.get("1")).then { GlobalScope.async { delay(250) } }
 
             // when we canel the job
             val job = mappedKeysCache.get(1)
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then an exception is thrown

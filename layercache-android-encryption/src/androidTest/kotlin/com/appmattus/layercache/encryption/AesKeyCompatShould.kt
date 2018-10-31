@@ -19,7 +19,7 @@ package com.appmattus.layercache.encryption
 import android.annotation.SuppressLint
 import android.os.Build
 import android.preference.PreferenceManager
-import androidx.test.InstrumentationRegistry
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -36,7 +36,7 @@ import javax.crypto.spec.IvParameterSpec
 class AesKeyCompatShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     private lateinit var aesKey: AesKeyCompat
 
@@ -44,7 +44,7 @@ class AesKeyCompatShould {
     fun setup() {
         // AndroidKeyStore only exists on API 18 and higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 
             // cleanup old keys
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
@@ -68,7 +68,7 @@ class AesKeyCompatShould {
             thrown.expect(IllegalStateException::class.java)
 
             // when we create a new AesKeyCompat
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             AesKeyCompat(appContext, BlockMode.CBC, EncryptionPadding.PKCS7, false, IntegrityCheck.HMAC_SHA256)
 
             // then an exception is thrown

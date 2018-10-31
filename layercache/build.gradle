@@ -23,15 +23,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
-    compileOnly "androidx.annotation:annotation:1.0.0-rc01"
+    compileOnly "androidx.annotation:annotation:1.0.0"
 
     testCompile project(':testutils')
-}
-
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
 }
 
 check { //noinspection GroovyAssignabilityCheck
@@ -48,4 +42,8 @@ task myProguardTask(type: proguard.gradle.ProGuardTask) {
     libraryjars configurations.compileOnly.files
     libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
     outjars file("$buildDir/libs/layercache_optimised.jar")
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
+    task.kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"]
 }

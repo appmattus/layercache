@@ -16,10 +16,10 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.cache2k.integration.FunctionalCacheLoader
 
 /**
@@ -29,25 +29,25 @@ import org.cache2k.integration.FunctionalCacheLoader
 internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) :
         Cache<Key, Value> {
     override fun evict(key: Key): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.remove(key)
         }
     }
 
     override fun get(key: Key): Deferred<Value?> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.get(key)
         }
     }
 
     override fun set(key: Key, value: Value): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.put(key, value)
         }
     }
 
     override fun evictAll(): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.clear()
 
             //FunctionalCacheLoader
@@ -69,7 +69,7 @@ fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cach
  */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value> {
-    return FunctionalCacheLoader<Key, Value> { key ->
+    return FunctionalCacheLoader { key ->
         // TODO What thread does a cache loader run on?
         runBlocking { get(key).await() }
     }

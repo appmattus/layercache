@@ -27,11 +27,5 @@ dependencies {
     testCompile "org.slf4j:slf4j-nop:1.7.25"
 }
 
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
-}
-
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"

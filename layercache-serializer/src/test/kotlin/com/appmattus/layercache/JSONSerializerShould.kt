@@ -16,12 +16,13 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonParsingException
 import kotlinx.serialization.serializer
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
@@ -44,8 +45,8 @@ class JSONSerializerShould {
             val initialCache = object : Cache<String, String> {
                 var lastValue: String? = null
 
-                override fun get(key: String): Deferred<String?> = async(CommonPool) { lastValue }
-                override fun set(key: String, value: String): Deferred<Unit> = async(CommonPool) { lastValue = value }
+                override fun get(key: String): Deferred<String?> = GlobalScope.async { lastValue }
+                override fun set(key: String, value: String): Deferred<Unit> = GlobalScope.async { lastValue = value }
                 override fun evict(key: String): Deferred<Unit> = TODO("not implemented")
                 override fun evictAll(): Deferred<Unit> = TODO("not implemented")
             }
@@ -96,8 +97,8 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform is not json`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("JSON"))
+        thrown.expect(JsonParsingException::class.java)
+        thrown.expectMessage(StringStartsWith("Invalid JSON"))
 
         JSONSerializer(ValueClass::class.serializer()).transform("junk")
     }

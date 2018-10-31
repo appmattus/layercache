@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -80,7 +80,7 @@ class CacheBatchSetShould {
     fun `not throw exception when value in entry in values map is null`() {
         runBlocking {
             // given we have a cache
-            Mockito.`when`(cache.set(anyString(), MockitoKotlin.any())).then { async(CommonPool) {} }
+            Mockito.`when`(cache.set(anyString(), MockitoKotlin.any())).then { GlobalScope.async {} }
 
             // when key in values map is null
             cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized<String>()), Pair("key3", "value3"))).await()
@@ -94,14 +94,14 @@ class CacheBatchSetShould {
         runBlocking {
             // given we set values into a cache
             Mockito.`when`(cache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(requestTimeInMills, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(requestTimeInMills)
                 }
             }
             val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then a CancellationException is thrown
             job.await()
@@ -113,8 +113,8 @@ class CacheBatchSetShould {
         runBlocking {
             // given we start a timer and set the values for 3 keys
             Mockito.`when`(cache.set(anyString(), anyString())).then {
-                async(CommonPool) {
-                    delay(requestTimeInMills, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(requestTimeInMills)
                 }
             }
             val start = System.nanoTime()
@@ -134,7 +134,7 @@ class CacheBatchSetShould {
     fun `execute set for each key`() {
         runBlocking {
             // given we set the values for 3 keys
-            Mockito.`when`(cache.set(anyString(), anyString())).then { async(CommonPool) { } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
             val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
 
             // when we wait for the job to complete
@@ -154,7 +154,7 @@ class CacheBatchSetShould {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
             Mockito.`when`(cache.set(anyString(), anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     val key = it.getArgument<String>(0)
                     if (key == "key2") {
                         throw TestException()

@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -81,15 +81,15 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request the values for 3 keys
             Mockito.`when`(cache.get(anyString())).then {
-                async(CommonPool) {
-                    delay(requestTimeInMills, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(requestTimeInMills)
                     "value"
                 }
             }
             val job = cache.batchGet(listOf("key1", "key2", "key3"))
 
             // when we cancel the job
-            assertTrue(job.cancel())
+            job.cancel()
 
             // then a CancellationException is thrown
             job.await()
@@ -102,8 +102,8 @@ class CacheBatchGetShould {
             runBlocking {
                 // given we start a timer and request the values for 3 keys
                 Mockito.`when`(cache.get(anyString())).then {
-                    async(CommonPool) {
-                        delay(requestTimeInMills, TimeUnit.MILLISECONDS); "value"
+                    GlobalScope.async {
+                        delay(requestTimeInMills); "value"
                     }
                 }
 
@@ -128,10 +128,10 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request the values for 3 keys where the second value takes longer to return
             Mockito.`when`(cache.get(anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     val key = it.getArgument<String>(0)
                     if (key == "key2") {
-                        delay(requestTimeInMills, TimeUnit.MILLISECONDS)
+                        delay(requestTimeInMills)
                     }
                     key.replace("key", "value")
                 }
@@ -152,7 +152,7 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
             Mockito.`when`(cache.get(anyString())).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     val key = it.getArgument<String>(0)
                     if (key == "key2") {
                         throw TestException()

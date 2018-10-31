@@ -22,7 +22,7 @@ package com.appmattus.layercache
  */
 class CacheException(message: String, innerExceptions: List<Throwable>) : Exception(message) {
     init {
-        require(innerExceptions.isNotEmpty(), { "You must provide at least one Exception" })
+        require(innerExceptions.isNotEmpty()) { "You must provide at least one Exception" }
 
         initCause(innerExceptions.first())
 

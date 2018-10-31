@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
+import androidx.annotation.CheckResult
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.annotation.CheckResult
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * Convert a cache to return LiveData objects
@@ -38,7 +38,6 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
         cache.get(key).onCompletion {
             when (it) {
                 is DeferredResult.Success -> LiveDataResult.Success<Value?>(it.value)
-                is DeferredResult.Failure -> LiveDataResult.Failure<Value?>(it.exception)
                 is DeferredResult.Cancelled -> LiveDataResult.Failure<Value?>(it.exception)
             }.let {
                 liveData.postValue(it)
@@ -54,7 +53,7 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
     fun set(key: Key, value: Value): LiveData<Unit> {
         val liveData = MutableLiveData<Unit>()
 
-        async(CommonPool) {
+        GlobalScope.async {
             liveData.postValue(cache.set(key, value).await())
         }
 
@@ -67,7 +66,7 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
     fun evict(key: Key): LiveData<Unit> {
         val liveData = MutableLiveData<Unit>()
 
-        async(CommonPool) {
+        GlobalScope.async {
             liveData.postValue(cache.evict(key).await())
         }
 

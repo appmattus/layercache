@@ -18,7 +18,7 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -39,7 +39,7 @@ class RetrofitWrapperShould {
 
     class MockRetrofitService(private val serviceDelegate: BehaviorDelegate<RetrofitService>) : RetrofitService {
         override fun listName(name: String): Call<String> {
-            return serviceDelegate.returningResponse("${name}-a").listName(name)
+            return serviceDelegate.returningResponse("$name-a").listName(name)
         }
     }
 

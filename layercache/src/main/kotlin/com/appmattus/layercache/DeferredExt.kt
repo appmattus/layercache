@@ -16,12 +16,10 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.DefaultDispatcher
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 /**
  * Sealed class representing the result of a deferred, one of Success, Failure or Cancelled
@@ -35,32 +33,25 @@ sealed class DeferredResult<Value> {
     class Success<Value>(val value: Value?) : DeferredResult<Value>()
 
     /**
-     * Failure, contains the exception thrown in the deferred execution
-     * @property exception Thrown exception
-     */
-    class Failure<Value>(val exception: Throwable) : DeferredResult<Value>()
-
-    /**
      * Cancelled, contains the exception thrown by cancelling the deferred execution
      * @property exception Cancellation exception
      */
-    class Cancelled<Value>(val exception: Throwable) : DeferredResult<Value>()
+    class Cancelled<Value>(val exception: Throwable?) : DeferredResult<Value>()
 }
 
 /**
  * Executes completion handler with a DeferredResult when the Deferred completes, regardless of status
  */
-fun <Value> Deferred<Value>.onCompletion(context: CoroutineContext = DefaultDispatcher, completion: (result: DeferredResult<Value>) -> Unit): Deferred<Value> {
-    async(CommonPool) {
+fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Value>) -> Unit): Deferred<Value> {
+    GlobalScope.async {
         join()
 
         @Suppress("RemoveExplicitTypeArguments")
         when {
-            isCancelled -> DeferredResult.Cancelled<Value>(getCancellationException())
-            isCompletedExceptionally -> DeferredResult.Failure<Value>(getCancellationException())
+            isCancelled -> DeferredResult.Cancelled<Value>(getCompletionExceptionOrNull())
             else -> DeferredResult.Success<Value>(getCompleted())
         }.let {
-            launch(context) {
+            GlobalScope.launch {
                 completion(it)
             }
         }
@@ -72,30 +63,13 @@ fun <Value> Deferred<Value>.onCompletion(context: CoroutineContext = DefaultDisp
 /**
  * Executes success handler only when Deferred completes successfully returning its data
  */
-fun <Value> Deferred<Value>.onSuccess(context: CoroutineContext = DefaultDispatcher, success: (value: Value?) -> Unit): Deferred<Value> {
-    async(CommonPool) {
+fun <Value> Deferred<Value>.onSuccess(success: (value: Value?) -> Unit): Deferred<Value> {
+    GlobalScope.async {
         join()
 
-        if (!isCancelled && !isCompletedExceptionally) {
-            launch(context) {
+        if (!isCancelled) {
+            GlobalScope.launch {
                 success(getCompleted())
-            }
-        }
-    }
-
-    return this
-}
-
-/**
- * Executes failure handler only when Deferred throws an exception
- */
-fun <Value> Deferred<Value>.onFailure(context: CoroutineContext = DefaultDispatcher, failure: (exception: Throwable) -> Unit): Deferred<Value> {
-    async(CommonPool) {
-        join()
-
-        if (!isCancelled && isCompletedExceptionally) {
-            launch(context) {
-                failure(getCancellationException())
             }
         }
     }
@@ -106,13 +80,13 @@ fun <Value> Deferred<Value>.onFailure(context: CoroutineContext = DefaultDispatc
 /**
  * Executes cancelled handler only when Deferred is cancelled by calling job.cancel()
  */
-fun <Value> Deferred<Value>.onCancel(context: CoroutineContext = DefaultDispatcher, cancelled: (exception: Throwable) -> Unit): Deferred<Value> {
-    async(CommonPool) {
+fun <Value> Deferred<Value>.onCancel(cancelled: (exception: Throwable?) -> Unit): Deferred<Value> {
+    GlobalScope.async {
         join()
 
         if (isCancelled) {
-            launch(context) {
-                cancelled(getCancellationException())
+            GlobalScope.launch {
+                cancelled(getCompletionExceptionOrNull())
             }
         }
     }

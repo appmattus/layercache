@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * Fetcher is a special kind of cache that is just used to retrieve data. It is not possible to cache any values
@@ -29,20 +29,20 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
      * No-op as Cache is a Fetcher
      */
     @Deprecated("set does nothing on a Fetcher")
-    override fun set(key: Key, value: Value): Deferred<Unit> = async(CommonPool) {}
+    override fun set(key: Key, value: Value): Deferred<Unit> = GlobalScope.async {}
 
     /**
      * No-op as Cache is a Fetcher
      */
     @Deprecated("evict does nothing on a Fetcher")
-    override fun evict(key: Key): Deferred<Unit> = async(CommonPool) {}
+    override fun evict(key: Key): Deferred<Unit> = GlobalScope.async {}
 
     /**
      * No-op as Cache is a Fetcher
      */
     @Deprecated("evictAll does nothing on a Fetcher")
-    override fun evictAll(): Deferred<Unit> = async(CommonPool) {}
-    
+    override fun evictAll(): Deferred<Unit> = GlobalScope.async {}
+
     @Deprecated("Use valueTransform(transform) on a Fetcher", ReplaceWith("valueTransform(transform)"))
     override fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue,
                                                     inverseTransform: (MappedValue) -> Value): Fetcher<Key, MappedValue> {

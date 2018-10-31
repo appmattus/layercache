@@ -27,11 +27,5 @@ dependencies {
     testCompile 'com.squareup.retrofit2:retrofit-mock:2.4.0'
 }
 
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
-}
-
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"

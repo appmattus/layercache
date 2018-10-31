@@ -30,7 +30,7 @@ sealed class LiveDataResult<Value> {
      * Failure, contains the exception thrown by the cache execution
      * @property exception  Thrown exception
      */
-    class Failure<Value>(val exception: Throwable) : LiveDataResult<Value>()
+    class Failure<Value>(val exception: Throwable?) : LiveDataResult<Value>()
 
     /**
      * Loading, when a cache execution is in progress and is not yet Success or Failure

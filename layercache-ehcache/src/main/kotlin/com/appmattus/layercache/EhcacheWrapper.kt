@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * Wrapper around EhCache (http://www.ehcache.org/)
@@ -27,25 +27,25 @@ import kotlinx.coroutines.experimental.async
 internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) :
         Cache<Key, Value> {
     override fun evict(key: Key): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.remove(key)
         }
     }
 
     override fun get(key: Key): Deferred<Value?> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.get(key)
         }
     }
 
     override fun set(key: Key, value: Value): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.put(key, value)
         }
     }
 
     override fun evictAll(): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.clear()
         }
     }

@@ -18,9 +18,9 @@ package com.appmattus.layercache
 
 import android.content.Context
 import android.content.SharedPreferences
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * Simple cache that stores values associated with keys in a shared preferences file with no expiration or cleanup
@@ -36,7 +36,7 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
             Cache<String, T> {
 
         override fun get(key: String): Deferred<T?> {
-            return async(CommonPool) {
+            return GlobalScope.async {
                 if (sharedPreferences.contains(key)) {
                     getFun(sharedPreferences, key)
                 } else {
@@ -46,7 +46,7 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
         }
 
         override fun set(key: String, value: T): Deferred<Unit> {
-            return async(CommonPool) {
+            return GlobalScope.async {
                 val editor = sharedPreferences.edit()
                 setFun(editor, key, value)
                 editor.apply()
@@ -54,7 +54,7 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
         }
 
         override fun evict(key: String): Deferred<Unit> {
-            return async(CommonPool) {
+            return GlobalScope.async {
                 val editor = sharedPreferences.edit()
                 editor.remove(key)
                 editor.apply()
@@ -62,7 +62,7 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
         }
 
         override fun evictAll(): Deferred<Unit> {
-            return async(CommonPool) {
+            return GlobalScope.async {
                 val editor = sharedPreferences.edit()
                 editor.clear()
                 editor.apply()

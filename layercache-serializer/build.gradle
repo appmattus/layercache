@@ -28,10 +28,8 @@ dependencies {
     testCompile project(':testutils')
 }
 
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
+    task.kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"]
 }
 
 sourceCompatibility = "1.7"

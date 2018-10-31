@@ -20,12 +20,12 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.preference.PreferenceManager
 import androidx.annotation.RequiresApi
-import androidx.test.InstrumentationRegistry
+import androidx.test.platform.app.InstrumentationRegistry
 import com.appmattus.layercache.encryption.EncryptionFactory
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import junitparams.naming.TestCaseName
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
@@ -41,13 +41,13 @@ import java.security.KeyStore
 class StringEncryptionShould {
 
     @get:Rule
-    var thrown = ExpectedException.none()
+    var thrown: ExpectedException = ExpectedException.none()
 
     @Before
     fun setup() {
         // AndroidKeyStore only exists on API 18 and higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 
             // cleanup old keys
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
@@ -152,7 +152,7 @@ class StringEncryptionShould {
     }
 
     fun encryptor(): Array<Array<Any>> {
-        val appContext = InstrumentationRegistry.getContext().applicationContext
+        val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 
         val params = mutableListOf<Array<Any>>()
 
@@ -175,7 +175,7 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             thrown.expect(IllegalStateException::class.java)
 
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
         }
     }
@@ -186,7 +186,7 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR2) {
             thrown.expect(IllegalStateException::class.java)
 
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
         }
     }
@@ -201,7 +201,7 @@ class StringEncryptionShould {
             val encryptedData = encryptor.inverseTransform("hello world")
 
             // when we decrypt using a new encryptor using the same alias (as the keys will be the same)
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             val newEncryptor = when (encryptor.toString()) {
                 EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
                 EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
@@ -223,7 +223,7 @@ class StringEncryptionShould {
             thrown.expect(Exception::class.java)
 
 
-            val appContext = InstrumentationRegistry.getContext().applicationContext
+            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 
             // given we encrypt some data
             val encryptedData = encryptor.inverseTransform("hello world")

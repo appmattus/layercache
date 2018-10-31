@@ -17,9 +17,9 @@
 package com.appmattus.layercache
 
 import androidx.annotation.NonNull
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 /**
  * A standard cache which stores and retrieves data
@@ -66,7 +66,7 @@ interface Cache<Key : Any, Value : Any> {
                 get() = listOf(this@Cache, b)
 
             override fun evict(key: Key): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     executeInParallel(listOf(this@Cache, b), "evict", {
                         it.evict(key)
                     })
@@ -75,7 +75,7 @@ interface Cache<Key : Any, Value : Any> {
             }
 
             override fun get(key: Key): Deferred<Value?> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     this@Cache.get(key).await() ?: let {
                         b.get(key).await()?.apply {
                             this@Cache.set(key, this).await()
@@ -85,7 +85,7 @@ interface Cache<Key : Any, Value : Any> {
             }
 
             override fun set(key: Key, value: Value): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     executeInParallel(listOf(this@Cache, b), "set", {
                         it.set(key, value)
                     })
@@ -95,7 +95,7 @@ interface Cache<Key : Any, Value : Any> {
             }
 
             override fun evictAll(): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     executeInParallel(listOf(this@Cache, b), "evictAll", {
                         it.evictAll()
                     })
@@ -118,7 +118,7 @@ interface Cache<Key : Any, Value : Any> {
     fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
         return object : MapKeysCache<Key, Value, MappedKey>(this@Cache, transform) {
             override fun evict(key: MappedKey): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     val mappedKey = requireNotNull(transform(key)) {
                         "Required value was null. Key '$key' mapped to null"
                     }
@@ -127,7 +127,7 @@ interface Cache<Key : Any, Value : Any> {
             }
 
             override fun set(key: MappedKey, value: Value): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     val mappedKey = requireNotNull(transform(key)) {
                         "Required value was null. Key '$key' mapped to null"
                     }
@@ -168,7 +168,7 @@ interface Cache<Key : Any, Value : Any> {
             override fun evict(key: Key) = this@Cache.evict(key)
 
             override fun set(key: Key, value: MappedValue): Deferred<Unit> {
-                return async(CommonPool) {
+                return GlobalScope.async {
                     this@Cache.set(key, inverseTransform(value)).await()
                 }
             }
@@ -202,7 +202,7 @@ interface Cache<Key : Any, Value : Any> {
     fun batchGet(keys: List<Key>): Deferred<List<Value?>> {
         keys.requireNoNulls()
 
-        return async(CommonPool) {
+        return GlobalScope.async {
             keys.map { this@Cache.get(it) }.map { it.await() }
         }
     }
@@ -213,7 +213,7 @@ interface Cache<Key : Any, Value : Any> {
     fun batchSet(values: Map<Key, Value>): Deferred<Unit> {
         values.keys.requireNoNulls()
 
-        return async(CommonPool) {
+        return GlobalScope.async {
             values.map { entry: Map.Entry<Key, Value> ->
                 this@Cache.set(entry.key, entry.value)
             }.forEach { it.await() }
@@ -224,11 +224,11 @@ interface Cache<Key : Any, Value : Any> {
     private suspend fun <T> executeJobsInParallel(jobs: List<Deferred<T>>, lazyMessage: (index: Int) -> Any): List<T> {
         jobs.forEach { it.join() }
 
-        val jobsWithExceptions = jobs.filter { it.isCompletedExceptionally }
+        val jobsWithExceptions = jobs.filter { it.isCancelled }
         if (jobsWithExceptions.isNotEmpty()) {
             val errorMessage = jobsWithExceptions.map { "${lazyMessage(jobs.indexOf(it))}" }.joinToString()
 
-            val exceptions = jobsWithExceptions.map { it.getCancellationException() }
+            val exceptions = jobsWithExceptions.map { it.getCompletionExceptionOrNull() }.filterNotNull()
 
             throw CacheException(errorMessage, exceptions)
         }

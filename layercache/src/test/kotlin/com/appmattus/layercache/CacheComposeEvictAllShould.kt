@@ -16,22 +16,22 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.Is.isA
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.internal.matchers.ThrowableCauseMatcher.hasCause
 import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeEvictAllShould {
@@ -65,12 +65,12 @@ class CacheComposeEvictAllShould {
 
             // given we have two caches with a long running job to evict a value
             Mockito.`when`(firstCache.evictAll()).then {
-                async(newSingleThreadContext("1")) {
+                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(newSingleThreadContext("2")) {
+                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
@@ -89,8 +89,8 @@ class CacheComposeEvictAllShould {
     fun `execute evictAll for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.evictAll()).then { async(CommonPool) {} }
-            Mockito.`when`(secondCache.evictAll()).then { async(CommonPool) {} }
+            Mockito.`when`(firstCache.evictAll()).then { GlobalScope.async {} }
+            Mockito.`when`(secondCache.evictAll()).then { GlobalScope.async {} }
 
             // when we evictAll values
             composedCache.evictAll().await()
@@ -109,19 +109,19 @@ class CacheComposeEvictAllShould {
             // expect exception and successful execution of secondCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evictAll failed for firstCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
 
             executions.expect(1)
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
@@ -140,18 +140,18 @@ class CacheComposeEvictAllShould {
             // expect exception and successful execution of firstCache
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evictAll failed for secondCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the second cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
@@ -170,16 +170,16 @@ class CacheComposeEvictAllShould {
             // expect exception
             thrown.expect(CacheException::class.java)
             thrown.expectMessage("evictAll failed for firstCache, evictAll failed for secondCache")
-            thrown.expectCause(hasCause(isA(TestException::class.java)))
+            thrown.expectCause(isA(TestException::class.java))
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     throw TestException()
                 }
             }
@@ -202,19 +202,19 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(250, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(250)
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     executions.execute()
                 }
             }
 
             // when we evictAll values
             val job = composedCache.evictAll()
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then evictAll on the second cache still completes and an exception is thrown
@@ -232,19 +232,19 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
+                GlobalScope.async {
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(250, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(250)
                 }
             }
 
             // when we evictAll values
             val job = composedCache.evictAll()
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(50)
             job.cancel()
 
             // then evictAll on the first cache still completes and an exception is thrown
@@ -262,21 +262,21 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                async(CommonPool) {
-                    delay(50, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(50)
                     executions.execute()
                 }
             }
 
             // when we evictAll values
             val job = composedCache.evictAll()
-            delay(25, TimeUnit.MILLISECONDS)
+            delay(25)
             job.cancel()
 
             // then an exception is thrown

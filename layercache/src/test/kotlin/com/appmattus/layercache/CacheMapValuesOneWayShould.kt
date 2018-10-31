@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -57,7 +57,7 @@ class CacheMapValuesOneWayShould {
     fun `only invoke function and not inverse function`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "1" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
@@ -74,7 +74,7 @@ class CacheMapValuesOneWayShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "1" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
@@ -90,7 +90,7 @@ class CacheMapValuesOneWayShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string and transform throws an exception
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "1" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { throw TestException() }
 
             // when we get the value from a map with exception throwing functions
@@ -104,7 +104,7 @@ class CacheMapValuesOneWayShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we throw an exception on get
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value from a map
             mappedValuesCache.get("key").await()

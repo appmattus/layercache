@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -29,7 +29,6 @@ import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class CacheReuseInflightShould {
@@ -54,7 +53,7 @@ class CacheReuseInflightShould {
     fun `single call to get returns the value`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             val result = reuseInflightCache.get("key").await()
@@ -72,8 +71,8 @@ class CacheReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                async(CommonPool) {
-                    delay(100, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(100)
 
                     count.getAndIncrement()
                 }
@@ -98,8 +97,8 @@ class CacheReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(500)
 
                     count.incrementAndGet()
                 }
@@ -108,7 +107,7 @@ class CacheReuseInflightShould {
             reuseInflightCache.get("key").await()
 
             // we yield here as the map that stores the reuse may not have been cleared yet
-            delay(100, TimeUnit.MILLISECONDS)
+            delay(100)
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
@@ -126,7 +125,7 @@ class CacheReuseInflightShould {
     fun `propogate exception on get`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             reuseInflightCache.get("key").await()
@@ -140,7 +139,7 @@ class CacheReuseInflightShould {
     fun `call set from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             reuseInflightCache.set("key", "value").await()
@@ -155,7 +154,7 @@ class CacheReuseInflightShould {
     fun `propagate exception on set`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             reuseInflightCache.set("key", "value").await()
@@ -169,7 +168,7 @@ class CacheReuseInflightShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
 
             // when we get the value
             reuseInflightCache.evict("key").await()
@@ -184,7 +183,7 @@ class CacheReuseInflightShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evict("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             reuseInflightCache.evict("key").await()
@@ -198,7 +197,7 @@ class CacheReuseInflightShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) {} }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
 
             // when we evictAll values
             reuseInflightCache.evictAll().await()
@@ -212,7 +211,7 @@ class CacheReuseInflightShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
 
             // when we evictAll values
             reuseInflightCache.evictAll().await()

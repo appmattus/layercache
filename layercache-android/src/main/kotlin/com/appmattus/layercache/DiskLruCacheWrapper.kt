@@ -17,9 +17,9 @@
 package com.appmattus.layercache
 
 import com.jakewharton.disklrucache.DiskLruCache
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.io.File
 
 /**
@@ -28,19 +28,19 @@ import java.io.File
 internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<String, String> {
 
     override fun evict(key: String): Deferred<Unit> {
-        return async<Unit>(CommonPool) {
+        return GlobalScope.async<Unit> {
             cache.remove(key)
         }
     }
 
     override fun get(key: String): Deferred<String?> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             cache.get(key)?.getString(0)
         }
     }
 
     override fun set(key: String, value: String): Deferred<Unit> {
-        return async(CommonPool) {
+        return GlobalScope.async {
             val editor = cache.edit(key)
             editor.set(0, value)
             editor.commit()
@@ -48,7 +48,7 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
     }
 
     override fun evictAll(): Deferred<Unit> {
-        return async<Unit>(CommonPool) {
+        return GlobalScope.async {
             // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
             // by calling flush immediately we ensure this happens in the same call
             cache.maxSize.let {

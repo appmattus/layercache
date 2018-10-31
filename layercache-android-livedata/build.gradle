@@ -22,7 +22,7 @@ apply from: "$rootDir/dokka-android.gradle"
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.2"
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         minSdkVersion 17
@@ -59,15 +59,8 @@ repositories {
 
 dependencies {
     implementation project(':layercache-android')
-    implementation "androidx.lifecycle:lifecycle-runtime:2.0.0-rc01"
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0-rc01"
+    implementation "androidx.lifecycle:lifecycle-livedata:2.0.0"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:3.8"
-}
-
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
 }

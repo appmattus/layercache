@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.cache2k.Cache2kBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -56,7 +56,7 @@ class Cache2kWrapperShould {
         integratedCache = Cache.fromCache2k(cache2k)
 
 
-        Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { async(CommonPool) { "hello" } }
+        Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { GlobalScope.async { "hello" } }
 
         val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
                 .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes

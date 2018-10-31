@@ -22,7 +22,7 @@ apply from: "$rootDir/dokka-android.gradle"
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.2"
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         minSdkVersion 17
@@ -30,7 +30,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.appmattus.layercache.AndroidXJUnitRunner"
     }
 
     buildTypes {
@@ -60,21 +60,18 @@ tasks.withType(Test) {
 
 dependencies {
     implementation project(':layercache-android')
-    compileOnly "androidx.annotation:annotation:1.0.0-rc01"
+    compileOnly "androidx.annotation:annotation:1.0.0"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:3.8"
 
     androidTestImplementation project(':testutils')
-    androidTestImplementation files('testlibs/JUnitParams-1.1.0-custom.jar')
-    androidTestImplementation('androidx.test:runner:1.1.0-alpha4')
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
+
+    androidTestImplementation 'pl.pragmatists:JUnitParams:1.1.1'
+    androidTestImplementation('androidx.test:runner:1.1.0')
+    androidTestImplementation 'androidx.multidex:multidex:2.0.0'
+
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'androidx.annotation', module: 'annotation'
     })
-}
-
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
 }

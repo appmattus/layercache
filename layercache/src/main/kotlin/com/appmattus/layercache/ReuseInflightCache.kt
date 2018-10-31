@@ -16,9 +16,9 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 @Suppress("UnnecessaryAbstractClass", "ExceptionRaisedInUnexpectedLocation") // incorrectly reported
 internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) :
@@ -38,7 +38,7 @@ internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val c
         return map.get(key) ?: cache.get(key).apply {
             map.set(key, this)
 
-            async(CommonPool) {
+            GlobalScope.async {
                 // free up map when job is completed regardless of success or failure
                 join()
                 map.remove(key)

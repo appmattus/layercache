@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -29,7 +29,6 @@ import org.junit.rules.ExpectedException
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class FetcherReuseInflightShould {
@@ -68,7 +67,7 @@ class FetcherReuseInflightShould {
     fun `single call to get returns the value`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { "value" } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "value" } }
 
             // when we get the value
             val result = reuseInflightCache.get("key").await()
@@ -86,8 +85,8 @@ class FetcherReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                async(CommonPool) {
-                    delay(100, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(100)
 
                     count.getAndIncrement()
                 }
@@ -112,8 +111,8 @@ class FetcherReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                async(CommonPool) {
-                    delay(500, TimeUnit.MILLISECONDS)
+                GlobalScope.async {
+                    delay(500)
 
                     count.incrementAndGet()
                 }
@@ -122,7 +121,7 @@ class FetcherReuseInflightShould {
             reuseInflightCache.get("key").await()
 
             // we yield here as the map that stores the reuse may not have been cleared yet
-            delay(100, TimeUnit.MILLISECONDS)
+            delay(100)
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
@@ -140,7 +139,7 @@ class FetcherReuseInflightShould {
     fun `propogate exception on get`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { async(CommonPool) { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
 
             // when we get the value
             reuseInflightCache.get("key").await()
