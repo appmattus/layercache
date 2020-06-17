@@ -28,7 +28,7 @@ buildscript {
         maven { url "https://kotlin.bintray.com/kotlinx" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:4.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath "gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detekt_version"
@@ -73,9 +73,10 @@ apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 
 task jacocoTestReport(type: JacocoReport) {
-    sourceDirectories = files()
-    classDirectories = files()
-    executionData = files()
+    // TODO Re-enable jacoco report
+    /*sourceDirectories(files())
+    classDirectories(files())
+    executionData(files())
 
     reports {
         html.enabled = true
@@ -88,10 +89,8 @@ task jacocoTestReport(type: JacocoReport) {
         true
     }
 
-    /*
-     * Builds list of source dirs, class dirs, and executionData files
-     * when task is run, not at script evaluation time
-     */
+    // Builds list of source dirs, class dirs, and executionData files
+    // when task is run, not at script evaluation time
     doFirst {
         subprojects.findAll { subproject ->
             subproject.pluginManager.hasPlugin('jacoco')
@@ -118,7 +117,7 @@ task jacocoTestReport(type: JacocoReport) {
         })
 
         coveralls.sourceDirs = additionalSourceDirs.findAll()
-    }
+    }*/
 }
 
 coveralls {
