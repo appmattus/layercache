@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.jakewharton.disklrucache.DiskLruCache
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -37,7 +39,7 @@ class DiskLruCacheWrapperIntegrationShould {
 
     @Before
     fun before() {
-        diskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk"), 0, 1, 200)
+        diskCache = DiskLruCache.open(File(ApplicationProvider.getApplicationContext<Context>().cacheDir, "disk"), 0, 1, 200)
         integratedCache = Cache.fromDiskLruCache(diskCache)
     }
 
@@ -90,7 +92,7 @@ class DiskLruCacheWrapperIntegrationShould {
     @Test
     fun remove_first_value_when_all_unused() {
         runBlocking {
-            val singleEntryDiskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk2"), 0, 1, 6)
+            val singleEntryDiskCache = DiskLruCache.open(File(ApplicationProvider.getApplicationContext<Context>().cacheDir, "disk2"), 0, 1, 6)
 
             try {
                 // given we create a cache of size 1
@@ -113,7 +115,7 @@ class DiskLruCacheWrapperIntegrationShould {
     @Test
     fun remove_oldest_value_when_one_is_used() {
         runBlocking {
-            val doubleEntryDiskCache = DiskLruCache.open(File(RuntimeEnvironment.application.cacheDir, "disk2"), 0, 1, 12)
+            val doubleEntryDiskCache = DiskLruCache.open(File(ApplicationProvider.getApplicationContext<Context>().cacheDir, "disk2"), 0, 1, 12)
 
             try {
                 // given we create and populate a cache of size 2
