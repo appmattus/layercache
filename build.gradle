@@ -176,7 +176,7 @@ dependencyUpdates {
     resolutionStrategy {
         componentSelection {
             all {
-                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+                if (isNonStable(it.candidate.version)) {
                     reject('Release candidate')
                 }
             }

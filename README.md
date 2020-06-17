@@ -40,7 +40,7 @@ or watch the talk from [droidcon London 2017](https://skillsmatter.com/skillscas
 ### Base module
 
 ```groovy
-compile 'com.appmattus:layercache:<latest-version>'
+implementation 'com.appmattus:layercache:<latest-version>'
 ```
 
 #### Composing two caches
@@ -110,7 +110,7 @@ val newCache: Cache<Key, Value> = cache.reuseInflight()
 ### Retrofit module
 
 ```groovy
-compile 'com.appmattus:layercache-retrofit:<latest-version>'
+implementation 'com.appmattus:layercache-retrofit:<latest-version>'
 ```
 
 Given a Retrofit service that returns a Call<Value>, we can turn this into a Cache with `Cache.fromRetrofit`:
@@ -133,7 +133,7 @@ val cache : Cache<Key, Value> = Cache.fromRetrofit { key: Key ->
 ### Serializer module
 
 ```groovy
-compile 'com.appmattus:layercache-serializer:<latest-version>'
+implementation 'com.appmattus:layercache-serializer:<latest-version>'
 ```
 
 Configures a transformation from JSON to a serialisable data class and
@@ -153,7 +153,7 @@ val objectCache: Cache<Key, Value> = cache.jsonSerializer(Value::class.serialize
 ### Android base module
 
 ```groovy
-compile 'com.appmattus:layercache-android:<latest-version>'
+implementation 'com.appmattus:layercache-android:<latest-version>'
 ```
 
 #### LruCache
@@ -179,7 +179,7 @@ val memoryCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 ### Android LiveData module
 
 ```groovy
-compile 'com.appmattus:layercache-android-livedata:<latest-version>'
+implementation 'com.appmattus:layercache-android-livedata:<latest-version>'
 ```
 
 Given a cache we can convert it for use with LiveData. This makes the getter
@@ -210,25 +210,25 @@ Available from jcenter()
 
 ```groovy
 dependencies {
-    compile 'com.appmattus:layercache:<latest-version>'
+    implementation 'com.appmattus:layercache:<latest-version>'
 
     // To use with the Kotlin serializer
-    compile 'com.appmattus:layercache-serializer:<latest-version>'
+    implementation 'com.appmattus:layercache-serializer:<latest-version>'
 
     // Provides support for ehcache
-    compile 'com.appmattus:layercache-ehcache:<latest-version>'
+    implementation 'com.appmattus:layercache-ehcache:<latest-version>'
 
     // Enables converting Retrofit calls to Cache
-    compile 'com.appmattus:layercache-retrofit:<latest-version>'
+    implementation 'com.appmattus:layercache-retrofit:<latest-version>'
 
     // Provides LruCache & DiskLruCache support for Android
-    compile 'com.appmattus:layercache-android:<latest-version>'
+    implementation 'com.appmattus:layercache-android:<latest-version>'
 
     // Provides one-line String encryption for Android
-    compile 'com.appmattus:layercache-android-encryption:<latest-version>'
+    implementation 'com.appmattus:layercache-android-encryption:<latest-version>'
 
     // Provides conversion from Cache into LiveData for Android
-    compile 'com.appmattus:layercache-android-livedata:<latest-version>'
+    implementation 'com.appmattus:layercache-android-livedata:<latest-version>'
 }
 ```
 

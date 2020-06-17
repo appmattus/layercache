@@ -20,9 +20,9 @@ apply plugin: 'jacoco'
 dependencies {
     compile project(':layercache')
     compile "androidx.annotation:annotation:1.1.0"
-    compile "junit:junit:4.12"
+    compile "junit:junit:4.13"
     compile 'org.mockito:mockito-core:2.18.3'
-    compile 'com.github.stefanbirkner:system-rules:1.18.0'
+    compile 'com.github.stefanbirkner:system-rules:1.19.0'
 }
 
 test { finalizedBy jacocoTestReport }

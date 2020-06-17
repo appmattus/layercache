@@ -21,11 +21,11 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile project(':layercache')
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
+    implementation project(':layercache')
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
-    testCompile project(':testutils')
+    testImplementation project(':testutils')
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->

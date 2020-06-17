@@ -20,11 +20,11 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile project(':layercache')
-    compile 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation project(':layercache')
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    testCompile project(':testutils')
-    testCompile 'com.squareup.retrofit2:retrofit-mock:2.4.0'
+    testImplementation project(':testutils')
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.9.0'
 }
 
 sourceCompatibility = "1.7"

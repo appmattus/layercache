@@ -25,7 +25,7 @@ dependencies {
 
     compileOnly "androidx.annotation:annotation:1.1.0"
 
-    testCompile project(':testutils')
+    testImplementation project(':testutils')
 }
 
 check { //noinspection GroovyAssignabilityCheck
