@@ -69,7 +69,7 @@ class FetcherMapValuesShould {
 
             // then the main function is invoked but the inverse is not
             Mockito.verify(function).invoke("1")
-            Mockito.verifyZeroInteractions(functionInverse)
+            Mockito.verifyNoInteractions(functionInverse)
         }
     }
 
@@ -138,7 +138,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.set("1", 1).await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -163,7 +163,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evict("1").await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -188,7 +188,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evictAll().await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 }

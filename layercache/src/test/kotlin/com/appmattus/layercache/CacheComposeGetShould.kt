@@ -93,7 +93,7 @@ class CacheComposeGetShould {
             composedCache.get("key").await()
 
             // then we do not call the second cache
-            Mockito.verifyZeroInteractions(secondCache)
+            Mockito.verifyNoInteractions(secondCache)
         }
     }
 

@@ -65,7 +65,7 @@ class CacheMapValuesOneWayShould {
 
             // then the main function is invoked but the inverse is not
             Mockito.verify(function).invoke("1")
-            Mockito.verifyZeroInteractions(functionInverse)
+            Mockito.verifyNoInteractions(functionInverse)
         }
     }
 
@@ -134,7 +134,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.set("1", 1).await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -159,7 +159,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evict("1").await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -184,7 +184,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evictAll().await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 }

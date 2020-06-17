@@ -164,7 +164,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.set(1, "1").await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -189,7 +189,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evict(1).await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
@@ -214,7 +214,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evictAll().await()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            Mockito.verifyNoInteractions(function)
         }
     }
 
