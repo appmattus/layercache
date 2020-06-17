@@ -67,5 +67,5 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     testImplementation project(':testutils')
-    testImplementation 'org.robolectric:robolectric:3.8'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
 }
