@@ -63,15 +63,15 @@ dependencies {
     compileOnly "androidx.annotation:annotation:1.1.0"
 
     testImplementation project(':testutils')
-    testImplementation "org.robolectric:robolectric:3.8"
+    testImplementation "org.robolectric:robolectric:4.3.1"
 
     androidTestImplementation project(':testutils')
 
     androidTestImplementation 'pl.pragmatists:JUnitParams:1.1.1'
-    androidTestImplementation('androidx.test:runner:1.1.0')
+    androidTestImplementation('androidx.test:runner:1.2.0')
     androidTestImplementation 'androidx.multidex:multidex:2.0.1'
 
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.2.0', {
         exclude group: 'androidx.annotation', module: 'annotation'
     })
 }
