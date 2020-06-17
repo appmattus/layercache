@@ -21,9 +21,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.JsonParsingException
+import kotlinx.serialization.json.JsonDecodingException
 import kotlinx.serialization.serializer
+import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -97,16 +97,16 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform is not json`() {
-        thrown.expect(JsonParsingException::class.java)
-        thrown.expectMessage(StringStartsWith("Invalid JSON"))
+        thrown.expect(JsonDecodingException::class.java)
+        thrown.expectMessage(StringStartsWith("Unexpected JSON token"))
 
         JSONSerializer(ValueClass::class.serializer()).transform("junk")
     }
 
     @Test
     fun `throw exception when parameter to transform contains field that is not expected`() {
-        thrown.expect(SerializationException::class.java)
-        thrown.expectMessage(StringStartsWith("Strict JSON encountered unknown key"))
+        thrown.expect(JsonDecodingException::class.java)
+        thrown.expectMessage(StringContains("Encountered an unknown key 'result'"))
 
         JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
     }

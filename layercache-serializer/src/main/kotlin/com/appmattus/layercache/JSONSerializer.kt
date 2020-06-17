@@ -17,19 +17,22 @@
 package com.appmattus.layercache
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.JSON
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.serializer
 
 /**
  * Two-way transform to serialise and deserialise data class objects to String
  */
 internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<Value>) : TwoWayTransform<String, Value> {
+    private val json = Json(JsonConfiguration.Stable)
+
     override fun transform(value: String): Value {
-        return JSON.parse(serializer, value)
+        return json.parse(serializer, value)
     }
 
     override fun inverseTransform(mappedValue: Value): String {
-        return JSON.stringify(serializer, mappedValue)
+        return json.stringify(serializer, mappedValue)
     }
 }
 
