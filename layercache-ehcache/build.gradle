@@ -21,10 +21,10 @@ apply from: "$rootDir/dokka.gradle"
 
 dependencies {
     implementation project(':layercache')
-    implementation "org.ehcache:ehcache:3.5.2"
+    implementation "org.ehcache:ehcache:3.8.1"
 
     testImplementation project(':testutils')
-    testImplementation "org.slf4j:slf4j-nop:1.7.25"
+    testImplementation "org.slf4j:slf4j-nop:1.7.30"
 }
 
 sourceCompatibility = "1.7"
