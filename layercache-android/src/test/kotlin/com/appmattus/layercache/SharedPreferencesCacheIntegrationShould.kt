@@ -18,6 +18,7 @@
 
 package com.appmattus.layercache
 
+import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
@@ -25,7 +26,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -37,8 +37,8 @@ class SharedPreferencesCacheIntegrationShould {
 
     @Before
     fun before() {
-        stringCache = SharedPreferencesCache(RuntimeEnvironment.application, "test").withString()
-        intCache = SharedPreferencesCache(RuntimeEnvironment.application, "test").withInt()
+        stringCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
+        intCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
     }
 
     @After
@@ -66,7 +66,7 @@ class SharedPreferencesCacheIntegrationShould {
     @Test(expected = IllegalArgumentException::class)
     fun return_value_when_cache_has_value_3() {
         runBlocking {
-            val cache = SharedPreferencesCache(RuntimeEnvironment.application, "test").withString()
+            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
 
             // given we have a cache with a value
             cache.set("key", TestUtils.uninitialized()).await()
@@ -78,7 +78,7 @@ class SharedPreferencesCacheIntegrationShould {
     @Test
     fun return_value_when_cache_has_value_4() {
         runBlocking {
-            val cache = SharedPreferencesCache(RuntimeEnvironment.application, "test").withInt()
+            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
 
 
             // given we have a cache with a value
