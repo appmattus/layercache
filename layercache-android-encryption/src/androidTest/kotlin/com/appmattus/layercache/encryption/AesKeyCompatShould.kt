@@ -18,7 +18,7 @@ package com.appmattus.layercache.encryption
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

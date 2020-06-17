@@ -18,8 +18,8 @@ package com.appmattus.layercache
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.preference.PreferenceManager
 import androidx.annotation.RequiresApi
+import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.appmattus.layercache.encryption.EncryptionFactory
 import junitparams.JUnitParamsRunner
@@ -203,8 +203,16 @@ class StringEncryptionShould {
             // when we decrypt using a new encryptor using the same alias (as the keys will be the same)
             val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                    appContext,
+                    EncryptionFactory.Mode.AES_GCM_NoPadding,
+                    "testGcm"
+                )
+                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                    appContext,
+                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                    "testCbc"
+                )
                 else -> throw IllegalStateException("Unimplemented")
             }
             val decryptedData = newEncryptor.transform(encryptedData)
@@ -242,8 +250,16 @@ class StringEncryptionShould {
             // when we decrypt using a new encryptor using the same alias but different keys
 
             val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                    appContext,
+                    EncryptionFactory.Mode.AES_GCM_NoPadding,
+                    "testGcm"
+                )
+                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                    appContext,
+                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                    "testCbc"
+                )
                 else -> throw IllegalStateException("Unimplemented")
             }
             newEncryptor.transform(encryptedData)

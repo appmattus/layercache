@@ -21,12 +21,11 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka-android.gradle"
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
@@ -61,6 +60,8 @@ tasks.withType(Test) {
 dependencies {
     implementation project(':layercache-android')
     compileOnly "androidx.annotation:annotation:1.1.0"
+
+    implementation "androidx.preference:preference-ktx:1.1.1"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:4.3.1"

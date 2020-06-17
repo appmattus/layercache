@@ -18,10 +18,10 @@ package com.appmattus.layercache.encryption
 
 import android.content.Context
 import android.os.Build
-import android.preference.PreferenceManager
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import androidx.annotation.RequiresApi
+import androidx.preference.PreferenceManager
 import com.appmattus.layercache.encryption.KeyProperties.KEY_ALGORITHM_RSA
 import java.math.BigInteger
 import java.security.KeyPair
@@ -37,9 +37,11 @@ import javax.security.auth.x500.X500Principal
 
 @Suppress("ExceptionRaisedInUnexpectedLocation")
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-internal class AesKeyCompat(private val context: Context, private val blockMode: BlockMode,
-                            private val encryptionPadding: EncryptionPadding, private val providesIv: Boolean,
-                            private val integrityCheck: IntegrityCheck) {
+internal class AesKeyCompat(
+    private val context: Context, private val blockMode: BlockMode,
+    private val encryptionPadding: EncryptionPadding, private val providesIv: Boolean,
+    private val integrityCheck: IntegrityCheck
+) {
 
     private companion object {
         val RSA_MODE = "RSA/ECB/PKCS1Padding"
@@ -62,7 +64,7 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
     }
 
     internal fun retrieveConfidentialityKey(keystoreAlias: String): SecretKey =
-            mImpl.retrieveConfidentialityKey(keystoreAlias)
+        mImpl.retrieveConfidentialityKey(keystoreAlias)
 
     internal fun retrieveIntegrityKey(keystoreAlias: String): SecretKey = mImpl.retrieveIntegrityKey(keystoreAlias)
 
@@ -91,16 +93,17 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
 
         private fun generateRSAKeys(keystoreAlias: String): KeyPair {
             val start = Calendar.getInstance()
+
             @Suppress("MagicNumber")
             val end = Calendar.getInstance().apply { add(Calendar.YEAR, 50) }
 
             @Suppress("DEPRECATION")
             val specBuilder = android.security.KeyPairGeneratorSpec.Builder(context)
-                    .setAlias(keystoreAlias)
-                    .setEndDate(end.getTime())
-                    .setStartDate(start.getTime())
-                    .setSerialNumber(BigInteger.ONE)
-                    .setSubject(X500Principal("CN=${keystoreAlias}"))
+                .setAlias(keystoreAlias)
+                .setEndDate(end.getTime())
+                .setStartDate(start.getTime())
+                .setSerialNumber(BigInteger.ONE)
+                .setSubject(X500Principal("CN=${keystoreAlias}"))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 @Suppress("MagicNumber")
@@ -185,11 +188,13 @@ internal class AesKeyCompat(private val context: Context, private val blockMode:
         private fun generateConfidentialityKey(alias: String): SecretKey {
             val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE_PROVIDER)
 
-            val builder = KeyGenParameterSpec.Builder(alias,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                    .setBlockModes(blockMode.mode)
-                    .setEncryptionPaddings(encryptionPadding.padding)
-                    .setRandomizedEncryptionRequired(!providesIv)
+            val builder = KeyGenParameterSpec.Builder(
+                alias,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            )
+                .setBlockModes(blockMode.mode)
+                .setEncryptionPaddings(encryptionPadding.padding)
+                .setRandomizedEncryptionRequired(!providesIv)
 
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
                 builder.setInvalidatedByBiometricEnrollment(false)
