@@ -4,10 +4,16 @@
     <bytecodeTargetLevel>
       <module name="layercache-ehcache_main" target="1.7" />
       <module name="layercache-ehcache_test" target="1.7" />
+      <module name="layercache-layercache-cache2k" target="1.7" />
+      <module name="layercache-layercache-ehcache" target="1.7" />
+      <module name="layercache-layercache-retrofit" target="1.7" />
+      <module name="layercache-layercache-serializer" target="1.7" />
       <module name="layercache-layercache_main" target="1.7" />
       <module name="layercache-layercache_test" target="1.7" />
       <module name="layercache-serializer_main" target="1.7" />
       <module name="layercache-serializer_test" target="1.7" />
+      <module name="layercache-testutils" target="1.7" />
+      <module name="ThirdParty-layercache-layercache" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

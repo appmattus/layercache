@@ -60,7 +60,7 @@ tasks.withType(Test) {
 
 dependencies {
     implementation project(':layercache-android')
-    compileOnly "androidx.annotation:annotation:1.0.0"
+    compileOnly "androidx.annotation:annotation:1.1.0"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:3.8"
