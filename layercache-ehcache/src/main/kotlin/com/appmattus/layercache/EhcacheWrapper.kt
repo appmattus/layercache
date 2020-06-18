@@ -24,18 +24,16 @@ import kotlinx.coroutines.async
  * Wrapper around EhCache (http://www.ehcache.org/)
  * @property cache  Ehcache cache
  */
-internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) :
-        Cache<Key, Value> {
+internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) : Cache<Key, Value> {
+
     override fun evict(key: Key): Deferred<Unit> {
         return GlobalScope.async {
             cache.remove(key)
         }
     }
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
-            cache.get(key)
-        }
+    override suspend fun get(key: Key): Value? {
+        return cache.get(key)
     }
 
     override fun set(key: Key, value: Value): Deferred<Unit> {

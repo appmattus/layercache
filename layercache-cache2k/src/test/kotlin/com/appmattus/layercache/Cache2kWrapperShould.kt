@@ -16,55 +16,51 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.runBlocking
 import org.cache2k.Cache2kBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.TimeUnit
 
 
 class Cache2kWrapperShould {
 
-    @Mock
-    private lateinit var cache2k: org.cache2k.Cache<String, String>
+    private val cache2k = mock<org.cache2k.Cache<String, String>>()
 
     private lateinit var wrappedCache: Cache<String, String>
 
     private lateinit var integratedCache: Cache<String, String>
 
-    @Mock
-    private lateinit var loaderFetcher: AbstractFetcher<String, String>
+    private val loaderFetcher = mock<AbstractFetcher<String, String>>()
 
     private lateinit var integratedCacheWithLoader: Cache<String, String>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        wrappedCache = Cache2kWrapper(cache2k)
+        runBlocking {
+            wrappedCache = Cache2kWrapper(cache2k)
 
-        val cache2k = object : Cache2kBuilder<String, String>() {}
+            val cache2k = object : Cache2kBuilder<String, String>() {}
                 // expire/refresh after 5 minutes
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build()
-        integratedCache = Cache.fromCache2k(cache2k)
+            integratedCache = Cache.fromCache2k(cache2k)
 
 
-        Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { GlobalScope.async { "hello" } }
+            Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { "hello" }
 
-        val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
+            val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
                 .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
                 // exceptions
                 .refreshAhead(true)                       // keep fresh when expiring
                 .loader(loaderFetcher.toCache2kLoader())         // auto populating function
                 .build()
-        integratedCacheWithLoader = Cache.fromCache2k(cache2kWithLoader)
+            integratedCacheWithLoader = Cache.fromCache2k(cache2kWithLoader)
+        }
     }
 
     // get
@@ -75,7 +71,7 @@ class Cache2kWrapperShould {
             Mockito.`when`(cache2k.get("key")).thenReturn("value")
 
             // when we get the value
-            val result = wrappedCache.get("key").await()
+            val result = wrappedCache.get("key")
 
             // then we return the value
             assertEquals("value", result)
@@ -89,7 +85,7 @@ class Cache2kWrapperShould {
             Mockito.`when`(cache2k.get("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.get("key").await()
+            wrappedCache.get("key")
 
             // then we throw an exception
         }
@@ -157,7 +153,7 @@ class Cache2kWrapperShould {
             // integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             assertNull(result)
@@ -171,7 +167,7 @@ class Cache2kWrapperShould {
             integratedCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -188,7 +184,7 @@ class Cache2kWrapperShould {
             integratedCache.evict("key").await()
 
             // then the value is null
-            assertNull(integratedCache.get("key").await())
+            assertNull(integratedCache.get("key"))
         }
     }
 
@@ -200,7 +196,7 @@ class Cache2kWrapperShould {
             // integratedCacheWithLoader
 
             // when we retrieve a value
-            val result = integratedCacheWithLoader.get("key").await()
+            val result = integratedCacheWithLoader.get("key")
 
             // then the value comes from the loader
             assertEquals("hello", result)
@@ -214,7 +210,7 @@ class Cache2kWrapperShould {
             integratedCacheWithLoader.set("key", "value").await()
 
             // when we retrieve a value
-            val result = integratedCacheWithLoader.get("key").await()
+            val result = integratedCacheWithLoader.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -231,7 +227,7 @@ class Cache2kWrapperShould {
             integratedCacheWithLoader.evict("key").await()
 
             // then the value comes from the loader
-            assertEquals("hello", integratedCacheWithLoader.get("key").await())
+            assertEquals("hello", integratedCacheWithLoader.get("key"))
         }
     }
 }

@@ -47,7 +47,8 @@ class CacheMapValuesShould {
 
         val errorF: (String) -> Int = { _: String -> throw TestException() }
         val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java)))
+            .thenCallRealMethod()
         mappedValuesCacheWithError = cache.valueTransform(errorF, errorFInv)
     }
 
@@ -56,10 +57,10 @@ class CacheMapValuesShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            Mockito.`when`(cache.get("key")).then { "1" }
 
             // when we get the value
-            val result = mappedValuesCache.get("key").await()
+            val result = mappedValuesCache.get("key")
 
             // then it is converted to an integer
             assertEquals(1, result)
@@ -71,10 +72,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            Mockito.`when`(cache.get("key")).then { "1" }
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCacheWithError.get("key").await()
+            mappedValuesCacheWithError.get("key")
 
             // then an exception is thrown
         }
@@ -84,10 +85,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }

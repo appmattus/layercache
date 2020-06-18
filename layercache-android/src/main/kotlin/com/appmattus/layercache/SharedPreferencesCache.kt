@@ -30,18 +30,17 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
 
     private val sharedPreferences = context.getSharedPreferences(preferenceFileKey, Context.MODE_PRIVATE)
 
-    private class BaseCache<T : Any>(private val sharedPreferences: SharedPreferences,
-                                     val getFun: (sharedPreferences: SharedPreferences, key: String) -> T?,
-                                     val setFun: (editor: SharedPreferences.Editor, key: String, value: T) -> Unit) :
-            Cache<String, T> {
+    private class BaseCache<T : Any>(
+        private val sharedPreferences: SharedPreferences,
+        val getFun: (sharedPreferences: SharedPreferences, key: String) -> T?,
+        val setFun: (editor: SharedPreferences.Editor, key: String, value: T) -> Unit
+    ) : Cache<String, T> {
 
-        override fun get(key: String): Deferred<T?> {
-            return GlobalScope.async {
-                if (sharedPreferences.contains(key)) {
-                    getFun(sharedPreferences, key)
-                } else {
-                    null
-                }
+        override suspend fun get(key: String): T? {
+            return if (sharedPreferences.contains(key)) {
+                getFun(sharedPreferences, key)
+            } else {
+                null
             }
         }
 
@@ -75,8 +74,8 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
      */
     fun withString(): Cache<String, String> {
         return BaseCache(sharedPreferences,
-                { sharedPreferences, key -> sharedPreferences.getString(key, null) },
-                { editor, key, value -> editor.putString(key, value) })
+            { sharedPreferences, key -> sharedPreferences.getString(key, null) },
+            { editor, key, value -> editor.putString(key, value) })
     }
 
     /**
@@ -84,8 +83,8 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
      */
     fun withInt(): Cache<String, Int> {
         return BaseCache(sharedPreferences,
-                { sharedPreferences: SharedPreferences, key: String -> sharedPreferences.getInt(key, 0) },
-                { editor, key, value -> editor.putInt(key, value) })
+            { sharedPreferences: SharedPreferences, key: String -> sharedPreferences.getInt(key, 0) },
+            { editor, key, value -> editor.putInt(key, value) })
     }
 
     /**
@@ -93,8 +92,8 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
      */
     fun withFloat(): Cache<String, Float> {
         return BaseCache(sharedPreferences,
-                { sharedPreferences, key -> sharedPreferences.getFloat(key, 0f) },
-                { editor, key, value -> editor.putFloat(key, value) })
+            { sharedPreferences, key -> sharedPreferences.getFloat(key, 0f) },
+            { editor, key, value -> editor.putFloat(key, value) })
     }
 
     /**
@@ -102,8 +101,8 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
      */
     fun withBoolean(): Cache<String, Boolean> {
         return BaseCache(sharedPreferences,
-                { sharedPreferences, key -> sharedPreferences.getBoolean(key, false) },
-                { editor, key, value -> editor.putBoolean(key, value) })
+            { sharedPreferences, key -> sharedPreferences.getBoolean(key, false) },
+            { editor, key, value -> editor.putBoolean(key, value) })
     }
 
     /**
@@ -111,7 +110,7 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
      */
     fun withLong(): Cache<String, Long> {
         return BaseCache(sharedPreferences,
-                { sharedPreferences, key -> sharedPreferences.getLong(key, 0) },
-                { editor, key, value -> editor.putLong(key, value) })
+            { sharedPreferences, key -> sharedPreferences.getLong(key, 0) },
+            { editor, key, value -> editor.putLong(key, value) })
     }
 }

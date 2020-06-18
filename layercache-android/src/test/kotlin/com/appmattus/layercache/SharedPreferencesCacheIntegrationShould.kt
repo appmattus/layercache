@@ -56,7 +56,7 @@ class SharedPreferencesCacheIntegrationShould {
             stringCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = stringCache.get("key").await()
+            val result = stringCache.get("key")
 
             // then it is returned
             Assert.assertEquals("value", result)
@@ -85,7 +85,7 @@ class SharedPreferencesCacheIntegrationShould {
             cache.set("key", 5).await()
 
             // when we retrieve a value
-            val result = cache.get("key").await()
+            val result = cache.get("key")
 
             // then it is returned
             Assert.assertEquals(5, result)
@@ -99,7 +99,7 @@ class SharedPreferencesCacheIntegrationShould {
             // given we have an empty cache, integratedCache
 
             // when we retrieve a value
-            val result = stringCache.get("key").await()
+            val result = stringCache.get("key")
 
             // then it is null
             Assert.assertNull(result)
@@ -113,7 +113,7 @@ class SharedPreferencesCacheIntegrationShould {
             stringCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = stringCache.get("key").await()
+            val result = stringCache.get("key")
 
             // then it is returned
             Assert.assertEquals("value", result)
@@ -130,7 +130,7 @@ class SharedPreferencesCacheIntegrationShould {
             stringCache.evict("key").await()
 
             // then the value is null
-            Assert.assertNull(stringCache.get("key").await())
+            Assert.assertNull(stringCache.get("key"))
         }
     }
 }

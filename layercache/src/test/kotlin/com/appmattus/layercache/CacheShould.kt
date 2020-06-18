@@ -36,12 +36,9 @@ class CacheShould {
     fun before() {
 
         cache = object : Cache<String, String> {
-            override fun get(key: String): Deferred<String?> {
-                return GlobalScope.async {
-                    delay(500)
-
-                    "value"
-                }
+            override suspend fun get(key: String): String? {
+                delay(500)
+                return "value"
             }
 
             override fun set(key: String, value: String): Deferred<Unit> {
@@ -68,7 +65,7 @@ class CacheShould {
     fun `throw exception on get when job cancelled`() {
         runBlocking {
             // given we call get
-            val job = cache.get("key")
+            val job = async { cache.get("key") }
 
             // when we cancel the job
             job.cancel()
@@ -126,7 +123,7 @@ class CacheShould {
     fun `execute onSuccess when job completes as expected`() {
         runBlocking {
             // given we call get
-            val job = cache.get("key")
+            val job = async { cache.get("key") }
 
             var called = false
             job.onSuccess { called = true }
@@ -146,10 +143,8 @@ class CacheShould {
     fun `onFailure`() {
         runBlocking {
             cache = object : Cache<String, String> {
-                override fun get(key: String): Deferred<String?> {
-                    return GlobalScope.async {
-                        throw Exception("Forced failure")
-                    }
+                override suspend fun get(key: String): String? {
+                    throw Exception("Forced failure")
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
@@ -172,14 +167,14 @@ class CacheShould {
             }
 
 
-            // given we call evict
-            val job = cache.get("key")
+            // given we call get
+            val job = async { cache.get("key") }
 
             job.onSuccess { println("Result $it") }
             job.onCancel { println("Exception $it") }
 
             // when we cancel the job
-            //assertTrue(job.cancel())
+            job.cancel()
 
             // then the job is cancelled and exception returned
             job.join()
@@ -192,11 +187,9 @@ class CacheShould {
     fun `onFailure cancelled`() {
         runBlocking {
             cache = object : Cache<String, String> {
-                override fun get(key: String): Deferred<String?> {
-                    return GlobalScope.async {
-                        delay(500)
-                        "value"
-                    }
+                override suspend fun get(key: String): String? {
+                    delay(500)
+                    return "value"
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
@@ -220,7 +213,7 @@ class CacheShould {
 
 
             // given we call evict
-            val job = cache.get("key")
+            val job = async { cache.get("key") }
 
             job.onSuccess { result -> println("Result $result") }
             job.onCancel { exception -> println("Cancelled exception $exception") }
@@ -240,11 +233,9 @@ class CacheShould {
     fun `onCompletion cancelled`() {
         runBlocking {
             cache = object : Cache<String, String> {
-                override fun get(key: String): Deferred<String?> {
-                    return GlobalScope.async {
-                        delay(500)
-                        "value"
-                    }
+                override suspend fun get(key: String): String? {
+                    delay(500)
+                    return "value"
                 }
 
                 override fun set(key: String, value: String): Deferred<Unit> {
@@ -268,7 +259,7 @@ class CacheShould {
 
 
             // given we call evict
-            val job = cache.get("key")
+            val job = async { cache.get("key") }
 
             job.onCompletion {
                 when (it) {

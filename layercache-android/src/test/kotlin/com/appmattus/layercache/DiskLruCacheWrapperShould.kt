@@ -50,7 +50,7 @@ class DiskLruCacheWrapperShould {
             Mockito.`when`(lruCache.get("key")).thenReturn(snapshot)
 
             // when we get the value
-            val result = wrappedCache.get("key").await()
+            val result = wrappedCache.get("key")
 
             // then we return the value
             Assert.assertEquals("value", result)
@@ -64,7 +64,7 @@ class DiskLruCacheWrapperShould {
             Mockito.`when`(lruCache.get("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.get("key").await()
+            wrappedCache.get("key")
 
             // then we throw an exception
         }

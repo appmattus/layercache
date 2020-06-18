@@ -54,7 +54,7 @@ class DiskLruCacheWrapperIntegrationShould {
             // given we have an empty cache, integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             Assert.assertNull(result)
@@ -68,7 +68,7 @@ class DiskLruCacheWrapperIntegrationShould {
             integratedCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             Assert.assertEquals("value", result)
@@ -85,7 +85,7 @@ class DiskLruCacheWrapperIntegrationShould {
             integratedCache.evict("key").await()
 
             // then the value is null
-            Assert.assertNull(integratedCache.get("key").await())
+            Assert.assertNull(integratedCache.get("key"))
         }
     }
 
@@ -104,8 +104,8 @@ class DiskLruCacheWrapperIntegrationShould {
                 singleEntryDiskCache.flush()
 
                 // then only the second value is available
-                Assert.assertNull(cache.get("key1").await())
-                Assert.assertEquals("value2", cache.get("key2").await())
+                Assert.assertNull(cache.get("key1"))
+                Assert.assertEquals("value2", cache.get("key2"))
             } finally {
                 singleEntryDiskCache.delete()
             }
@@ -124,14 +124,14 @@ class DiskLruCacheWrapperIntegrationShould {
                 cache.set("key2", "value2").await()
 
                 // when we get the 1st and add a 3rd value, and force flush the cache
-                cache.get("key1").await()
+                cache.get("key1")
                 cache.set("key3", "value3").await()
                 doubleEntryDiskCache.flush()
 
                 // then the 2nd is removed leaving the 1st and 3rd values
-                Assert.assertNull(cache.get("key2").await())
-                Assert.assertEquals("value1", cache.get("key1").await())
-                Assert.assertEquals("value3", cache.get("key3").await())
+                Assert.assertNull(cache.get("key2"))
+                Assert.assertEquals("value1", cache.get("key1"))
+                Assert.assertEquals("value3", cache.get("key3"))
             } finally {
                 doubleEntryDiskCache.delete()
             }

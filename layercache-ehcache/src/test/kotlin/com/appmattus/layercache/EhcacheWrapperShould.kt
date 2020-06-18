@@ -56,7 +56,7 @@ class EhcacheWrapperShould {
             Mockito.`when`(ehcache.get("key")).thenReturn("value")
 
             // when we get the value
-            val result = wrappedCache.get("key").await()
+            val result = wrappedCache.get("key")
 
             // then we return the value
             assertEquals("value", result)
@@ -70,7 +70,7 @@ class EhcacheWrapperShould {
             Mockito.`when`(ehcache.get("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.get("key").await()
+            wrappedCache.get("key")
 
             // then we throw an exception
         }
@@ -165,7 +165,7 @@ class EhcacheWrapperShould {
             // integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             assertNull(result)
@@ -179,7 +179,7 @@ class EhcacheWrapperShould {
             integratedCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -196,7 +196,7 @@ class EhcacheWrapperShould {
             integratedCache.evict("key").await()
 
             // then the value is null
-            assertNull(integratedCache.get("key").await())
+            assertNull(integratedCache.get("key"))
         }
     }
 }

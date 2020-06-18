@@ -20,6 +20,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -53,10 +54,10 @@ class CacheReuseInflightShould {
     fun `single call to get returns the value`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(cache.get("key")).then { "value" }
 
             // when we get the value
-            val result = reuseInflightCache.get("key").await()
+            val result = reuseInflightCache.get("key")
 
             // then we return the value
             Mockito.verify(cache).get("key")
@@ -71,17 +72,17 @@ class CacheReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(100)
-
-                    count.getAndIncrement()
                 }
+
+                count.getAndIncrement()
             }
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
             for (i in 1..5) {
-                jobs.add(reuseInflightCache.get("key"))
+                jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }
 
@@ -97,22 +98,22 @@ class CacheReuseInflightShould {
         runBlocking {
             // given value available in first cache only
             Mockito.`when`(cache.get("key")).then {
-                GlobalScope.async {
-                    delay(500)
+                runBlocking {
+                    delay(100)
 
                     count.incrementAndGet()
                 }
             }
 
-            reuseInflightCache.get("key").await()
+            launch { reuseInflightCache.get("key") }
 
             // we yield here as the map that stores the reuse may not have been cleared yet
-            delay(100)
+            delay(200)
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
             for (i in 1..5) {
-                jobs.add(reuseInflightCache.get("key"))
+                jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }
 
@@ -125,10 +126,10 @@ class CacheReuseInflightShould {
     fun `propogate exception on get`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { throw TestException() }
 
             // when we get the value
-            reuseInflightCache.get("key").await()
+            reuseInflightCache.get("key")
 
             // then we throw an exception
         }

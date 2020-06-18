@@ -16,23 +16,18 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import retrofit2.Call
 
 internal class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -> Call<Value>) : Fetcher<Key, Value> {
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
-            val response = retrofitCall(key).execute()
+    override suspend fun get(key: Key): Value? {
+        val response = retrofitCall(key).execute()
 
-            if (!response.isSuccessful) {
-                throw RetrofitException(response)
-            }
-
-            response.body()
+        if (!response.isSuccessful) {
+            throw RetrofitException(response)
         }
+
+        return response.body()
     }
 }
 
@@ -41,4 +36,5 @@ internal class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -
  * @property retrofitCall   Lambda calling a Retrofit service and returning a Call
  */
 @Suppress("unused", "USELESS_CAST")
-fun <Key : Any, Value : Any> Cache.Companion.fromRetrofit(retrofitCall: (Key) -> Call<Value>) = RetrofitWrapper(retrofitCall) as Fetcher<Key, Value>
+fun <Key : Any, Value : Any> Cache.Companion.fromRetrofit(retrofitCall: (Key) -> Call<Value>) =
+    RetrofitWrapper(retrofitCall) as Fetcher<Key, Value>

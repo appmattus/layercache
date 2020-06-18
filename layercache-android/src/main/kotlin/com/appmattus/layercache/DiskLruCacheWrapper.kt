@@ -33,10 +33,8 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
         }
     }
 
-    override fun get(key: String): Deferred<String?> {
-        return GlobalScope.async {
-            cache.get(key)?.getString(0)
-        }
+    override suspend fun get(key: String): String? {
+        return cache.get(key)?.getString(0)
     }
 
     override fun set(key: String, value: String): Deferred<Unit> {

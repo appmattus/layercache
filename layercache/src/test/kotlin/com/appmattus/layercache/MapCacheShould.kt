@@ -36,7 +36,7 @@ class MapCacheShould {
             // given we have an empty cache
 
             // when we retrieve a value
-            val result = mapCache.get("key").await()
+            val result = mapCache.get("key")
 
             // then it is null
             Assert.assertNull(result)
@@ -50,7 +50,7 @@ class MapCacheShould {
             mapCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = mapCache.get("key").await()
+            val result = mapCache.get("key")
 
             // then it is returned
             Assert.assertEquals("value", result)
@@ -67,7 +67,7 @@ class MapCacheShould {
             mapCache.evict("key").await()
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key").await())
+            Assert.assertNull(mapCache.get("key"))
         }
     }
 
@@ -81,7 +81,7 @@ class MapCacheShould {
             mapCache.evictAll().await()
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key").await())
+            Assert.assertNull(mapCache.get("key"))
         }
     }
 }

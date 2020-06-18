@@ -17,7 +17,6 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -73,10 +72,10 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(cache.get("1")).then { "value" }
 
             // when we get the value
-            val result = mappedKeysCache.get(1).await()
+            val result = mappedKeysCache.get(1)
 
             Assert.assertEquals("value", result)
         }
@@ -93,7 +92,7 @@ class FetcherMapKeysShould {
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when the mapping function returns null
-            mappedKeysCache.get(1).await()
+            mappedKeysCache.get(1)
         }
     }
 
@@ -106,7 +105,7 @@ class FetcherMapKeysShould {
             //Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
 
             // when we get the value from a map with exception throwing functions
-            mappedKeysCache.get(1).await()
+            mappedKeysCache.get(1)
 
             // then an exception is thrown
         }
@@ -117,10 +116,10 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.get("1")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedKeysCache.get(1).await()
+            mappedKeysCache.get(1)
 
             // then an exception is thrown
         }
@@ -131,10 +130,10 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a long running job
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(cache.get("1")).then { runBlocking { delay(250) } }
 
-            // when we canel the job
-            val job = mappedKeysCache.get(1)
+            // when we cancel the job
+            val job = async { mappedKeysCache.get(1) }
             delay(50)
             job.cancel()
 

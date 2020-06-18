@@ -43,7 +43,7 @@ class LruCacheWrapperIntegrationShould {
             // given we have an empty cache, integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             assertNull(result)
@@ -57,7 +57,7 @@ class LruCacheWrapperIntegrationShould {
             integratedCache.set("key", "value").await()
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             Assert.assertEquals("value", result)
@@ -74,7 +74,7 @@ class LruCacheWrapperIntegrationShould {
             integratedCache.evict("key").await()
 
             // then the value is null
-            assertNull(integratedCache.get("key").await())
+            assertNull(integratedCache.get("key"))
         }
     }
 
@@ -89,8 +89,8 @@ class LruCacheWrapperIntegrationShould {
             cache.set("key2", "value2").await()
 
             // then only the second value is available
-            assertNull(cache.get("key1").await())
-            assertEquals("value2", cache.get("key2").await())
+            assertNull(cache.get("key1"))
+            assertEquals("value2", cache.get("key2"))
         }
     }
 
@@ -103,13 +103,13 @@ class LruCacheWrapperIntegrationShould {
             cache.set("key2", "value2").await()
 
             // when we get the 1st and add a 3rd value
-            cache.get("key1").await()
+            cache.get("key1")
             cache.set("key3", "value3").await()
 
             // then the 2nd is removed leaving the 1st and 3rd values
-            assertNull(cache.get("key2").await())
-            assertEquals("value1", cache.get("key1").await())
-            assertEquals("value3", cache.get("key3").await())
+            assertNull(cache.get("key2"))
+            assertEquals("value1", cache.get("key1"))
+            assertEquals("value3", cache.get("key3"))
         }
     }
 }

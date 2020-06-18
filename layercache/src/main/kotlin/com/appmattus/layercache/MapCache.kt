@@ -27,10 +27,8 @@ import kotlinx.coroutines.async
 class MapCache : Cache<String, String> {
     private val map = mutableMapOf<String, String?>()
 
-    override fun get(key: String): Deferred<String?> {
-        return GlobalScope.async {
-            map[key]
-        }
+    override suspend fun get(key: String): String? {
+        return map[key]
     }
 
     override fun set(key: String, value: String): Deferred<Unit> {

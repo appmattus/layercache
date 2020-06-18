@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import android.util.LruCache
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -48,29 +49,31 @@ class LiveDataCacheShould {
 
     @Test
     fun receive_value() {
-        val latch = CountDownLatch(1)
+        runBlocking {
+            val latch = CountDownLatch(1)
 
-        // given value available in first cache only
-        Mockito.`when`(lruCache.get("key")).then { "value" }
+            // given value available in first cache only
+            Mockito.`when`(lruCache.get("key")).then { "value" }
 
-        val liveDataCache = Cache.fromLruCache(lruCache).toLiveData()
+            val liveDataCache = Cache.fromLruCache(lruCache).toLiveData()
 
-        val liveData = liveDataCache.get("key")
+            val liveData = liveDataCache.get("key")
 
-        liveData.observeForever { liveDataResult ->
-            when (liveDataResult) {
-                is LiveDataResult.Success -> {
-                    latch.countDown()
+            liveData.observeForever { liveDataResult ->
+                when (liveDataResult) {
+                    is LiveDataResult.Success -> {
+                        latch.countDown()
+                    }
                 }
             }
-        }
 
-        // Force LiveData processing on main thread
-        val start = System.currentTimeMillis()
-        while (latch.count != 0L && (System.currentTimeMillis() - start) < TIMEOUT_IN_MILLIS) {
-            Robolectric.flushForegroundThreadScheduler()
-        }
+            // Force LiveData processing on main thread
+            val start = System.currentTimeMillis()
+            while (latch.count != 0L && (System.currentTimeMillis() - start) < TIMEOUT_IN_MILLIS) {
+                Robolectric.flushForegroundThreadScheduler()
+            }
 
-        assertTrue(latch.count == 0L)
+            assertTrue(latch.count == 0L)
+        }
     }
 }

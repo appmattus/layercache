@@ -26,18 +26,16 @@ import org.cache2k.integration.FunctionalCacheLoader
  * Wrapper around Cache2k (https://cache2k.org/)
  * @property cache  Cache2k cache
  */
-internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) :
-        Cache<Key, Value> {
+internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) : Cache<Key, Value> {
+
     override fun evict(key: Key): Deferred<Unit> {
         return GlobalScope.async {
             cache.remove(key)
         }
     }
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
-            cache.get(key)
-        }
+    override suspend fun get(key: Key): Value? {
+        return cache.get(key)
     }
 
     override fun set(key: Key, value: Value): Deferred<Unit> {
@@ -68,9 +66,9 @@ fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cach
  * @return Cache2k loader
  */
 @Suppress("unused")
-fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value> {
+suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value?> {
     return FunctionalCacheLoader { key ->
         // TODO What thread does a cache loader run on?
-        runBlocking { get(key).await() }
+        runBlocking { get(key) }
     }
 }

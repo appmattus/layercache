@@ -16,21 +16,17 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 @Suppress("UnnecessaryAbstractClass") // incorrectly reported
 internal abstract class MapKeysCache<Key : Any, Value : Any, MappedKey : Any>(
-        private val cache: Cache<Key, Value>, private val transform: (MappedKey) -> Key) :
-        ComposedCache<MappedKey, Value>() {
+    private val cache: Cache<Key, Value>,
+    private val transform: (MappedKey) -> Key
+) : ComposedCache<MappedKey, Value>() {
+
     final override val parents: List<Cache<*, *>>
         get() = listOf(cache)
 
-    final override fun get(key: MappedKey): Deferred<Value?> {
-        return GlobalScope.async {
-            val mappedKey = requireNotNull(transform(key)) { "Required value was null. Key '$key' mapped to null" }
-            cache.get(mappedKey).await()
-        }
+    final override suspend fun get(key: MappedKey): Value? {
+        val mappedKey = requireNotNull(transform(key)) { "Required value was null. Key '$key' mapped to null" }
+        return cache.get(mappedKey)
     }
 }

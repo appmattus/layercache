@@ -36,10 +36,8 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
         }
     }
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
-            cache.get(key)
-        }
+    override suspend fun get(key: Key): Value? {
+        return cache.get(key)
     }
 
     override fun set(key: Key, value: Value): Deferred<Unit> {

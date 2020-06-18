@@ -20,6 +20,7 @@ import androidx.annotation.NonNull
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 
 /**
  * A standard cache which stores and retrieves data
@@ -34,7 +35,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Return the value associated with the key or null if not present
      */
-    fun get(key: Key): Deferred<Value?>
+    suspend fun get(key: Key): Value?
 
     /**
      * Save the value against the key
@@ -59,7 +60,7 @@ interface Cache<Key : Any, Value : Any> {
     fun compose(@NonNull b: Cache<Key, Value>): Cache<Key, Value> {
         return object : ComposedCache<Key, Value>() {
             init {
-                require(!hasLoop(), { "Cache creates a circular reference" })
+                require(!hasLoop()) { "Cache creates a circular reference" }
             }
 
             override val parents: List<Cache<*, *>>
@@ -67,28 +68,27 @@ interface Cache<Key : Any, Value : Any> {
 
             override fun evict(key: Key): Deferred<Unit> {
                 return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evict", {
+                    executeInParallel(listOf(this@Cache, b), "evict") {
                         it.evict(key)
-                    })
+                    }
                     Unit
                 }
             }
 
-            override fun get(key: Key): Deferred<Value?> {
-                return GlobalScope.async {
-                    this@Cache.get(key).await() ?: let {
-                        b.get(key).await()?.apply {
-                            this@Cache.set(key, this).await()
-                        }
+            override suspend fun get(key: Key): Value? {
+                requireNotNull(key)
+                return this@Cache.get(key) ?: let {
+                    b.get(key)?.apply {
+                        this@Cache.set(key, this).await()
                     }
                 }
             }
 
             override fun set(key: Key, value: Value): Deferred<Unit> {
                 return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "set", {
+                    executeInParallel(listOf(this@Cache, b), "set") {
                         it.set(key, value)
-                    })
+                    }
 
                     Unit
                 }
@@ -96,9 +96,9 @@ interface Cache<Key : Any, Value : Any> {
 
             override fun evictAll(): Deferred<Unit> {
                 return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evictAll", {
+                    executeInParallel(listOf(this@Cache, b), "evictAll") {
                         it.evictAll()
-                    })
+                    }
                     Unit
                 }
             }
@@ -143,7 +143,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map keys from one type to another.
      */
     fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
-            keyTransform(transform::transform)
+        keyTransform(transform::transform)
 
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
@@ -157,7 +157,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
     fun <MappedValue : Any> valueTransform(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
-            valueTransform(transform::transform)
+        valueTransform(transform::transform)
 
     /**
      * Map values from one type to another and vice-versa.
@@ -181,7 +181,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map values from one type to another and vice-versa.
      */
     fun <MappedValue : Any> valueTransform(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
-            valueTransform(transform::transform, transform::inverseTransform)
+        valueTransform(transform::transform, transform::inverseTransform)
 
     /**
      * If a get request is already in flight then this ensures the original request is returned
@@ -199,12 +199,10 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Return data associated with multiple keys.
      */
-    fun batchGet(keys: List<Key>): Deferred<List<Value?>> {
+    suspend fun batchGet(keys: List<Key>): List<Value?> {
         keys.requireNoNulls()
 
-        return GlobalScope.async {
-            keys.map { this@Cache.get(it) }.map { it.await() }
-        }
+        return keys.map { GlobalScope.async { this@Cache.get(it) } }.awaitAll()
     }
 
     /**
@@ -236,9 +234,11 @@ interface Cache<Key : Any, Value : Any> {
         return jobs.map { it.getCompleted() }
     }
 
-    private suspend fun <K : Any, V : Any, T> executeInParallel(caches: List<Cache<K, V>>, message: String,
-                                                                methodCall: (Cache<K, V>) -> Deferred<T>): List<T> {
+    private suspend fun <K : Any, V : Any, T> executeInParallel(
+        caches: List<Cache<K, V>>, message: String,
+        methodCall: (Cache<K, V>) -> Deferred<T>
+    ): List<T> {
         val jobs = caches.map { methodCall(it) }
-        return executeJobsInParallel(jobs, { index -> "${message} failed for ${caches[index]}" })
+        return executeJobsInParallel(jobs) { index -> "${message} failed for ${caches[index]}" }
     }
 }

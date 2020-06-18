@@ -19,10 +19,11 @@ package com.appmattus.layercache
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
 
 @Suppress("UnnecessaryAbstractClass", "ExceptionRaisedInUnexpectedLocation") // incorrectly reported
-internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) :
-        ComposedCache<Key, Value>() {
+internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) : ComposedCache<Key, Value>() {
+
     final override val parents: List<Cache<*, *>>
         get() = listOf(cache)
 
@@ -34,15 +35,14 @@ internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val c
 
     val map = mutableMapOf<Key, Deferred<Value?>>()
 
-    final override fun get(key: Key): Deferred<Value?> {
-        return map.get(key) ?: cache.get(key).apply {
-            map.set(key, this)
+    private val mutex = Mutex()
 
-            GlobalScope.async {
-                // free up map when job is completed regardless of success or failure
-                join()
-                map.remove(key)
-            }
+    final override suspend fun get(key: Key): Value? {
+        return (map[key] ?: GlobalScope.async { cache.get(key) }.apply {
+            map[key] = this
+        }).await().also {
+            @Suppress("DeferredResultUnused")
+            map.remove(key)
         }
     }
 }

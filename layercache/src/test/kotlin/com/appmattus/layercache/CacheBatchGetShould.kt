@@ -47,8 +47,8 @@ class CacheBatchGetShould {
     @Before
     fun before() {
         MockitoAnnotations.initMocks(this)
-        Mockito.`when`(cache.batchGet(Mockito.anyList<String>())).thenCallRealMethod()
-        Mockito.`when`(cache.batchGet(MockitoKotlin.any())).thenCallRealMethod()
+        Mockito.`when`(runBlocking { cache.batchGet(Mockito.anyList<String>()) }).thenCallRealMethod()
+        Mockito.`when`(runBlocking { cache.batchGet(MockitoKotlin.any()) }).thenCallRealMethod()
     }
 
     @Test
@@ -59,7 +59,7 @@ class CacheBatchGetShould {
             thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
 
             // when key is null
-            cache.batchGet(TestUtils.uninitialized<List<String>>()).await()
+            cache.batchGet(TestUtils.uninitialized<List<String>>())
         }
     }
 
@@ -71,7 +71,7 @@ class CacheBatchGetShould {
             thrown.expectMessage(StringStartsWith("null element found in"))
 
             // when key in list is null
-            cache.batchGet(listOf("key1", TestUtils.uninitialized<String>(), "key3")).await()
+            cache.batchGet(listOf("key1", TestUtils.uninitialized<String>(), "key3"))
         }
     }
 
@@ -86,7 +86,7 @@ class CacheBatchGetShould {
                     "value"
                 }
             }
-            val job = cache.batchGet(listOf("key1", "key2", "key3"))
+            val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
             // when we cancel the job
             job.cancel()
@@ -102,13 +102,13 @@ class CacheBatchGetShould {
             runBlocking {
                 // given we start a timer and request the values for 3 keys
                 Mockito.`when`(cache.get(anyString())).then {
-                    GlobalScope.async {
+                    runBlocking {
                         delay(requestTimeInMills); "value"
                     }
                 }
 
                 val start = System.nanoTime()
-                val job = cache.batchGet(listOf("key1", "key2", "key3"))
+                val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
                 // when we wait for the job to complete
                 job.await()
@@ -128,7 +128,7 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request the values for 3 keys where the second value takes longer to return
             Mockito.`when`(cache.get(anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     val key = it.getArgument<String>(0)
                     if (key == "key2") {
                         delay(requestTimeInMills)
@@ -136,7 +136,7 @@ class CacheBatchGetShould {
                     key.replace("key", "value")
                 }
             }
-            val job = cache.batchGet(listOf("key1", "key2", "key3"))
+            val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
             // when we wait for the job to complete
             val result = job.await()
@@ -152,15 +152,13 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
             Mockito.`when`(cache.get(anyString())).then {
-                GlobalScope.async {
-                    val key = it.getArgument<String>(0)
-                    if (key == "key2") {
-                        throw TestException()
-                    }
-                    key.replace("key", "value")
+                val key = it.getArgument<String>(0)
+                if (key == "key2") {
+                    throw TestException()
                 }
+                key.replace("key", "value")
             }
-            val job = cache.batchGet(listOf("key1", "key2", "key3"))
+            val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
             // when we wait for the job to complete
             job.await()

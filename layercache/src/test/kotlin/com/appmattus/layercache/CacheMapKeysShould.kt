@@ -79,10 +79,10 @@ class CacheMapKeysShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(cache.get("1")).then { "value" }
 
             // when we get the value
-            val result = mappedKeysCache.get(1).await()
+            val result = mappedKeysCache.get(1)
 
             Assert.assertEquals("value", result)
         }
@@ -96,7 +96,7 @@ class CacheMapKeysShould {
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when the mapping function returns null
-            mappedKeysCacheWithNull.get(1).await()
+            mappedKeysCacheWithNull.get(1)
         }
     }
 
@@ -104,10 +104,10 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(cache.get("1")).then { "value" }
 
             // when we get the value from a map with exception throwing functions
-            mappedKeysCacheWithError.get(1).await()
+            mappedKeysCacheWithError.get(1)
 
             // then an exception is thrown
         }
@@ -117,10 +117,10 @@ class CacheMapKeysShould {
     fun `throw exception when get throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.get("1")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedKeysCache.get(1).await()
+            mappedKeysCache.get(1)
 
             // then an exception is thrown
         }
@@ -130,10 +130,10 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during get`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.get("1")).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(cache.get("1")).then { runBlocking { delay(250) } }
 
-            // when we canel the job
-            val job = mappedKeysCache.get(1)
+            // when we cancel the job
+            val job = async { mappedKeysCache.get(1) }
             delay(50)
             job.cancel()
 
@@ -202,7 +202,7 @@ class CacheMapKeysShould {
             // given we have a long running job
             Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { delay(250) } }
 
-            // when we canel the job
+            // when we cancel the job
             val job = mappedKeysCache.set(1, "1")
             delay(50)
             job.cancel()
@@ -272,7 +272,7 @@ class CacheMapKeysShould {
             // given we have a long running job
             Mockito.`when`(cache.evict("1")).then { GlobalScope.async { delay(250) } }
 
-            // when we canel the job
+            // when we cancel the job
             val job = mappedKeysCache.evict(1)
             delay(50)
             job.cancel()
@@ -342,7 +342,7 @@ class CacheMapKeysShould {
             // given we have a long running job
             Mockito.`when`(cache.evictAll()).then { GlobalScope.async { delay(250) } }
 
-            // when we canel the job
+            // when we cancel the job
             val job = mappedKeysCache.evictAll()
             delay(50)
             job.cancel()

@@ -31,11 +31,11 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
      * Return the value associated with the key or null if not present
      */
     @CheckResult
-    fun get(key: Key): LiveData<LiveDataResult<Value?>> {
+    suspend fun get(key: Key): LiveData<LiveDataResult<Value?>> {
         val liveData = MutableLiveData<LiveDataResult<Value?>>()
         liveData.postValue(LiveDataResult.Loading())
 
-        cache.get(key).onCompletion {
+        GlobalScope.async { cache.get(key) }.onCompletion {
             when (it) {
                 is DeferredResult.Success -> LiveDataResult.Success<Value?>(it.value)
                 is DeferredResult.Cancelled -> LiveDataResult.Failure<Value?>(it.exception)

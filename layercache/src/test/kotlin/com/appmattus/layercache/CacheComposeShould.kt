@@ -136,7 +136,7 @@ class CacheComposeShould {
     fun `throw exception when parents not overridden?`() {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {
-            override fun get(key: String): Deferred<String?> = throw Exception("Unimplemented")
+            override suspend fun get(key: String): String? = throw Exception("Unimplemented")
             override fun set(key: String, value: String): Deferred<Unit> = throw Exception("Unimplemented")
             override fun evict(key: String): Deferred<Unit> = throw Exception("Unimplemented")
             override fun evictAll(): Deferred<Unit> = throw Exception("Unimplemented")

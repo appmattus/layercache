@@ -48,7 +48,8 @@ class FetcherMapValuesShould {
         MockitoAnnotations.initMocks(this)
 
         Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java))).thenCallRealMethod()
+        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java)))
+            .thenCallRealMethod()
 
         mappedValuesCache = cache.valueTransform(function, functionInverse)
 
@@ -61,11 +62,11 @@ class FetcherMapValuesShould {
     fun `only invoke function and not inverse function`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            Mockito.`when`(cache.get("key")).then { "1" }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then the main function is invoked but the inverse is not
             Mockito.verify(function).invoke("1")
@@ -78,11 +79,11 @@ class FetcherMapValuesShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            Mockito.`when`(cache.get("key")).then { "1" }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
-            val result = mappedValuesCache.get("key").await()
+            val result = mappedValuesCache.get("key")
 
             // then it is converted to an integer
             assertEquals(1, result)
@@ -94,11 +95,11 @@ class FetcherMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string and transform throws an exception
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            Mockito.`when`(cache.get("key")).then { "1" }
             Mockito.`when`(function.invoke(Mockito.anyString())).then { throw TestException() }
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }
@@ -108,10 +109,10 @@ class FetcherMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we throw an exception on get
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }

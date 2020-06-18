@@ -64,9 +64,9 @@ class RetrofitWrapperShould {
                 service.listName(key)
             }
 
-            assertEquals("key-a", cache.get("key").await())
+            assertEquals("key-a", cache.get("key"))
 
-            assertEquals("key2-a", cache.get("key2").await())
+            assertEquals("key2-a", cache.get("key2"))
         }
     }
 
@@ -78,12 +78,12 @@ class RetrofitWrapperShould {
                 service.listName(key)
             }
 
-            assertEquals(null, memoryCache.get("key").await())
+            assertEquals(null, memoryCache.get("key"))
 
             val cache = memoryCache.compose(networkCache)
 
-            assertEquals("key-a", cache.get("key").await())
-            assertEquals("key-a", memoryCache.get("key").await())
+            assertEquals("key-a", cache.get("key"))
+            assertEquals("key-a", memoryCache.get("key"))
         }
     }
 }
