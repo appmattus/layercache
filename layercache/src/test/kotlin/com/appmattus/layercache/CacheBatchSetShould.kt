@@ -18,6 +18,8 @@ package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
@@ -30,10 +32,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mockito.anyMap
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.ArgumentMatchers.anyMap
+import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
 
 class CacheBatchSetShould {

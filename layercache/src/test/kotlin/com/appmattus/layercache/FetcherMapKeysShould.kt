@@ -16,6 +16,9 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -29,32 +32,26 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.Mockito.verifyNoInteractions
 
 class FetcherMapKeysShould {
 
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractFetcher<String, Any>
-
-    @Mock
-    private lateinit var function: (Int) -> String
+    private val cache = mock<AbstractFetcher<String, Any>>()
+    private val function = mock<(Int) -> String>()
 
     private lateinit var mappedKeysCache: Fetcher<Int, Any>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-
         whenever(cache.keyTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
 
         mappedKeysCache = cache.keyTransform(function)
 
-        Mockito.verify(cache, Mockito.atLeastOnce()).keyTransform(MockitoKotlin.any(function::class.java))
+        verify(cache, Mockito.atLeastOnce()).keyTransform(MockitoKotlin.any(function::class.java))
     }
 
     @Test
@@ -153,7 +150,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.set(1, "1")
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -165,7 +162,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.set(1, "1")
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -178,7 +175,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evict(1)
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -190,7 +187,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evict(1)
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -203,7 +200,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -215,7 +212,7 @@ class FetcherMapKeysShould {
             mappedKeysCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 

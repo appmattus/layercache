@@ -17,9 +17,12 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -29,15 +32,10 @@ import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -49,17 +47,17 @@ class CacheComposeSetShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
+    private val firstCache = mock<AbstractCache<String, String>> {
+        onGeneric { toString() } doReturn "firstCache"
+    }
+    private val secondCache = mock<AbstractCache<String, String>> {
+        onGeneric { toString() } doReturn "secondCache"
+    }
 
     private lateinit var composedCache: Cache<String, String>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         whenever(firstCache.compose(secondCache)).thenCallRealMethod()
         composedCache = firstCache.compose(secondCache)
         verify(firstCache).compose(secondCache)
@@ -132,8 +130,8 @@ class CacheComposeSetShould {
             // then set is called on both caches
             verify(firstCache).set("key", "value")
             verify(secondCache).set("key", "value")
-            Mockito.verifyNoMoreInteractions(firstCache)
-            Mockito.verifyNoMoreInteractions(secondCache)
+            verifyNoMoreInteractions(firstCache)
+            verifyNoMoreInteractions(secondCache)
         }
     }
 
@@ -221,24 +219,21 @@ class CacheComposeSetShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on set and first cache is executing`() {
         runBlocking {
             // expect exception and successful execution of secondCache
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
             whenever(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(250)
                 }
             }
             whenever(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+                executions.execute()
             }
 
             // when we set the value
@@ -253,22 +248,19 @@ class CacheComposeSetShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on set and second cache is executing`() {
         runBlocking {
             // expect exception and successful execution of firstCache
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
             whenever(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+                executions.execute()
             }
             whenever(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(250)
                 }
             }
@@ -285,23 +277,22 @@ class CacheComposeSetShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on set and both caches executing`() {
         runBlocking {
             // expect exception and no execution of caches
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
             whenever(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
             whenever(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }

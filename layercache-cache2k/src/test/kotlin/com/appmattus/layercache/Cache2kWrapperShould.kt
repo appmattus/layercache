@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.cache2k.Cache2kBuilder
@@ -24,7 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
 
 class Cache2kWrapperShould {
@@ -50,7 +51,7 @@ class Cache2kWrapperShould {
                 .build()
             integratedCache = Cache.fromCache2k(cache2k)
 
-            whenever(loaderFetcher.get(Mockito.anyString())).then { "hello" }
+            whenever(loaderFetcher.get(anyString())).then { "hello" }
 
             val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
                 .expireAfterWrite(5, TimeUnit.MINUTES) // expire/refresh after 5 minutes
@@ -100,7 +101,7 @@ class Cache2kWrapperShould {
             wrappedCache.set("key", "value")
 
             // then put is called
-            Mockito.verify(cache2k).put("key", "value")
+            verify(cache2k).put("key", "value")
         }
     }
 
@@ -128,7 +129,7 @@ class Cache2kWrapperShould {
 
             // then we return the value
             // assertEquals("value", result)
-            Mockito.verify(cache2k).remove("key")
+            verify(cache2k).remove("key")
         }
     }
 

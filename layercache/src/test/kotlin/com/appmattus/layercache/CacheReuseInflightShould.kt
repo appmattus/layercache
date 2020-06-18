@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -27,9 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.atomic.AtomicInteger
 
 class CacheReuseInflightShould {
@@ -37,14 +36,12 @@ class CacheReuseInflightShould {
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractCache<Any, Any>
+    private val cache = mock<AbstractCache<Any, Any>>()
 
     private lateinit var reuseInflightCache: Cache<Any, Any>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         whenever(cache.reuseInflight()).thenCallRealMethod()
         reuseInflightCache = cache.reuseInflight()
     }
@@ -60,7 +57,7 @@ class CacheReuseInflightShould {
             val result = reuseInflightCache.get("key")
 
             // then we return the value
-            Mockito.verify(cache).get("key")
+            verify(cache).get("key")
             assertEquals("value", result)
         }
     }
@@ -147,7 +144,7 @@ class CacheReuseInflightShould {
 
             // then we return the value
             // Assert.assertEquals("value", result)
-            Mockito.verify(cache).set("key", "value")
+            verify(cache).set("key", "value")
         }
     }
 
@@ -176,7 +173,7 @@ class CacheReuseInflightShould {
 
             // then we return the value
             // Assert.assertEquals("value", result)
-            Mockito.verify(cache).evict("key")
+            verify(cache).evict("key")
         }
     }
 
@@ -204,7 +201,7 @@ class CacheReuseInflightShould {
             reuseInflightCache.evictAll()
 
             // then evictAll is called
-            Mockito.verify(cache).evictAll()
+            verify(cache).evictAll()
         }
     }
 

@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -23,22 +25,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
 
 class CacheMapValuesShould {
 
-    @Mock
-    private lateinit var cache: AbstractCache<Any, String>
+    private val cache = mock<AbstractCache<Any, String>>()
 
     private lateinit var mappedValuesCache: Cache<Any, Int>
     private lateinit var mappedValuesCacheWithError: Cache<Any, Int>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         val f: (String) -> Int = { str: String -> str.toInt() }
         val fInv: (Int) -> String = { int: Int -> int.toString() }
         whenever(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
@@ -104,7 +101,7 @@ class CacheMapValuesShould {
             mappedValuesCache.set("key", 1)
 
             // then it is converted to a string
-            Mockito.verify(cache).set("key", "1")
+            verify(cache).set("key", "1")
         }
     }
 
@@ -146,7 +143,7 @@ class CacheMapValuesShould {
 
             // then we return the value
             // Assert.assertEquals("value", result)
-            Mockito.verify(cache).evict("key")
+            verify(cache).evict("key")
         }
     }
 
@@ -174,7 +171,7 @@ class CacheMapValuesShould {
             mappedValuesCache.evictAll()
 
             // then evictAll is called
-            Mockito.verify(cache).evictAll()
+            verify(cache).evictAll()
         }
     }
 

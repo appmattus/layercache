@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
@@ -142,7 +143,7 @@ class CacheBatchGetShould {
 
             // then the job completes with the values in the same sequence as the keys
             assertEquals(listOf("value1", "value2", "value3"), result)
-            Mockito.verify(cache, Mockito.times(3)).get(anyString())
+            verify(cache, Mockito.times(3)).get(anyString())
         }
     }
 

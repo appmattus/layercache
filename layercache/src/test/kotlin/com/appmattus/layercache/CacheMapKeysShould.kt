@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
@@ -31,18 +33,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
 
 class CacheMapKeysShould {
 
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractCache<String, Any>
+    private val cache = mock<AbstractCache<String, Any>>()
 
     private lateinit var mappedKeysCache: Cache<Int, Any>
     private lateinit var mappedKeysCacheWithError: Cache<Int, Any>
@@ -50,7 +48,6 @@ class CacheMapKeysShould {
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         val fInv: (Int) -> String = { int: Int -> int.toString() }
         whenever(cache.keyTransform(fInv)).thenCallRealMethod()
         mappedKeysCache = cache.keyTransform(fInv)
@@ -154,7 +151,7 @@ class CacheMapKeysShould {
             mappedKeysCache.set(1, "1")
 
             // then it is converted to a string
-            Mockito.verify(cache).set("1", "1")
+            verify(cache).set("1", "1")
         }
     }
 
@@ -225,7 +222,7 @@ class CacheMapKeysShould {
 
             // then we return the value
             // Assert.assertEquals("value", result)
-            Mockito.verify(cache).evict("1")
+            verify(cache).evict("1")
         }
     }
 
@@ -294,7 +291,7 @@ class CacheMapKeysShould {
             mappedKeysCache.evictAll()
 
             // then we evictAll value
-            Mockito.verify(cache).evictAll()
+            verify(cache).evictAll()
         }
     }
 

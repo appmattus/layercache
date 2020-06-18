@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Deferred
@@ -28,9 +30,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.atomic.AtomicInteger
 
 class FetcherReuseInflightShould {
@@ -38,18 +37,16 @@ class FetcherReuseInflightShould {
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractFetcher<Any, Any>
+    private val cache = mock<AbstractFetcher<Any, Any>>()
 
     private lateinit var reuseInflightCache: Fetcher<Any, Any>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         whenever(cache.reuseInflight()).thenCallRealMethod()
         reuseInflightCache = cache.reuseInflight()
 
-        Mockito.verify(cache).reuseInflight()
+        verify(cache).reuseInflight()
     }
 
     @Test
@@ -75,7 +72,7 @@ class FetcherReuseInflightShould {
             val result = reuseInflightCache.get("key")
 
             // then we return the value
-            Mockito.verify(cache).get("key")
+            verify(cache).get("key")
             Assert.assertEquals("value", result)
         }
     }
@@ -159,7 +156,7 @@ class FetcherReuseInflightShould {
             reuseInflightCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -172,7 +169,7 @@ class FetcherReuseInflightShould {
             reuseInflightCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 

@@ -17,43 +17,38 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.atLeastOnce
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.atLeastOnce
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.verifyNoInteractions
 
 class FetcherMapValuesShould {
 
-    @Mock
-    private lateinit var cache: AbstractFetcher<Any, String>
-
-    @Mock
-    private lateinit var function: (String) -> Int
-
-    @Mock
-    private lateinit var functionInverse: (Int) -> String
+    private val cache = mock< AbstractFetcher<Any, String>>()
+    private val function = mock< (String) -> Int>()
+    private val functionInverse = mock< (Int) -> String>()
 
     private lateinit var mappedValuesCache: Fetcher<Any, Int>
 
     @Suppress("DEPRECATION")
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-
         whenever(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
         whenever(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java)))
             .thenCallRealMethod()
 
         mappedValuesCache = cache.valueTransform(function, functionInverse)
 
-        Mockito.verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>())
-        Mockito.verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>(), any<(Int) -> String>())
+        verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>())
+        verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>(), any<(Int) -> String>())
     }
 
     // get
@@ -62,14 +57,14 @@ class FetcherMapValuesShould {
         runBlocking {
             // given we have a cache that returns a string
             whenever(cache.get("key")).then { "1" }
-            whenever(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
             mappedValuesCache.get("key")
 
             // then the main function is invoked but the inverse is not
-            Mockito.verify(function).invoke("1")
-            Mockito.verifyNoInteractions(functionInverse)
+            verify(function).invoke("1")
+            verifyNoInteractions(functionInverse)
         }
     }
 
@@ -78,7 +73,7 @@ class FetcherMapValuesShould {
         runBlocking {
             // given we have a cache that returns a string
             whenever(cache.get("key")).then { "1" }
-            whenever(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
             val result = mappedValuesCache.get("key")
@@ -94,7 +89,7 @@ class FetcherMapValuesShould {
         runBlocking {
             // given we have a string and transform throws an exception
             whenever(cache.get("key")).then { "1" }
-            whenever(function.invoke(Mockito.anyString())).then { throw TestException() }
+            whenever(function.invoke(anyString())).then { throw TestException() }
 
             // when we get the value from a map with exception throwing functions
             mappedValuesCache.get("key")
@@ -125,7 +120,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -137,7 +132,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -150,7 +145,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -162,7 +157,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -175,7 +170,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -187,7 +182,7 @@ class FetcherMapValuesShould {
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 }

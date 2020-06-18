@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.ehcache.config.builders.CacheConfigurationBuilder
@@ -26,14 +28,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 
 class EhcacheWrapperShould {
 
-    @Mock
-    private lateinit var ehcache: Ehcache<String, String>
+    private val ehcache = mock<Ehcache<String, String>>()
 
     private lateinit var wrappedCache: Cache<String, String>
 
@@ -41,7 +39,6 @@ class EhcacheWrapperShould {
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         wrappedCache = EhcacheWrapper(ehcache)
 
         val cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true)
@@ -91,7 +88,7 @@ class EhcacheWrapperShould {
             wrappedCache.set("key", "value")
 
             // then put is called
-            Mockito.verify(ehcache).put("key", "value")
+            verify(ehcache).put("key", "value")
         }
     }
 
@@ -118,7 +115,7 @@ class EhcacheWrapperShould {
             wrappedCache.evict("key")
 
             // then remove is called
-            Mockito.verify(ehcache).remove("key")
+            verify(ehcache).remove("key")
         }
     }
 
@@ -145,7 +142,7 @@ class EhcacheWrapperShould {
             wrappedCache.evictAll()
 
             // then clear is called
-            Mockito.verify(ehcache).clear()
+            verify(ehcache).clear()
         }
     }
 
