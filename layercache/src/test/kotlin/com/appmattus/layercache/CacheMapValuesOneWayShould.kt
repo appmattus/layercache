@@ -16,38 +16,37 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.Mockito.anyString
+import org.mockito.Mockito.atLeastOnce
+import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.verifyNoMoreInteractions
 
 class CacheMapValuesOneWayShould {
 
-    @Mock
-    private lateinit var cache: AbstractCache<Any, String>
+    private val cache = mock<AbstractCache<Any, String>>()
 
-    @Mock
-    private lateinit var function: (String) -> Int
+    private val function = mock<(String) -> Int>()
 
-    @Mock
-    private lateinit var functionInverse: (Int) -> String
+    private val functionInverse = mock<(Int) -> String>()
 
     private lateinit var mappedValuesCache: Fetcher<Any, Int>
-
 
     @Suppress("DEPRECATION")
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        whenever(cache.valueTransform(any<(String) -> Int>())).thenCallRealMethod()
 
         mappedValuesCache = cache.valueTransform(function)
 
-        Mockito.verify(cache, Mockito.atLeastOnce()).valueTransform(MockitoKotlin.any<(String) -> Any>())
+        verify(cache, atLeastOnce()).valueTransform(any<(String) -> Any>())
     }
 
     // get
@@ -55,25 +54,24 @@ class CacheMapValuesOneWayShould {
     fun `only invoke function and not inverse function`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { "1" }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
             mappedValuesCache.get("key")
 
             // then the main function is invoked but the inverse is not
-            Mockito.verify(function).invoke("1")
-            Mockito.verifyNoInteractions(functionInverse)
+            verify(function).invoke("1")
+            verifyNoInteractions(functionInverse)
         }
     }
-
 
     @Test
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { "1" }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
             val result = mappedValuesCache.get("key")
@@ -88,8 +86,8 @@ class CacheMapValuesOneWayShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string and transform throws an exception
-            Mockito.`when`(cache.get("key")).then { "1" }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { throw TestException() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { throw TestException() }
 
             // when we get the value from a map with exception throwing functions
             mappedValuesCache.get("key")
@@ -102,7 +100,7 @@ class CacheMapValuesOneWayShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we throw an exception on get
-            Mockito.`when`(cache.get("key")).then { throw TestException() }
+            whenever(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
             mappedValuesCache.get("key")
@@ -120,7 +118,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -132,7 +130,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -145,7 +143,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -157,7 +155,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -170,7 +168,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -182,7 +180,7 @@ class CacheMapValuesOneWayShould {
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 }

@@ -132,6 +132,7 @@ class CacheComposeShould {
     }
 
     @Test
+    @Suppress("ThrowsCount")
     fun `throw exception when parents not overridden?`() {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {

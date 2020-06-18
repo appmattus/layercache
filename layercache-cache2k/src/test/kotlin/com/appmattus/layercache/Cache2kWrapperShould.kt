@@ -26,7 +26,6 @@ import org.junit.Test
 import org.mockito.Mockito
 import java.util.concurrent.TimeUnit
 
-
 class Cache2kWrapperShould {
 
     private val cache2k = mock<org.cache2k.Cache<String, String>>()
@@ -50,14 +49,13 @@ class Cache2kWrapperShould {
                 .build()
             integratedCache = Cache.fromCache2k(cache2k)
 
-
             Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { "hello" }
 
             val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
-                .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
+                .expireAfterWrite(5, TimeUnit.MINUTES) // expire/refresh after 5 minutes
                 // exceptions
-                .refreshAhead(true)                       // keep fresh when expiring
-                .loader(loaderFetcher.toCache2kLoader())         // auto populating function
+                .refreshAhead(true) // keep fresh when expiring
+                .loader(loaderFetcher.toCache2kLoader()) // auto populating function
                 .build()
             integratedCacheWithLoader = Cache.fromCache2k(cache2kWithLoader)
         }
@@ -128,7 +126,7 @@ class Cache2kWrapperShould {
             wrappedCache.evict("key")
 
             // then we return the value
-            //assertEquals("value", result)
+            // assertEquals("value", result)
             Mockito.verify(cache2k).remove("key")
         }
     }
@@ -187,7 +185,6 @@ class Cache2kWrapperShould {
             assertNull(integratedCache.get("key"))
         }
     }
-
 
     @Test
     fun `return from loader when the cache is empty`() {

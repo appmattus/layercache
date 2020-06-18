@@ -22,24 +22,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 /**
- * Sealed class representing the result of a deferred, one of Success, Failure or Cancelled
- */
-@Suppress("unused")
-sealed class DeferredResult<Value> {
-    /**
-     * Success, contains the value returned by the deferred execution
-     * @property value Result of the Deferred
-     */
-    class Success<Value>(val value: Value?) : DeferredResult<Value>()
-
-    /**
-     * Cancelled, contains the exception thrown by cancelling the deferred execution
-     * @property exception Cancellation exception
-     */
-    class Cancelled<Value>(val exception: Throwable?) : DeferredResult<Value>()
-}
-
-/**
  * Executes completion handler with a DeferredResult when the Deferred completes, regardless of status
  */
 fun <Value> Deferred<Value>.onCompletion(completion: (result: DeferredResult<Value>) -> Unit): Deferred<Value> {

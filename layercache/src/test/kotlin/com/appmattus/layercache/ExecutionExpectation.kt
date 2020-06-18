@@ -30,7 +30,7 @@ class ExecutionExpectation : ExternalResource() {
 
     fun expect(target: Int) {
         this.target = target
-        //integer.set(target)
+        // integer.set(target)
     }
 
     override fun after() {
@@ -40,6 +40,6 @@ class ExecutionExpectation : ExternalResource() {
             return
         }
 
-        fail("Expected test to make ${target} executions but actually made ${actual}")
+        fail("Expected test to make $target executions but actually made $actual")
     }
 }

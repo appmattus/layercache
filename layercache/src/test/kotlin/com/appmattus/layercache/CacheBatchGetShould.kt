@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -28,10 +30,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.TimeUnit
 
 class CacheBatchGetShould {
@@ -41,14 +41,12 @@ class CacheBatchGetShould {
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractCache<String, String>
+    private val cache = mock<AbstractCache<String, String>>()
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(runBlocking { cache.batchGet(Mockito.anyList<String>()) }).thenCallRealMethod()
-        Mockito.`when`(runBlocking { cache.batchGet(MockitoKotlin.any()) }).thenCallRealMethod()
+        whenever(runBlocking { cache.batchGet(Mockito.anyList<String>()) }).thenCallRealMethod()
+        whenever(runBlocking { cache.batchGet(MockitoKotlin.any()) }).thenCallRealMethod()
     }
 
     @Test
@@ -75,12 +73,11 @@ class CacheBatchGetShould {
         }
     }
 
-
     @Test(expected = CancellationException::class)
     fun `throw exception when job cancelled`() {
         runBlocking {
             // given we request the values for 3 keys
-            Mockito.`when`(cache.get(anyString())).then {
+            whenever(cache.get(anyString())).then {
                 GlobalScope.async {
                     delay(requestTimeInMills)
                     "value"
@@ -101,7 +98,7 @@ class CacheBatchGetShould {
         try {
             runBlocking {
                 // given we start a timer and request the values for 3 keys
-                Mockito.`when`(cache.get(anyString())).then {
+                whenever(cache.get(anyString())).then {
                     runBlocking {
                         delay(requestTimeInMills); "value"
                     }
@@ -127,7 +124,7 @@ class CacheBatchGetShould {
     fun `return values in key sequence`() {
         runBlocking {
             // given we request the values for 3 keys where the second value takes longer to return
-            Mockito.`when`(cache.get(anyString())).then {
+            whenever(cache.get(anyString())).then {
                 runBlocking {
                     val key = it.getArgument<String>(0)
                     if (key == "key2") {
@@ -151,7 +148,7 @@ class CacheBatchGetShould {
     fun `throw internal exception`() {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
-            Mockito.`when`(cache.get(anyString())).then {
+            whenever(cache.get(anyString())).then {
                 val key = it.getArgument<String>(0)
                 if (key == "key2") {
                     throw TestException()

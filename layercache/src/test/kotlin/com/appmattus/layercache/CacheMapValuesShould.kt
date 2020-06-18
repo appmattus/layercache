@@ -144,7 +144,7 @@ class CacheMapValuesShould {
             mappedValuesCache.evict("key")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
+            // Assert.assertEquals("value", result)
             Mockito.verify(cache).evict("key")
         }
     }

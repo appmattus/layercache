@@ -115,7 +115,7 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                throw TestException()
+                    throw TestException()
             }
             Mockito.`when`(secondCache.evictAll()).then {
                 runBlocking {
@@ -149,7 +149,7 @@ class CacheComposeEvictAllShould {
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                throw TestException()
+                    throw TestException()
             }
 
             // when we evictAll values
@@ -170,10 +170,10 @@ class CacheComposeEvictAllShould {
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                throw TestException()
+                    throw TestException()
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                throw TestException()
+                    throw TestException()
             }
 
             // when we evictAll values
@@ -200,7 +200,7 @@ class CacheComposeEvictAllShould {
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                executions.execute()
+                    executions.execute()
             }
 
             // when we evictAll values
@@ -224,7 +224,7 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                executions.execute()
+                    executions.execute()
             }
             Mockito.`when`(secondCache.evictAll()).then {
                 runBlocking {

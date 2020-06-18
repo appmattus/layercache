@@ -31,7 +31,7 @@ dependencies {
 test { finalizedBy jacocoTestReport }
 
 check { //noinspection GroovyAssignabilityCheck
-    finalizedBy rootProject.detektCheck
+    finalizedBy rootProject.tasks.named("detekt")
 }
 
 sourceCompatibility = "1.7"

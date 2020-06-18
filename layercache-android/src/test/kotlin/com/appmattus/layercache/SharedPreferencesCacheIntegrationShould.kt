@@ -80,7 +80,6 @@ class SharedPreferencesCacheIntegrationShould {
         runBlocking {
             val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
 
-
             // given we have a cache with a value
             cache.set("key", 5)
 
@@ -91,7 +90,6 @@ class SharedPreferencesCacheIntegrationShould {
             Assert.assertEquals(5, result)
         }
     }
-
 
     @Test
     fun return_null_when_the_cache_is_empty() {

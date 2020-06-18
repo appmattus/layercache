@@ -102,7 +102,7 @@ class FetcherMapKeysShould {
             // given we have a string
             Mockito.`when`(function.invoke(Mockito.anyInt())).then { throw TestException() }
 
-            //Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
+            // Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCache.get(1)

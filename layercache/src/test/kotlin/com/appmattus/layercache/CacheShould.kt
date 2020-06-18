@@ -67,7 +67,6 @@ class CacheShould {
         }
     }
 
-
     @Test(expected = CancellationException::class)
     fun `throw exception on set when job cancelled`() {
         runBlocking {
@@ -110,7 +109,6 @@ class CacheShould {
         }
     }
 
-
     @Test
     fun `execute onSuccess when job completes as expected`() {
         runBlocking {
@@ -152,7 +150,6 @@ class CacheShould {
                 }
             }
 
-
             // given we call get
             val job = async { cache.get("key") }
 
@@ -191,7 +188,6 @@ class CacheShould {
                 }
             }
 
-
             // given we call evict
             val job = async { cache.get("key") }
 
@@ -207,7 +203,6 @@ class CacheShould {
             yield()
         }
     }
-
 
     @Test
     fun `onCompletion cancelled`() {
@@ -231,7 +226,6 @@ class CacheShould {
                 }
             }
 
-
             // given we call evict
             val job = async { cache.get("key") }
 
@@ -254,5 +248,4 @@ class CacheShould {
             yield()
         }
     }
-
 }

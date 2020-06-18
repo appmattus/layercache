@@ -145,7 +145,7 @@ class CacheReuseInflightShould {
             reuseInflightCache.set("key", "value")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
+            // Assert.assertEquals("value", result)
             Mockito.verify(cache).set("key", "value")
         }
     }
@@ -174,7 +174,7 @@ class CacheReuseInflightShould {
             reuseInflightCache.evict("key")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
+            // Assert.assertEquals("value", result)
             Mockito.verify(cache).evict("key")
         }
     }

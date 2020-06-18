@@ -33,7 +33,7 @@ internal class RetrofitWrapper<Key : Any, Value : Any>(val retrofitCall: (Key) -
 
 /**
  * Generate a Cache from a Retrofit Call
- * @property retrofitCall   Lambda calling a Retrofit service and returning a Call
+ * @property retrofitCall Lambda calling a Retrofit service and returning a Call
  */
 @Suppress("unused", "USELESS_CAST")
 fun <Key : Any, Value : Any> Cache.Companion.fromRetrofit(retrofitCall: (Key) -> Call<Value>) =

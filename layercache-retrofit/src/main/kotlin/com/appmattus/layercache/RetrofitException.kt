@@ -20,6 +20,6 @@ import retrofit2.Response
 
 /**
  * Exception wrapping a Response for access to the Http error
- * @property response   Retrofit Response, containing errorBody and status code
+ * @property response Retrofit Response, containing errorBody and status code
  */
 class RetrofitException(val response: Response<*>) : Exception(response.message())

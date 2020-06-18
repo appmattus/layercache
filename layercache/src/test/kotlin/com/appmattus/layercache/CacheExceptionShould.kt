@@ -40,7 +40,6 @@ class CacheExceptionShould {
         CacheException("hi", TestUtils.uninitialized())
     }
 
-
     @Test
     fun `throw exception when exceptions is empty`() {
         // expect exception
@@ -97,5 +96,4 @@ class CacheExceptionShould {
         // then suppressed contains the second exception
         assertThat(exception.suppressed.asList(), equalTo(listOf<Throwable>(secondException, thirdException)))
     }
-
 }

@@ -21,7 +21,7 @@ import org.cache2k.integration.FunctionalCacheLoader
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
- * @property cache  Cache2k cache
+ * @property cache Cache2k cache
  */
 internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) : Cache<Key, Value> {
 
@@ -40,13 +40,13 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
     override suspend fun evictAll() {
         cache.clear()
 
-        //FunctionalCacheLoader
+        // FunctionalCacheLoader
     }
 }
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
- * @property cache  Cache2k cache
+ * @property cache Cache2k cache
  * @return Cache
  */
 @Suppress("unused", "USELESS_CAST")

@@ -29,7 +29,6 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 
-
 class EhcacheWrapperShould {
 
     @Mock
@@ -45,7 +44,12 @@ class EhcacheWrapperShould {
         wrappedCache = EhcacheWrapper(ehcache)
 
         val cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true)
-        integratedCache = Cache.fromEhcache(cacheManager.createCache("myCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))))
+        integratedCache = Cache.fromEhcache(
+            cacheManager.createCache(
+                "myCache",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))
+            )
+        )
     }
 
     // get

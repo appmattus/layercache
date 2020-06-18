@@ -46,7 +46,7 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
 
 /**
  * Create a Cache from Android's built in LruCache
- * @property lruCache   An LruCache
+ * @property lruCache An LruCache
  */
 @Suppress("unused", "USELESS_CAST")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
@@ -54,7 +54,7 @@ fun <Key : Any, Value : Any> Cache.Companion.fromLruCache(lruCache: LruCache<Key
 
 /**
  * Create a Cache from a newly created LruCache
- * @property maxSize    Maximum number of entries
+ * @property maxSize Maximum number of entries
  */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Cache.Companion.createLruCache(maxSize: Int) = Cache.fromLruCache(LruCache<Key, Value>(maxSize))

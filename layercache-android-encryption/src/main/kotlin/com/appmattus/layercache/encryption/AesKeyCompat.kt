@@ -38,16 +38,18 @@ import javax.security.auth.x500.X500Principal
 @Suppress("ExceptionRaisedInUnexpectedLocation")
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 internal class AesKeyCompat(
-    private val context: Context, private val blockMode: BlockMode,
-    private val encryptionPadding: EncryptionPadding, private val providesIv: Boolean,
+    private val context: Context,
+    private val blockMode: BlockMode,
+    private val encryptionPadding: EncryptionPadding,
+    private val providesIv: Boolean,
     private val integrityCheck: IntegrityCheck
 ) {
 
     private companion object {
-        val RSA_MODE = "RSA/ECB/PKCS1Padding"
-        val ANDROID_KEYSTORE_PROVIDER = "AndroidKeyStore"
-        val ANDROID_OPEN_SSL_PROVIDER = "AndroidOpenSSL"
-        val AES_ALGORITHM = "AES"
+        const val RSA_MODE = "RSA/ECB/PKCS1Padding"
+        const val ANDROID_KEYSTORE_PROVIDER = "AndroidKeyStore"
+        const val ANDROID_OPEN_SSL_PROVIDER = "AndroidOpenSSL"
+        const val AES_ALGORITHM = "AES"
     }
 
     private var mImpl: AESKey
@@ -103,7 +105,7 @@ internal class AesKeyCompat(
                 .setEndDate(end.getTime())
                 .setStartDate(start.getTime())
                 .setSerialNumber(BigInteger.ONE)
-                .setSubject(X500Principal("CN=${keystoreAlias}"))
+                .setSubject(X500Principal("CN=$keystoreAlias"))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 @Suppress("MagicNumber")
@@ -141,13 +143,13 @@ internal class AesKeyCompat(
                 init(256, SecureRandom())
             }.generateKey().apply {
                 val encryptedKey = rsaEncrypt(alias, this.encoded).encodeBase64()
-                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("${alias}:confidentiality", encryptedKey).apply()
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("$alias:confidentiality", encryptedKey).apply()
             }
         }
 
         private fun loadConfidentialityKey(alias: String): SecretKey? {
-            return keyStore.getEntry("${alias}:rsa", null)?.let {
-                PreferenceManager.getDefaultSharedPreferences(context).getString("${alias}:confidentiality", null)?.let {
+            return keyStore.getEntry("$alias:rsa", null)?.let {
+                PreferenceManager.getDefaultSharedPreferences(context).getString("$alias:confidentiality", null)?.let {
                     SecretKeySpec(rsaDecrypt(alias, it.decodeBase64()), AES_ALGORITHM)
                 }
             }
@@ -162,7 +164,7 @@ internal class AesKeyCompat(
         }
 
         private fun loadIntegrityKey(alias: String): SecretKey? {
-            return keyStore.getEntry("${alias}:rsa", null)?.let {
+            return keyStore.getEntry("$alias:rsa", null)?.let {
                 PreferenceManager.getDefaultSharedPreferences(context).getString("$alias:integrity", null)?.let {
                     SecretKeySpec(rsaDecrypt(alias, it.decodeBase64()), AES_ALGORITHM)
                 }

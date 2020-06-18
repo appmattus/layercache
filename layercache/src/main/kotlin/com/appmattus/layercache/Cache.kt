@@ -221,10 +221,11 @@ interface Cache<Key : Any, Value : Any> {
     }
 
     private suspend fun <K : Any, V : Any, T> executeInParallel(
-        caches: List<Cache<K, V>>, message: String,
+        caches: List<Cache<K, V>>,
+        message: String,
         methodCall: suspend (Cache<K, V>) -> T
     ): List<T> {
         val jobs = caches.map { GlobalScope.async { methodCall(it) } }
-        return executeJobsInParallel(jobs) { index -> "${message} failed for ${caches[index]}" }
+        return executeJobsInParallel(jobs) { index -> "$message failed for ${caches[index]}" }
     }
 }

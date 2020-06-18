@@ -60,7 +60,6 @@ class CacheMapKeysShould {
         val nullFInv: (Int) -> String = { _: Int -> TestUtils.uninitialized() }
         Mockito.`when`(cache.keyTransform(nullFInv)).thenCallRealMethod()
         mappedKeysCacheWithNull = cache.keyTransform(nullFInv)
-
     }
 
     @Test
@@ -223,7 +222,7 @@ class CacheMapKeysShould {
             mappedKeysCache.evict(1)
 
             // then we return the value
-            //Assert.assertEquals("value", result)
+            // Assert.assertEquals("value", result)
             Mockito.verify(cache).evict("1")
         }
     }

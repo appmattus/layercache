@@ -125,25 +125,19 @@ class StringEncryptionShould {
                 val networkCache = Cache.createLruCache<String, String>(10)
                 networkCache.set("key", "value")
 
-
                 val diskCache = Cache.createLruCache<String, String>(10)
                 val encryptedDiskCache = diskCache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
-
                 val chained = encryptedDiskCache.compose(networkCache)
-
 
                 assertNull(diskCache.get("key").await())
                 assertNull(encryptedDiskCache.get("key").await())
 
-
                 val valueFromNetwork = chained.get("key").await()
                 assertEquals("value", valueFromNetwork)
 
-
                 val valueFromDiskCache = encryptedDiskCache.get("key").await()
                 assertEquals("value", valueFromDiskCache)
-
 
                 val valueFromRawCacheEncrypted = diskCache.get("key").await()
                 assertNotEquals(valueFromRawCacheEncrypted, valueFromDiskCache)
@@ -229,7 +223,6 @@ class StringEncryptionShould {
     fun decrypt_using_new_encryptor_using_new_key(encryptor: StringEncryption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             thrown.expect(Exception::class.java)
-
 
             val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 

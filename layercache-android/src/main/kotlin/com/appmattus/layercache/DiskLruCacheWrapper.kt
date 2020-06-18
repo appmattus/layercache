@@ -51,15 +51,15 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
 
 /**
  * Create a Cache from a DiskLruCache
- * @property diskLruCache   A DiskLruCache
+ * @property diskLruCache A DiskLruCache
  */
 @Suppress("unused", "USELESS_CAST")
 fun Cache.Companion.fromDiskLruCache(diskLruCache: DiskLruCache) = DiskLruCacheWrapper(diskLruCache) as Cache<String, String>
 
 /**
  * Create a Cache from a newly created DiskLruCache
- * @property directory  Directory to create cache in
- * @property maxSize    Maximum number of bytes
+ * @property directory Directory to create cache in
+ * @property maxSize Maximum number of bytes
  */
 @Suppress("unused", "USELESS_CAST")
 fun Cache.Companion.createDiskLruCache(directory: File, maxSize: Long) = fromDiskLruCache(DiskLruCache.open(directory, 1, 1, maxSize))

@@ -103,7 +103,7 @@ class LruCacheWrapperShould {
             wrappedCache.evict("key")
 
             // then we return the value
-            //assertEquals("value", result)
+            // assertEquals("value", result)
             Mockito.verify(lruCache).remove("key")
         }
     }

@@ -128,7 +128,6 @@ class CacheComposeGetShould {
         }
     }
 
-
     @Test(expected = TestException::class)
     fun `throw internal exception on get when first cache empty and second cache throws`() {
         runBlocking {

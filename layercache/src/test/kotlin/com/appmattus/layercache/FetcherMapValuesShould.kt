@@ -39,7 +39,6 @@ class FetcherMapValuesShould {
 
     private lateinit var mappedValuesCache: Fetcher<Any, Int>
 
-
     @Suppress("DEPRECATION")
     @Before
     fun before() {
@@ -71,7 +70,6 @@ class FetcherMapValuesShould {
             Mockito.verifyNoInteractions(functionInverse)
         }
     }
-
 
     @Test
     fun `map string value in get to int`() {

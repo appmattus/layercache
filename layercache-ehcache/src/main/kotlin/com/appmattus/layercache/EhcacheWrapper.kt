@@ -18,7 +18,7 @@ package com.appmattus.layercache
 
 /**
  * Wrapper around EhCache (http://www.ehcache.org/)
- * @property cache  Ehcache cache
+ * @property cache Ehcache cache
  */
 internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehcache.Cache<Key, Value>) : Cache<Key, Value> {
 
@@ -41,7 +41,7 @@ internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehc
 
 /**
  * Wrapper around EhCache (http://www.ehcache.org/)
- * @property cache  Ehcache cache
+ * @property cache Ehcache cache
  * @return Cache
  */
 @Suppress("unused", "USELESS_CAST")

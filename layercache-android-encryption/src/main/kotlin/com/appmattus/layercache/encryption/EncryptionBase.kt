@@ -44,7 +44,7 @@ internal abstract class EncryptionBase(private val context: Context, private val
     }
 
     private fun getTransformation(): String {
-        return "AES/${blockMode}/${encryptionPadding}"
+        return "AES/$blockMode/$encryptionPadding"
     }
 
     final override fun encrypt(value: String): String {
@@ -107,9 +107,7 @@ internal abstract class EncryptionBase(private val context: Context, private val
             }
         }
 
-
         val secretKey = aesKey.retrieveConfidentialityKey(keystoreAlias)
-
 
         val cipher = Cipher.getInstance(getTransformation())
 

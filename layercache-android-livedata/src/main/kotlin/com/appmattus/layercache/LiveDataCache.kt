@@ -24,7 +24,7 @@ import kotlinx.coroutines.async
 
 /**
  * Convert a cache to return LiveData objects
- * @property cache  Cache to convert
+ * @property cache Cache to convert
  */
 class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) {
     /**
