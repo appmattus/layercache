@@ -32,22 +32,24 @@ import org.mockito.Mockito.verifyNoInteractions
 
 class FetcherMapValuesShould {
 
-    private val cache = mock< AbstractFetcher<Any, String>>()
-    private val function = mock< (String) -> Int>()
-    private val functionInverse = mock< (Int) -> String>()
+    private val cache = mock<AbstractFetcher<Any, String>>()
+    private val function = mock<(String) -> Int>()
+    private val functionInverse = mock<(Int) -> String>()
 
     private lateinit var mappedValuesCache: Fetcher<Any, Int>
 
     @Suppress("DEPRECATION")
     @Before
     fun before() {
-        whenever(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
-        whenever(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java)))
+        whenever(cache.valueTransform(any<(String) -> Int>())).thenCallRealMethod()
+        @Suppress("RemoveExplicitTypeArguments")
+        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>()))
             .thenCallRealMethod()
 
         mappedValuesCache = cache.valueTransform(function, functionInverse)
 
         verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>())
+        @Suppress("RemoveExplicitTypeArguments")
         verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>(), any<(Int) -> String>())
     }
 

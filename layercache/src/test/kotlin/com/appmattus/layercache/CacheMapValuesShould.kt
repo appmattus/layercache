@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -36,16 +37,15 @@ class CacheMapValuesShould {
 
     @Before
     fun before() {
-        val f: (String) -> Int = { str: String -> str.toInt() }
-        val fInv: (Int) -> String = { int: Int -> int.toString() }
-        whenever(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
-        mappedValuesCache = cache.valueTransform(f, fInv)
+        @Suppress("RemoveExplicitTypeArguments")
+        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>())).thenCallRealMethod()
+        mappedValuesCache = cache.valueTransform({ str: String -> str.toInt() }, { int: Int -> int.toString() })
 
-        val errorF: (String) -> Int = { _: String -> throw TestException() }
-        val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        whenever(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java)))
+        @Suppress("RemoveExplicitTypeArguments")
+        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>()))
             .thenCallRealMethod()
-        mappedValuesCacheWithError = cache.valueTransform(errorF, errorFInv)
+        @Suppress("RedundantLambdaArrow")
+        mappedValuesCacheWithError = cache.valueTransform({ _: String -> throw TestException() }, { _: Int -> throw TestException() })
     }
 
     // get

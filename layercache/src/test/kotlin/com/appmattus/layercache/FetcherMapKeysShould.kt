@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
@@ -47,11 +48,11 @@ class FetcherMapKeysShould {
 
     @Before
     fun before() {
-        whenever(cache.keyTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        whenever(cache.keyTransform(any<(Int) -> String>())).thenCallRealMethod()
 
         mappedKeysCache = cache.keyTransform(function)
 
-        verify(cache, Mockito.atLeastOnce()).keyTransform(MockitoKotlin.any(function::class.java))
+        verify(cache, Mockito.atLeastOnce()).keyTransform(any<(Int) -> String>())
     }
 
     @Test
