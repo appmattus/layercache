@@ -68,10 +68,10 @@ class CacheComposeSetShould {
         runBlocking {
             // expect exception
             thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+            thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when key is null
-            composedCache.set(TestUtils.uninitialized(), "value").await()
+            composedCache.set(TestUtils.uninitialized(), "value")
         }
     }
 
@@ -80,21 +80,13 @@ class CacheComposeSetShould {
         runBlocking {
             // expect exception
             thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+            thrown.expectMessage(StringStartsWith("Required value was null"))
 
-            Mockito.`when`(firstCache.set(anyString(), MockitoKotlin.any())).then {
-                GlobalScope.async {
-
-                }
-            }
-            Mockito.`when`(secondCache.set(anyString(), MockitoKotlin.any())).then {
-                GlobalScope.async {
-
-                }
-            }
+            Mockito.`when`(firstCache.set(anyString(), MockitoKotlin.any())).then { "" }
+            Mockito.`when`(secondCache.set(anyString(), MockitoKotlin.any())).then { "" }
 
             // when value is null
-            composedCache.set("key", TestUtils.uninitialized()).await()
+            composedCache.set("key", TestUtils.uninitialized())
         }
     }
 
@@ -118,7 +110,7 @@ class CacheComposeSetShould {
 
             // when we set the value and start the timer
             val start = System.nanoTime()
-            composedCache.set("key", "value").await()
+            composedCache.set("key", "value")
 
             // then set is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
@@ -134,7 +126,7 @@ class CacheComposeSetShould {
             Mockito.`when`(secondCache.set(anyString(), anyString())).then { GlobalScope.async {} }
 
             // when we set the value
-            composedCache.set("key", "value").await()
+            composedCache.set("key", "value")
 
             // then set is called on both caches
             verify(firstCache).set("key", "value")
@@ -155,19 +147,17 @@ class CacheComposeSetShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             yield()
 
             // then set on the second cache still completes and an exception is thrown
@@ -186,19 +176,17 @@ class CacheComposeSetShould {
 
             // given the second cache throws an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             yield()
 
             // then an exception is thrown
@@ -216,18 +204,14 @@ class CacheComposeSetShould {
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             yield()
 
             // then an exception is thrown
@@ -257,7 +241,7 @@ class CacheComposeSetShould {
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             delay(50)
             job.cancel()
             yield()
@@ -289,7 +273,7 @@ class CacheComposeSetShould {
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             delay(50)
             job.cancel()
             yield()
@@ -323,7 +307,7 @@ class CacheComposeSetShould {
             }
 
             // when we set the value
-            val job = composedCache.set("key", "value")
+            val job = async { composedCache.set("key", "value") }
             delay(25)
             job.cancel()
             yield()

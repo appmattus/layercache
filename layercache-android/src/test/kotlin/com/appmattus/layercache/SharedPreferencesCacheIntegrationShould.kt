@@ -53,7 +53,7 @@ class SharedPreferencesCacheIntegrationShould {
     fun return_value_when_cache_has_value_2() {
         runBlocking {
             // given we have a cache with a value
-            stringCache.set("key", "value").await()
+            stringCache.set("key", "value")
 
             // when we retrieve a value
             val result = stringCache.get("key")
@@ -69,7 +69,7 @@ class SharedPreferencesCacheIntegrationShould {
             val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
 
             // given we have a cache with a value
-            cache.set("key", TestUtils.uninitialized()).await()
+            cache.set("key", TestUtils.uninitialized())
 
             // then exception is thrown
         }
@@ -82,7 +82,7 @@ class SharedPreferencesCacheIntegrationShould {
 
 
             // given we have a cache with a value
-            cache.set("key", 5).await()
+            cache.set("key", 5)
 
             // when we retrieve a value
             val result = cache.get("key")
@@ -110,7 +110,7 @@ class SharedPreferencesCacheIntegrationShould {
     fun return_value_when_cache_has_value() {
         runBlocking {
             // given we have a cache with a value
-            stringCache.set("key", "value").await()
+            stringCache.set("key", "value")
 
             // when we retrieve a value
             val result = stringCache.get("key")
@@ -124,7 +124,7 @@ class SharedPreferencesCacheIntegrationShould {
     fun return_null_when_the_key_has_been_evicted() {
         runBlocking {
             // given we have a cache with a value
-            stringCache.set("key", "value").await()
+            stringCache.set("key", "value")
 
             // when we evict the value
             stringCache.evict("key").await()

@@ -38,10 +38,8 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
         return cache.get(key)
     }
 
-    override fun set(key: Key, value: Value): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.put(key, value)
-        }
+    override suspend fun set(key: Key, value: Value) {
+        cache.put(key, value)
     }
 
     override fun evictAll(): Deferred<Unit> {

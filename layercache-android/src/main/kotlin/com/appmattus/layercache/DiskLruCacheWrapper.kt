@@ -37,12 +37,10 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
         return cache.get(key)?.getString(0)
     }
 
-    override fun set(key: String, value: String): Deferred<Unit> {
-        return GlobalScope.async {
-            val editor = cache.edit(key)
-            editor.set(0, value)
-            editor.commit()
-        }
+    override suspend fun set(key: String, value: String) {
+        val editor = cache.edit(key)
+        editor.set(0, value)
+        editor.commit()
     }
 
     override fun evictAll(): Deferred<Unit> {

@@ -98,7 +98,7 @@ class Cache2kWrapperShould {
             // given
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then put is called
             Mockito.verify(cache2k).put("key", "value")
@@ -112,7 +112,7 @@ class Cache2kWrapperShould {
             Mockito.`when`(cache2k.put("key", "value")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then we throw an exception
         }
@@ -164,7 +164,7 @@ class Cache2kWrapperShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
             val result = integratedCache.get("key")
@@ -178,7 +178,7 @@ class Cache2kWrapperShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
             integratedCache.evict("key").await()
@@ -207,7 +207,7 @@ class Cache2kWrapperShould {
     fun `return value and not from loader when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCacheWithLoader.set("key", "value").await()
+            integratedCacheWithLoader.set("key", "value")
 
             // when we retrieve a value
             val result = integratedCacheWithLoader.get("key")
@@ -221,7 +221,7 @@ class Cache2kWrapperShould {
     fun `return value from loader when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCacheWithLoader.set("key", "value").await()
+            integratedCacheWithLoader.set("key", "value")
 
             // when we evict the value
             integratedCacheWithLoader.evict("key").await()

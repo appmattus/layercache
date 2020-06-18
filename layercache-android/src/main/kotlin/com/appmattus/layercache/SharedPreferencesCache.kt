@@ -44,12 +44,10 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
             }
         }
 
-        override fun set(key: String, value: T): Deferred<Unit> {
-            return GlobalScope.async {
-                val editor = sharedPreferences.edit()
-                setFun(editor, key, value)
-                editor.apply()
-            }
+        override suspend fun set(key: String, value: T) {
+            val editor = sharedPreferences.edit()
+            setFun(editor, key, value)
+            editor.apply()
         }
 
         override fun evict(key: String): Deferred<Unit> {

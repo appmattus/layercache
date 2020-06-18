@@ -20,7 +20,7 @@ and setter.
 ```kotlin
 interface Cache<Key : Any, Value : Any> {
     suspend fun get(key: Key): Value?
-    fun set(key: Key, value: Value): Deferred<Unit>
+    suspend fun set(key: Key, value: Value)
 }
 ```
 

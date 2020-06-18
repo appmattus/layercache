@@ -31,7 +31,7 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
      * Return the value associated with the key or null if not present
      */
     @CheckResult
-    suspend fun get(key: Key): LiveData<LiveDataResult<Value?>> {
+    fun get(key: Key): LiveData<LiveDataResult<Value?>> {
         val liveData = MutableLiveData<LiveDataResult<Value?>>()
         liveData.postValue(LiveDataResult.Loading())
 
@@ -54,7 +54,7 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
         val liveData = MutableLiveData<Unit>()
 
         GlobalScope.async {
-            liveData.postValue(cache.set(key, value).await())
+            liveData.postValue(cache.set(key, value))
         }
 
         return liveData

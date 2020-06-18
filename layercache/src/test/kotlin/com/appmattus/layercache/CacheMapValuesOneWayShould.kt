@@ -16,8 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
@@ -119,7 +117,7 @@ class CacheMapValuesOneWayShould {
         runBlocking {
             // when we set the value
             @Suppress("DEPRECATION")
-            mappedValuesCache.set("1", 1).await()
+            mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
             Mockito.verifyNoMoreInteractions(cache)
@@ -131,7 +129,7 @@ class CacheMapValuesOneWayShould {
         runBlocking {
             // when we set the value
             @Suppress("DEPRECATION")
-            mappedValuesCache.set("1", 1).await()
+            mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
             Mockito.verifyNoInteractions(function)

@@ -73,7 +73,7 @@ class LruCacheWrapperShould {
             // given
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then put is called
             Mockito.verify(lruCache).put("key", "value")
@@ -87,7 +87,7 @@ class LruCacheWrapperShould {
             Mockito.`when`(lruCache.put("key", "value")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then we throw an exception
         }

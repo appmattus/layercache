@@ -83,7 +83,7 @@ class EhcacheWrapperShould {
             // given
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then put is called
             Mockito.verify(ehcache).put("key", "value")
@@ -97,7 +97,7 @@ class EhcacheWrapperShould {
             Mockito.`when`(ehcache.put("key", "value")).then { throw TestException() }
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then we throw an exception
         }
@@ -176,7 +176,7 @@ class EhcacheWrapperShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
             val result = integratedCache.get("key")
@@ -190,7 +190,7 @@ class EhcacheWrapperShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
             integratedCache.evict("key").await()

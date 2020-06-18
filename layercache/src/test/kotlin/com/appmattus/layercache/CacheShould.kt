@@ -41,10 +41,8 @@ class CacheShould {
                 return "value"
             }
 
-            override fun set(key: String, value: String): Deferred<Unit> {
-                return GlobalScope.async {
-                    delay(500)
-                }
+            override suspend fun set(key: String, value: String) {
+                delay(500)
             }
 
             override fun evict(key: String): Deferred<Unit> {
@@ -80,7 +78,7 @@ class CacheShould {
     fun `throw exception on set when job cancelled`() {
         runBlocking {
             // given we call set
-            val job = cache.set("key", "value")
+            val job = async { cache.set("key", "value") }
 
             // when we cancel the job
             job.cancel()
@@ -147,10 +145,8 @@ class CacheShould {
                     throw Exception("Forced failure")
                 }
 
-                override fun set(key: String, value: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun set(key: String, value: String) {
+                    delay(500)
                 }
 
                 override fun evict(key: String): Deferred<Unit> {
@@ -192,10 +188,8 @@ class CacheShould {
                     return "value"
                 }
 
-                override fun set(key: String, value: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun set(key: String, value: String) {
+                    delay(500)
                 }
 
                 override fun evict(key: String): Deferred<Unit> {
@@ -238,10 +232,8 @@ class CacheShould {
                     return "value"
                 }
 
-                override fun set(key: String, value: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun set(key: String, value: String) {
+                    delay(500)
                 }
 
                 override fun evict(key: String): Deferred<Unit> {

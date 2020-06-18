@@ -46,14 +46,14 @@ class JSONSerializerShould {
                 var lastValue: String? = null
 
                 override suspend fun get(key: String): String? = lastValue
-                override fun set(key: String, value: String): Deferred<Unit> = GlobalScope.async { lastValue = value }
+                override suspend fun set(key: String, value: String) { lastValue = value }
                 override fun evict(key: String): Deferred<Unit> = TODO("not implemented")
                 override fun evictAll(): Deferred<Unit> = TODO("not implemented")
             }
             val cache: Cache<String, ValueClass> = initialCache.jsonSerializer()
 
             // when we set a data class into it
-            cache.set("a", ValueClass(4)).await()
+            cache.set("a", ValueClass(4))
 
             // then the the original cache contains json and the data object can retrieved from the wrapper
             assertEquals("{\"value\":4}", initialCache.lastValue)

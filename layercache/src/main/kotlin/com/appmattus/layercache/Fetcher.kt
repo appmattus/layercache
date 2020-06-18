@@ -29,7 +29,7 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
      * No-op as Cache is a Fetcher
      */
     @Deprecated("set does nothing on a Fetcher")
-    override fun set(key: Key, value: Value): Deferred<Unit> = GlobalScope.async {}
+    override suspend fun set(key: Key, value: Value) = Unit
 
     /**
      * No-op as Cache is a Fetcher
@@ -44,8 +44,10 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
     override fun evictAll(): Deferred<Unit> = GlobalScope.async {}
 
     @Deprecated("Use valueTransform(transform) on a Fetcher", ReplaceWith("valueTransform(transform)"))
-    override fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue,
-                                                    inverseTransform: (MappedValue) -> Value): Fetcher<Key, MappedValue> {
+    override fun <MappedValue : Any> valueTransform(
+        transform: (Value) -> MappedValue,
+        inverseTransform: (MappedValue) -> Value
+    ): Fetcher<Key, MappedValue> {
         return valueTransform(transform)
     }
 
@@ -55,7 +57,7 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
     }
 
     override fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Fetcher<MappedKey, Value> =
-            keyTransform(transform::transform)
+        keyTransform(transform::transform)
 
     override fun reuseInflight(): Fetcher<Key, Value> {
         @Suppress("EmptyClassBlock")

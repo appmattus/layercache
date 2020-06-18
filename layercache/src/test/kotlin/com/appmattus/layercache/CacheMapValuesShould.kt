@@ -102,7 +102,7 @@ class CacheMapValuesShould {
             Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we set the value
-            mappedValuesCache.set("key", 1).await()
+            mappedValuesCache.set("key", 1)
 
             // then it is converted to a string
             Mockito.verify(cache).set("key", "1")
@@ -116,7 +116,7 @@ class CacheMapValuesShould {
             Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCacheWithError.set("key", 1).await()
+            mappedValuesCacheWithError.set("key", 1)
 
             // then an exception is thrown
         }
@@ -126,10 +126,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.set("key", 1).await()
+            mappedValuesCache.set("key", 1)
 
             // then an exception is thrown
         }

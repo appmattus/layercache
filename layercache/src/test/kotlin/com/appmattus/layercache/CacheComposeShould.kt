@@ -137,7 +137,7 @@ class CacheComposeShould {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {
             override suspend fun get(key: String): String? = throw Exception("Unimplemented")
-            override fun set(key: String, value: String): Deferred<Unit> = throw Exception("Unimplemented")
+            override suspend fun set(key: String, value: String) = throw Exception("Unimplemented")
             override fun evict(key: String): Deferred<Unit> = throw Exception("Unimplemented")
             override fun evictAll(): Deferred<Unit> = throw Exception("Unimplemented")
         }

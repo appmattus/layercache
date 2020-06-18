@@ -150,7 +150,7 @@ class CacheMapKeysShould {
             Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we set the value
-            mappedKeysCache.set(1, "1").await()
+            mappedKeysCache.set(1, "1")
 
             // then it is converted to a string
             Mockito.verify(cache).set("1", "1")
@@ -165,7 +165,7 @@ class CacheMapKeysShould {
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when the mapping function returns null
-            mappedKeysCacheWithNull.set(1, "value").await()
+            mappedKeysCacheWithNull.set(1, "value")
         }
     }
 
@@ -176,7 +176,7 @@ class CacheMapKeysShould {
             Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
 
             // when we get the value from a map with exception throwing functions
-            mappedKeysCacheWithError.set(1, "1").await()
+            mappedKeysCacheWithError.set(1, "1")
 
             // then an exception is thrown
         }
@@ -186,10 +186,10 @@ class CacheMapKeysShould {
     fun `throw exception when set throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { throw TestException() }
 
             // when we set the value from a map
-            mappedKeysCache.set(1, "1").await()
+            mappedKeysCache.set(1, "1")
 
             // then an exception is thrown
         }
@@ -200,10 +200,10 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during set`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(cache.set(anyString(), anyString())).then { runBlocking { delay(250) } }
 
             // when we cancel the job
-            val job = mappedKeysCache.set(1, "1")
+            val job = async { mappedKeysCache.set(1, "1") }
             delay(50)
             job.cancel()
 

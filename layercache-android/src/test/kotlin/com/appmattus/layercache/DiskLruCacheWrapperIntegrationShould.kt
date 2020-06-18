@@ -65,7 +65,7 @@ class DiskLruCacheWrapperIntegrationShould {
     fun return_value_when_cache_has_value() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
             val result = integratedCache.get("key")
@@ -79,7 +79,7 @@ class DiskLruCacheWrapperIntegrationShould {
     fun return_null_when_the_key_has_been_evicted() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
             integratedCache.evict("key").await()
@@ -99,8 +99,8 @@ class DiskLruCacheWrapperIntegrationShould {
                 val cache = DiskLruCacheWrapper(singleEntryDiskCache)
 
                 // when we set 2 values, and force flush the cache
-                cache.set("key1", "value1").await()
-                cache.set("key2", "value2").await()
+                cache.set("key1", "value1")
+                cache.set("key2", "value2")
                 singleEntryDiskCache.flush()
 
                 // then only the second value is available
@@ -120,12 +120,12 @@ class DiskLruCacheWrapperIntegrationShould {
             try {
                 // given we create and populate a cache of size 2
                 val cache = DiskLruCacheWrapper(doubleEntryDiskCache)
-                cache.set("key1", "value1").await()
-                cache.set("key2", "value2").await()
+                cache.set("key1", "value1")
+                cache.set("key2", "value2")
 
                 // when we get the 1st and add a 3rd value, and force flush the cache
                 cache.get("key1")
-                cache.set("key3", "value3").await()
+                cache.set("key3", "value3")
                 doubleEntryDiskCache.flush()
 
                 // then the 2nd is removed leaving the 1st and 3rd values

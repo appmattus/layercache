@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -27,13 +28,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.TimeUnit
 
 class CacheBatchSetShould {
@@ -43,13 +42,13 @@ class CacheBatchSetShould {
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var cache: AbstractCache<String, String>
+    private val cache = mock<AbstractCache<String, String>>()
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(cache.batchSet(MockitoKotlin.any())).thenCallRealMethod()
+        runBlocking {
+            Mockito.`when`(cache.batchSet(MockitoKotlin.any())).thenCallRealMethod()
+        }
     }
 
     @Test
@@ -57,10 +56,10 @@ class CacheBatchSetShould {
         runBlocking {
             // expect exception
             thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+            thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when values map is null
-            cache.batchSet(TestUtils.uninitialized<Map<String, String>>()).await()
+            cache.batchSet(TestUtils.uninitialized<Map<String, String>>())
         }
     }
 
@@ -72,7 +71,7 @@ class CacheBatchSetShould {
             thrown.expectMessage(StringStartsWith("null element found in"))
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized<String>(), "value2"), Pair("key3", "value3"))).await()
+            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized<String>(), "value2"), Pair("key3", "value3")))
         }
     }
 
@@ -83,7 +82,7 @@ class CacheBatchSetShould {
             Mockito.`when`(cache.set(anyString(), MockitoKotlin.any())).then { GlobalScope.async {} }
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized<String>()), Pair("key3", "value3"))).await()
+            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized<String>()), Pair("key3", "value3")))
 
             // then no exception is thrown
         }
@@ -98,7 +97,7 @@ class CacheBatchSetShould {
                     delay(requestTimeInMills)
                 }
             }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we cancel the job
             job.cancel()
@@ -113,12 +112,12 @@ class CacheBatchSetShould {
         runBlocking {
             // given we start a timer and set the values for 3 keys
             Mockito.`when`(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(requestTimeInMills)
                 }
             }
             val start = System.nanoTime()
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()
@@ -135,7 +134,7 @@ class CacheBatchSetShould {
         runBlocking {
             // given we set the values for 3 keys
             Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()
@@ -154,15 +153,13 @@ class CacheBatchSetShould {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
             Mockito.`when`(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    val key = it.getArgument<String>(0)
-                    if (key == "key2") {
-                        throw TestException()
-                    }
-                    key.replace("key", "value")
+                val key = it.getArgument<String>(0)
+                if (key == "key2") {
+                    throw TestException()
                 }
+                key.replace("key", "value")
             }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()

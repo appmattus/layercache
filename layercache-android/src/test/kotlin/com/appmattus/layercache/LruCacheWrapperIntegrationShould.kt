@@ -54,7 +54,7 @@ class LruCacheWrapperIntegrationShould {
     fun return_value_when_cache_has_value() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
             val result = integratedCache.get("key")
@@ -68,7 +68,7 @@ class LruCacheWrapperIntegrationShould {
     fun return_null_when_the_key_has_been_evicted() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
             integratedCache.evict("key").await()
@@ -85,8 +85,8 @@ class LruCacheWrapperIntegrationShould {
             val cache = LruCacheWrapper<String, String>(1)
 
             // when we set 2 values
-            cache.set("key1", "value1").await()
-            cache.set("key2", "value2").await()
+            cache.set("key1", "value1")
+            cache.set("key2", "value2")
 
             // then only the second value is available
             assertNull(cache.get("key1"))
@@ -99,12 +99,12 @@ class LruCacheWrapperIntegrationShould {
         runBlocking {
             // given we create and populate a cache of size 2
             val cache = LruCacheWrapper<String, String>(2)
-            cache.set("key1", "value1").await()
-            cache.set("key2", "value2").await()
+            cache.set("key1", "value1")
+            cache.set("key2", "value2")
 
             // when we get the 1st and add a 3rd value
             cache.get("key1")
-            cache.set("key3", "value3").await()
+            cache.set("key3", "value3")
 
             // then the 2nd is removed leaving the 1st and 3rd values
             assertNull(cache.get("key2"))

@@ -31,10 +31,8 @@ class MapCache : Cache<String, String> {
         return map[key]
     }
 
-    override fun set(key: String, value: String): Deferred<Unit> {
-        return GlobalScope.async {
-            map[key] = value
-        }
+    override suspend fun set(key: String, value: String) {
+        map[key] = value
     }
 
     override fun evict(key: String): Deferred<Unit> {

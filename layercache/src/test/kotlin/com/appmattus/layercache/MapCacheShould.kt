@@ -47,7 +47,7 @@ class MapCacheShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we retrieve a value
             val result = mapCache.get("key")
@@ -61,7 +61,7 @@ class MapCacheShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we evict the value
             mapCache.evict("key").await()
@@ -75,7 +75,7 @@ class MapCacheShould {
     fun `return null when all keys has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we evict the value
             mapCache.evictAll().await()

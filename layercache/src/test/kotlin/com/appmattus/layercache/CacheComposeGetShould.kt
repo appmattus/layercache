@@ -149,7 +149,7 @@ class CacheComposeGetShould {
             // given value available in second cache only
             Mockito.`when`(firstCache.get("key")).then { null }
             Mockito.`when`(secondCache.get("key")).then { "value" }
-            Mockito.`when`(firstCache.set(Mockito.anyString(), Mockito.anyString())).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(firstCache.set(Mockito.anyString(), Mockito.anyString())).then { throw TestException() }
 
             // when we get the value
             composedCache.get("key")

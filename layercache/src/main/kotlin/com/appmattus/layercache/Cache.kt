@@ -40,7 +40,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Save the value against the key
      */
-    fun set(key: Key, value: Value): Deferred<Unit>
+    suspend fun set(key: Key, value: Value)
 
     /**
      * Remove the data associated with the key
@@ -79,18 +79,17 @@ interface Cache<Key : Any, Value : Any> {
                 requireNotNull(key)
                 return this@Cache.get(key) ?: let {
                     b.get(key)?.apply {
-                        this@Cache.set(key, this).await()
+                        this@Cache.set(key, this)
                     }
                 }
             }
 
-            override fun set(key: Key, value: Value): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "set") {
-                        it.set(key, value)
-                    }
+            override suspend fun set(key: Key, value: Value) {
+                requireNotNull(key)
+                requireNotNull(value)
 
-                    Unit
+                executeInParallel2(listOf(this@Cache, b), "set") {
+                    it.set(key, value)
                 }
             }
 
@@ -126,13 +125,11 @@ interface Cache<Key : Any, Value : Any> {
                 }
             }
 
-            override fun set(key: MappedKey, value: Value): Deferred<Unit> {
-                return GlobalScope.async {
-                    val mappedKey = requireNotNull(transform(key)) {
-                        "Required value was null. Key '$key' mapped to null"
-                    }
-                    this@Cache.set(mappedKey, value).await()
+            override suspend fun set(key: MappedKey, value: Value) {
+                val mappedKey = requireNotNull(transform(key)) {
+                    "Required value was null. Key '$key' mapped to null"
                 }
+                return this@Cache.set(mappedKey, value)
             }
 
             override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
@@ -167,10 +164,8 @@ interface Cache<Key : Any, Value : Any> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
             override fun evict(key: Key) = this@Cache.evict(key)
 
-            override fun set(key: Key, value: MappedValue): Deferred<Unit> {
-                return GlobalScope.async {
-                    this@Cache.set(key, inverseTransform(value)).await()
-                }
+            override suspend fun set(key: Key, value: MappedValue) {
+                return this@Cache.set(key, inverseTransform(value))
             }
 
             override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
@@ -190,7 +185,7 @@ interface Cache<Key : Any, Value : Any> {
         return object : ReuseInflightCache<Key, Value>(this@Cache) {
             override fun evict(key: Key) = this@Cache.evict(key)
 
-            override fun set(key: Key, value: Value) = this@Cache.set(key, value)
+            override suspend fun set(key: Key, value: Value) = this@Cache.set(key, value)
 
             override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
         }
@@ -208,15 +203,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Set data for multiple key/value pairs
      */
-    fun batchSet(values: Map<Key, Value>): Deferred<Unit> {
+    suspend fun batchSet(values: Map<Key, Value>) {
+        requireNotNull(values)
         values.keys.requireNoNulls()
 
-        return GlobalScope.async {
-            values.map { entry: Map.Entry<Key, Value> ->
-                this@Cache.set(entry.key, entry.value)
-            }.forEach { it.await() }
-            Unit
-        }
+        values.map { entry: Map.Entry<Key, Value> ->
+            GlobalScope.async { this@Cache.set(entry.key, entry.value) }
+        }.awaitAll()
     }
 
     private suspend fun <T> executeJobsInParallel(jobs: List<Deferred<T>>, lazyMessage: (index: Int) -> Any): List<T> {
@@ -239,6 +232,14 @@ interface Cache<Key : Any, Value : Any> {
         methodCall: (Cache<K, V>) -> Deferred<T>
     ): List<T> {
         val jobs = caches.map { methodCall(it) }
+        return executeJobsInParallel(jobs) { index -> "${message} failed for ${caches[index]}" }
+    }
+
+    private suspend fun <K : Any, V : Any, T> executeInParallel2(
+        caches: List<Cache<K, V>>, message: String,
+        methodCall: suspend (Cache<K, V>) -> T
+    ): List<T> {
+        val jobs = caches.map { GlobalScope.async { methodCall(it) } }
         return executeJobsInParallel(jobs) { index -> "${message} failed for ${caches[index]}" }
     }
 }

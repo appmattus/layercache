@@ -143,7 +143,7 @@ class CacheReuseInflightShould {
             Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { "value" } }
 
             // when we get the value
-            reuseInflightCache.set("key", "value").await()
+            reuseInflightCache.set("key", "value")
 
             // then we return the value
             //Assert.assertEquals("value", result)
@@ -155,10 +155,10 @@ class CacheReuseInflightShould {
     fun `propagate exception on set`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.set("key", "value")).then { throw TestException() }
 
             // when we get the value
-            reuseInflightCache.set("key", "value").await()
+            reuseInflightCache.set("key", "value")
 
             // then we throw an exception
         }
