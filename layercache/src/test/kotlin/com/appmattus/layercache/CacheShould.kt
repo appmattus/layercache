@@ -45,10 +45,8 @@ class CacheShould {
                 delay(500)
             }
 
-            override fun evict(key: String): Deferred<Unit> {
-                return GlobalScope.async {
-                    delay(500)
-                }
+            override suspend fun evict(key: String) {
+                delay(500)
             }
 
             override fun evictAll(): Deferred<Unit> {
@@ -92,7 +90,7 @@ class CacheShould {
     fun `throw exception on evict when job cancelled`() {
         runBlocking {
             // given we call evict
-            val job = cache.evict("key")
+            val job = async { cache.evict("key") }
 
             // when we cancel the job
             job.cancel()
@@ -149,10 +147,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evict(key: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evict(key: String) {
+                    delay(500)
                 }
 
                 override fun evictAll(): Deferred<Unit> {
@@ -192,10 +188,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evict(key: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evict(key: String) {
+                    delay(500)
                 }
 
                 override fun evictAll(): Deferred<Unit> {
@@ -236,10 +230,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evict(key: String): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evict(key: String) {
+                    delay(500)
                 }
 
                 override fun evictAll(): Deferred<Unit> {

@@ -35,10 +35,8 @@ class MapCache : Cache<String, String> {
         map[key] = value
     }
 
-    override fun evict(key: String): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
-            map.remove(key)
-        }
+    override suspend fun evict(key: String) {
+        map.remove(key)
     }
 
     override fun evictAll(): Deferred<Unit> {

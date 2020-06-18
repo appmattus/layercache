@@ -110,7 +110,7 @@ class EhcacheWrapperShould {
             // given
 
             // when we evict the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then remove is called
             Mockito.verify(ehcache).remove("key")
@@ -124,7 +124,7 @@ class EhcacheWrapperShould {
             Mockito.`when`(ehcache.remove("key")).then { throw TestException() }
 
             // when we evict the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we throw an exception
         }
@@ -193,7 +193,7 @@ class EhcacheWrapperShould {
             integratedCache.set("key", "value")
 
             // when we evict the value
-            integratedCache.evict("key").await()
+            integratedCache.evict("key")
 
             // then the value is null
             assertNull(integratedCache.get("key"))

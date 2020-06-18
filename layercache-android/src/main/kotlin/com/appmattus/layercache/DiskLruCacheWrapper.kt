@@ -27,10 +27,8 @@ import java.io.File
  */
 internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<String, String> {
 
-    override fun evict(key: String): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
-            cache.remove(key)
-        }
+    override suspend fun evict(key: String) {
+        cache.remove(key)
     }
 
     override suspend fun get(key: String): String? {

@@ -71,7 +71,7 @@ class LruCacheWrapperIntegrationShould {
             integratedCache.set("key", "value")
 
             // when we evict the value
-            integratedCache.evict("key").await()
+            integratedCache.evict("key")
 
             // then the value is null
             assertNull(integratedCache.get("key"))

@@ -67,7 +67,7 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
         val liveData = MutableLiveData<Unit>()
 
         GlobalScope.async {
-            liveData.postValue(cache.evict(key).await())
+            liveData.postValue(cache.evict(key))
         }
 
         return liveData

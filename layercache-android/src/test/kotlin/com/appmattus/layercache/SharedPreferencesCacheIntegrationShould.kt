@@ -127,7 +127,7 @@ class SharedPreferencesCacheIntegrationShould {
             stringCache.set("key", "value")
 
             // when we evict the value
-            stringCache.evict("key").await()
+            stringCache.evict("key")
 
             // then the value is null
             Assert.assertNull(stringCache.get("key"))

@@ -125,7 +125,7 @@ class Cache2kWrapperShould {
             // given
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we return the value
             //assertEquals("value", result)
@@ -140,7 +140,7 @@ class Cache2kWrapperShould {
             Mockito.`when`(cache2k.remove("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we throw an exception
         }
@@ -181,7 +181,7 @@ class Cache2kWrapperShould {
             integratedCache.set("key", "value")
 
             // when we evict the value
-            integratedCache.evict("key").await()
+            integratedCache.evict("key")
 
             // then the value is null
             assertNull(integratedCache.get("key"))
@@ -224,7 +224,7 @@ class Cache2kWrapperShould {
             integratedCacheWithLoader.set("key", "value")
 
             // when we evict the value
-            integratedCacheWithLoader.evict("key").await()
+            integratedCacheWithLoader.evict("key")
 
             // then the value comes from the loader
             assertEquals("hello", integratedCacheWithLoader.get("key"))

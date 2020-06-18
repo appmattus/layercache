@@ -50,12 +50,10 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
             editor.apply()
         }
 
-        override fun evict(key: String): Deferred<Unit> {
-            return GlobalScope.async {
-                val editor = sharedPreferences.edit()
-                editor.remove(key)
-                editor.apply()
-            }
+        override suspend fun evict(key: String) {
+            val editor = sharedPreferences.edit()
+            editor.remove(key)
+            editor.apply()
         }
 
         override fun evictAll(): Deferred<Unit> {

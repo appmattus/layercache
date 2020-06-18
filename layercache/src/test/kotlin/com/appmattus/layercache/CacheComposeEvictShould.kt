@@ -66,10 +66,10 @@ class CacheComposeEvictShould {
         runBlocking {
             // expect exception
             thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+            thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when key is null
-            composedCache.evict(TestUtils.uninitialized()).await()
+            composedCache.evict(TestUtils.uninitialized())
         }
     }
 
@@ -92,7 +92,7 @@ class CacheComposeEvictShould {
 
             // when we evict the value and start the timer
             val start = System.nanoTime()
-            composedCache.evict("key").await()
+            composedCache.evict("key")
 
             // then evict is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
@@ -108,7 +108,7 @@ class CacheComposeEvictShould {
             Mockito.`when`(secondCache.evict(anyString())).then { GlobalScope.async {} }
 
             // when we evict the value
-            composedCache.evict("key").await()
+            composedCache.evict("key")
 
             // then evict is called on both caches
             Mockito.verify(firstCache).evict("key")
@@ -130,19 +130,17 @@ class CacheComposeEvictShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
 
             // then evict on the second cache still completes and an exception is thrown
             job.await()
@@ -160,19 +158,17 @@ class CacheComposeEvictShould {
 
             // given the second cache throws an exception
             Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
 
             // then an exception is thrown
             job.await()
@@ -189,18 +185,14 @@ class CacheComposeEvictShould {
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
 
             // then an exception is thrown
             job.await()
@@ -229,7 +221,7 @@ class CacheComposeEvictShould {
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
             delay(50)
             job.cancel()
 
@@ -260,7 +252,7 @@ class CacheComposeEvictShould {
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
             delay(50)
             job.cancel()
 
@@ -293,7 +285,7 @@ class CacheComposeEvictShould {
             }
 
             // when we evict the value
-            val job = composedCache.evict("key")
+            val job = async { composedCache.evict("key") }
             delay(25)
             job.cancel()
 

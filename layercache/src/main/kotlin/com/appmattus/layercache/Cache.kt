@@ -45,7 +45,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Remove the data associated with the key
      */
-    fun evict(key: Key): Deferred<Unit>
+    suspend fun evict(key: Key)
 
     /**
      * Remove the data associated with all keys
@@ -66,12 +66,10 @@ interface Cache<Key : Any, Value : Any> {
             override val parents: List<Cache<*, *>>
                 get() = listOf(this@Cache, b)
 
-            override fun evict(key: Key): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evict") {
-                        it.evict(key)
-                    }
-                    Unit
+            override suspend fun evict(key: Key) {
+                requireNotNull(key)
+                executeInParallel2(listOf(this@Cache, b), "evict") {
+                    it.evict(key)
                 }
             }
 
@@ -116,13 +114,11 @@ interface Cache<Key : Any, Value : Any> {
     @Suppress("ReturnCount")
     fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
         return object : MapKeysCache<Key, Value, MappedKey>(this@Cache, transform) {
-            override fun evict(key: MappedKey): Deferred<Unit> {
-                return GlobalScope.async {
-                    val mappedKey = requireNotNull(transform(key)) {
-                        "Required value was null. Key '$key' mapped to null"
-                    }
-                    this@Cache.evict(mappedKey).await()
+            override suspend fun evict(key: MappedKey) {
+                val mappedKey = requireNotNull(transform(key)) {
+                    "Required value was null. Key '$key' mapped to null"
                 }
+                this@Cache.evict(mappedKey)
             }
 
             override suspend fun set(key: MappedKey, value: Value) {
@@ -162,7 +158,7 @@ interface Cache<Key : Any, Value : Any> {
     fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
             Cache<Key, MappedValue> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
-            override fun evict(key: Key) = this@Cache.evict(key)
+            override suspend fun evict(key: Key) = this@Cache.evict(key)
 
             override suspend fun set(key: Key, value: MappedValue) {
                 return this@Cache.set(key, inverseTransform(value))
@@ -183,7 +179,7 @@ interface Cache<Key : Any, Value : Any> {
      */
     fun reuseInflight(): Cache<Key, Value> {
         return object : ReuseInflightCache<Key, Value>(this@Cache) {
-            override fun evict(key: Key) = this@Cache.evict(key)
+            override suspend fun evict(key: Key) = this@Cache.evict(key)
 
             override suspend fun set(key: Key, value: Value) = this@Cache.set(key, value)
 

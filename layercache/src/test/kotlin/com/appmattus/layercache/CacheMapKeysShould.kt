@@ -217,10 +217,10 @@ class CacheMapKeysShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evict("1")).then { Unit }
 
             // when we get the value
-            mappedKeysCache.evict(1).await()
+            mappedKeysCache.evict(1)
 
             // then we return the value
             //Assert.assertEquals("value", result)
@@ -236,7 +236,7 @@ class CacheMapKeysShould {
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when the mapping function returns null
-            mappedKeysCacheWithNull.evict(1).await()
+            mappedKeysCacheWithNull.evict(1)
         }
     }
 
@@ -244,10 +244,10 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { } }
+            Mockito.`when`(cache.evict("1")).then { Unit }
 
             // when we get the value
-            mappedKeysCacheWithError.evict(1).await()
+            mappedKeysCacheWithError.evict(1)
 
             // then we throw an exception
         }
@@ -257,10 +257,10 @@ class CacheMapKeysShould {
     fun `throw exception when evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.evict("1")).then { throw TestException() }
 
             // when we get the value
-            mappedKeysCache.evict(1).await()
+            mappedKeysCache.evict(1)
 
             // then we throw an exception
         }
@@ -270,10 +270,10 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evict`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evict("1")).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(cache.evict("1")).then { runBlocking { delay(250) } }
 
             // when we cancel the job
-            val job = mappedKeysCache.evict(1)
+            val job = async { mappedKeysCache.evict(1) }
             delay(50)
             job.cancel()
 

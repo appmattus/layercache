@@ -28,10 +28,8 @@ import org.cache2k.integration.FunctionalCacheLoader
  */
 internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) : Cache<Key, Value> {
 
-    override fun evict(key: Key): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.remove(key)
-        }
+    override suspend fun evict(key: Key) {
+        cache.remove(key)
     }
 
     override suspend fun get(key: Key): Value? {

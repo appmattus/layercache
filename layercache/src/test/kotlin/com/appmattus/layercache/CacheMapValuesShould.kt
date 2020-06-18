@@ -143,7 +143,7 @@ class CacheMapValuesShould {
             Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
 
             // when we get the value
-            mappedValuesCache.evict("key").await()
+            mappedValuesCache.evict("key")
 
             // then we return the value
             //Assert.assertEquals("value", result)
@@ -155,10 +155,10 @@ class CacheMapValuesShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.evict("key")).then { throw TestException() }
 
             // when we get the value
-            mappedValuesCache.evict("key").await()
+            mappedValuesCache.evict("key")
 
             // then we throw an exception
         }

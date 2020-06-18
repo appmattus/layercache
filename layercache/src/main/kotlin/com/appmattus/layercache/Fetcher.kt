@@ -35,7 +35,7 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
      * No-op as Cache is a Fetcher
      */
     @Deprecated("evict does nothing on a Fetcher")
-    override fun evict(key: Key): Deferred<Unit> = GlobalScope.async {}
+    override suspend fun evict(key: Key) = Unit
 
     /**
      * No-op as Cache is a Fetcher

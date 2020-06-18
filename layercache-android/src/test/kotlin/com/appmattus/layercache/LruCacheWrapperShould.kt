@@ -100,7 +100,7 @@ class LruCacheWrapperShould {
             // given
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we return the value
             //assertEquals("value", result)
@@ -115,7 +115,7 @@ class LruCacheWrapperShould {
             Mockito.`when`(lruCache.remove("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we throw an exception
         }

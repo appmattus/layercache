@@ -30,10 +30,8 @@ import kotlinx.coroutines.async
 internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCache<Key, Value>) : Cache<Key, Value> {
     constructor(maxSize: Int) : this(LruCache(maxSize))
 
-    override fun evict(key: Key): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
-            cache.remove(key)
-        }
+    override suspend fun evict(key: Key) {
+        cache.remove(key)
     }
 
     override suspend fun get(key: Key): Value? {

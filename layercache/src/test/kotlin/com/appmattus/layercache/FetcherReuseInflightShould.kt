@@ -168,7 +168,7 @@ class FetcherReuseInflightShould {
         runBlocking {
             // when we evict the value
             @Suppress("DEPRECATION")
-            reuseInflightCache.evict("1").await()
+            reuseInflightCache.evict("1")
 
             // then the parent cache is not called
             Mockito.verifyNoMoreInteractions(cache)
