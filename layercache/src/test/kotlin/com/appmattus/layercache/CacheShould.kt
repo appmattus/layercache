@@ -17,8 +17,6 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -49,10 +47,8 @@ class CacheShould {
                 delay(500)
             }
 
-            override fun evictAll(): Deferred<Unit> {
-                return GlobalScope.async {
-                    delay(500)
-                }
+            override suspend fun evictAll() {
+                delay(500)
             }
         }
     }
@@ -104,7 +100,7 @@ class CacheShould {
     fun `throw exception on evictAll when job cancelled`() {
         runBlocking {
             // given we call evictAll
-            val job = cache.evictAll()
+            val job = async { cache.evictAll() }
 
             // when we cancel the job
             job.cancel()
@@ -151,10 +147,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evictAll(): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evictAll() {
+                    delay(500)
                 }
             }
 
@@ -192,10 +186,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evictAll(): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evictAll() {
+                    delay(500)
                 }
             }
 
@@ -234,10 +226,8 @@ class CacheShould {
                     delay(500)
                 }
 
-                override fun evictAll(): Deferred<Unit> {
-                    return GlobalScope.async {
-                        delay(500)
-                    }
+                override suspend fun evictAll() {
+                    delay(500)
                 }
             }
 

@@ -17,9 +17,6 @@
 package com.appmattus.layercache
 
 import com.jakewharton.disklrucache.DiskLruCache
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import java.io.File
 
 /**
@@ -41,15 +38,13 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
         editor.commit()
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
-            // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
-            // by calling flush immediately we ensure this happens in the same call
-            cache.maxSize.let {
-                cache.maxSize = 0
-                cache.flush()
-                cache.maxSize = it
-            }
+    override suspend fun evictAll() {
+        // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
+        // by calling flush immediately we ensure this happens in the same call
+        cache.maxSize.let {
+            cache.maxSize = 0
+            cache.flush()
+            cache.maxSize = it
         }
     }
 }

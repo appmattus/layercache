@@ -17,7 +17,6 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -140,7 +139,7 @@ class CacheReuseInflightShould {
     fun `call set from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { "value" } }
+            Mockito.`when`(cache.set("key", "value")).then { "value" }
 
             // when we get the value
             reuseInflightCache.set("key", "value")
@@ -169,7 +168,7 @@ class CacheReuseInflightShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evict("key")).then { Unit }
 
             // when we get the value
             reuseInflightCache.evict("key")
@@ -198,10 +197,10 @@ class CacheReuseInflightShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evictAll()).then { Unit }
 
             // when we evictAll values
-            reuseInflightCache.evictAll().await()
+            reuseInflightCache.evictAll()
 
             // then evictAll is called
             Mockito.verify(cache).evictAll()
@@ -212,10 +211,10 @@ class CacheReuseInflightShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
-            reuseInflightCache.evictAll().await()
+            reuseInflightCache.evictAll()
 
             // then we throw an exception
         }

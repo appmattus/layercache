@@ -137,7 +137,7 @@ class EhcacheWrapperShould {
             // given
 
             // when we evictAll values
-            wrappedCache.evictAll().await()
+            wrappedCache.evictAll()
 
             // then clear is called
             Mockito.verify(ehcache).clear()
@@ -151,7 +151,7 @@ class EhcacheWrapperShould {
             Mockito.`when`(ehcache.clear()).then { throw TestException() }
 
             // when we evictAll values
-            wrappedCache.evictAll().await()
+            wrappedCache.evictAll()
 
             // then we throw an exception
         }

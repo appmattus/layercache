@@ -44,8 +44,8 @@ class SharedPreferencesCacheIntegrationShould {
     @After
     fun after() {
         runBlocking {
-            stringCache.evictAll().await()
-            intCache.evictAll().await()
+            stringCache.evictAll()
+            intCache.evictAll()
         }
     }
 

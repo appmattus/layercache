@@ -78,7 +78,7 @@ class MapCacheShould {
             mapCache.set("key", "value")
 
             // when we evict the value
-            mapCache.evictAll().await()
+            mapCache.evictAll()
 
             // then the value is null
             Assert.assertNull(mapCache.get("key"))

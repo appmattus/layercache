@@ -287,10 +287,10 @@ class CacheMapKeysShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evictAll()).then { Unit }
 
             // when we evict the value
-            mappedKeysCache.evictAll().await()
+            mappedKeysCache.evictAll()
 
             // then we evictAll value
             Mockito.verify(cache).evictAll()
@@ -301,10 +301,10 @@ class CacheMapKeysShould {
     fun `no exception when transform returns null during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { } }
+            Mockito.`when`(cache.evictAll()).then { Unit }
 
             // when the mapping function returns null and we evictAll
-            mappedKeysCacheWithNull.evictAll().await()
+            mappedKeysCacheWithNull.evictAll()
 
             // then no exception is thrown
         }
@@ -314,10 +314,10 @@ class CacheMapKeysShould {
     fun `no exception when transform throws during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { } }
+            Mockito.`when`(cache.evictAll()).then { Unit }
 
             // when the mapping function throws an exception and we evictAll
-            mappedKeysCacheWithError.evictAll().await()
+            mappedKeysCacheWithError.evictAll()
 
             // then no exception is thrown
         }
@@ -327,10 +327,10 @@ class CacheMapKeysShould {
     fun `throw exception when evictAll throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
-            mappedKeysCache.evictAll().await()
+            mappedKeysCache.evictAll()
 
             // then we throw an exception
         }
@@ -340,10 +340,10 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evictAll`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { delay(250) } }
+            Mockito.`when`(cache.evictAll()).then { runBlocking { delay(250) } }
 
             // when we cancel the job
-            val job = mappedKeysCache.evictAll()
+            val job = async { mappedKeysCache.evictAll() }
             delay(50)
             job.cancel()
 

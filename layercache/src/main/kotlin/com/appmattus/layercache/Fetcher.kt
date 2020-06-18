@@ -41,7 +41,7 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
      * No-op as Cache is a Fetcher
      */
     @Deprecated("evictAll does nothing on a Fetcher")
-    override fun evictAll(): Deferred<Unit> = GlobalScope.async {}
+    override suspend fun evictAll() = Unit
 
     @Deprecated("Use valueTransform(transform) on a Fetcher", ReplaceWith("valueTransform(transform)"))
     override fun <MappedValue : Any> valueTransform(

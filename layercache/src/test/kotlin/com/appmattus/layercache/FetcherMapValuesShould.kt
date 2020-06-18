@@ -172,7 +172,7 @@ class FetcherMapValuesShould {
         runBlocking {
             // when we evictAll values
             @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
             Mockito.verifyNoMoreInteractions(cache)
@@ -184,7 +184,7 @@ class FetcherMapValuesShould {
         runBlocking {
             // when we evictAll values
             @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
             Mockito.verifyNoInteractions(function)

@@ -16,7 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertThat
@@ -139,7 +138,7 @@ class CacheComposeShould {
             override suspend fun get(key: String): String? = throw Exception("Unimplemented")
             override suspend fun set(key: String, value: String) = throw Exception("Unimplemented")
             override suspend fun evict(key: String) = throw Exception("Unimplemented")
-            override fun evictAll(): Deferred<Unit> = throw Exception("Unimplemented")
+            override suspend fun evictAll() = throw Exception("Unimplemented")
         }
 
         // expect an exception

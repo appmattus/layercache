@@ -38,10 +38,8 @@ internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehc
         cache.put(key, value)
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
+    override suspend fun evictAll() {
             cache.clear()
-        }
     }
 }
 

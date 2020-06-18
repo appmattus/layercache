@@ -16,10 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 /**
  * Simple cache that stores values associated with keys in a map with no expiration or cleanup logic. Use at your own
  * risk.
@@ -39,9 +35,7 @@ class MapCache : Cache<String, String> {
         map.remove(key)
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
-            map.clear()
-        }
+    override suspend fun evictAll() {
+        map.clear()
     }
 }

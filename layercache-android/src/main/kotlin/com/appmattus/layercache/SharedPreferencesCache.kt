@@ -18,9 +18,6 @@ package com.appmattus.layercache
 
 import android.content.Context
 import android.content.SharedPreferences
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 /**
  * Simple cache that stores values associated with keys in a shared preferences file with no expiration or cleanup
@@ -56,12 +53,10 @@ class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
             editor.apply()
         }
 
-        override fun evictAll(): Deferred<Unit> {
-            return GlobalScope.async {
-                val editor = sharedPreferences.edit()
-                editor.clear()
-                editor.apply()
-            }
+        override suspend fun evictAll() {
+            val editor = sharedPreferences.edit()
+            editor.clear()
+            editor.apply()
         }
     }
 

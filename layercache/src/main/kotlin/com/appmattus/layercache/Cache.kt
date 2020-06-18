@@ -50,7 +50,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Remove the data associated with all keys
      */
-    fun evictAll(): Deferred<Unit>
+    suspend fun evictAll()
 
     /**
      * Compose two caches. Try to fetch from the first cache and, failing that, request the data from the second cache.
@@ -91,12 +91,9 @@ interface Cache<Key : Any, Value : Any> {
                 }
             }
 
-            override fun evictAll(): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evictAll") {
-                        it.evictAll()
-                    }
-                    Unit
+            override suspend fun evictAll() {
+                executeInParallel2(listOf(this@Cache, b), "evictAll") {
+                    it.evictAll()
                 }
             }
         }
@@ -128,7 +125,7 @@ interface Cache<Key : Any, Value : Any> {
                 return this@Cache.set(mappedKey, value)
             }
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 
@@ -164,7 +161,7 @@ interface Cache<Key : Any, Value : Any> {
                 return this@Cache.set(key, inverseTransform(value))
             }
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 
@@ -183,7 +180,7 @@ interface Cache<Key : Any, Value : Any> {
 
             override suspend fun set(key: Key, value: Value) = this@Cache.set(key, value)
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 

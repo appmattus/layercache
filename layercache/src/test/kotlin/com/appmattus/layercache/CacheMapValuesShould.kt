@@ -16,8 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -140,7 +138,7 @@ class CacheMapValuesShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evict("key")).then { Unit }
 
             // when we get the value
             mappedValuesCache.evict("key")
@@ -169,10 +167,10 @@ class CacheMapValuesShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
+            Mockito.`when`(cache.evictAll()).then { Unit }
 
             // when we evictAll values
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then evictAll is called
             Mockito.verify(cache).evictAll()
@@ -183,10 +181,10 @@ class CacheMapValuesShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
+            Mockito.`when`(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then we throw an exception
         }

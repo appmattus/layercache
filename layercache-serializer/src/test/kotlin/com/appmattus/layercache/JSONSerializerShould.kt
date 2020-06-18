@@ -48,7 +48,7 @@ class JSONSerializerShould {
                 override suspend fun get(key: String): String? = lastValue
                 override suspend fun set(key: String, value: String) { lastValue = value }
                 override suspend fun evict(key: String) = TODO("not implemented")
-                override fun evictAll(): Deferred<Unit> = TODO("not implemented")
+                override suspend fun evictAll() = TODO("not implemented")
             }
             val cache: Cache<String, ValueClass> = initialCache.jsonSerializer()
 

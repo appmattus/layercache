@@ -19,9 +19,6 @@ package com.appmattus.layercache
 import android.annotation.TargetApi
 import android.os.Build
 import android.util.LruCache
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 /**
  * Wrapper around Android's built in LruCache
@@ -42,10 +39,8 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
         cache.put(key, value)
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.evictAll()
-        }
+    override suspend fun evictAll() {
+        cache.evictAll()
     }
 }
 

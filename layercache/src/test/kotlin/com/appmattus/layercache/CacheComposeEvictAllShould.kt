@@ -17,7 +17,6 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -78,7 +77,7 @@ class CacheComposeEvictAllShould {
 
             // when we evictAll values and start the timer
             val start = System.nanoTime()
-            composedCache.evictAll().await()
+            composedCache.evictAll()
 
             // then evictAll is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
@@ -90,11 +89,11 @@ class CacheComposeEvictAllShould {
     fun `execute evictAll for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.evictAll()).then { GlobalScope.async {} }
-            Mockito.`when`(secondCache.evictAll()).then { GlobalScope.async {} }
+            Mockito.`when`(firstCache.evictAll()).then { Unit }
+            Mockito.`when`(secondCache.evictAll()).then { Unit }
 
             // when we evictAll values
-            composedCache.evictAll().await()
+            composedCache.evictAll()
 
             // then evictAll is called on both caches
             Mockito.verify(firstCache).evictAll()
@@ -116,19 +115,17 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
 
             // then evictAll on the second cache still completes and an exception is thrown
             job.await()
@@ -146,19 +143,17 @@ class CacheComposeEvictAllShould {
 
             // given the second cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
 
             // then an exception is thrown
             job.await()
@@ -175,18 +170,14 @@ class CacheComposeEvictAllShould {
 
             // given both caches throw an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+                throw TestException()
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
 
             // then an exception is thrown
             job.await()
@@ -204,18 +195,16 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(250)
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+                executions.execute()
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
             delay(50)
             job.cancel()
 
@@ -235,18 +224,16 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+                executions.execute()
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(250)
                 }
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
             delay(50)
             job.cancel()
 
@@ -266,20 +253,20 @@ class CacheComposeEvictAllShould {
 
             // given the first cache throws an exception
             Mockito.`when`(firstCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
             Mockito.`when`(secondCache.evictAll()).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
 
             // when we evictAll values
-            val job = composedCache.evictAll()
+            val job = async { composedCache.evictAll() }
             delay(25)
             job.cancel()
 

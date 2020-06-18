@@ -16,9 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.cache2k.integration.FunctionalCacheLoader
 
@@ -40,12 +37,10 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
         cache.put(key, value)
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.clear()
+    override suspend fun evictAll() {
+        cache.clear()
 
-            //FunctionalCacheLoader
-        }
+        //FunctionalCacheLoader
     }
 }
 

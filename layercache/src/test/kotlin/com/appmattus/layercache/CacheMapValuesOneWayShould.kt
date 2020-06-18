@@ -167,7 +167,7 @@ class CacheMapValuesOneWayShould {
         runBlocking {
             // when we set the value
             @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
             Mockito.verifyNoMoreInteractions(cache)
@@ -179,7 +179,7 @@ class CacheMapValuesOneWayShould {
         runBlocking {
             // when we set the value
             @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
             Mockito.verifyNoInteractions(function)
