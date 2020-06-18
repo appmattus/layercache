@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
@@ -47,7 +48,7 @@ class CacheBatchSetShould {
     @Before
     fun before() {
         runBlocking {
-            whenever(cache.batchSet(MockitoKotlin.any())).thenCallRealMethod()
+            whenever(cache.batchSet(any())).thenCallRealMethod()
         }
     }
 
@@ -59,7 +60,12 @@ class CacheBatchSetShould {
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
             // when values map is null
-            cache.batchSet(TestUtils.uninitialized<Map<String, String>>())
+            object : AbstractCache<String, String>() {
+                override suspend fun get(key: String): String? = null
+                override suspend fun set(key: String, value: String) = Unit
+                override suspend fun evict(key: String) = Unit
+                override suspend fun evictAll() = Unit
+            }.batchSet(TestUtils.uninitialized())
         }
     }
 
@@ -71,7 +77,7 @@ class CacheBatchSetShould {
             thrown.expectMessage(StringStartsWith("null element found in"))
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized<String>(), "value2"), Pair("key3", "value3")))
+            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized(), "value2"), Pair("key3", "value3")))
         }
     }
 
@@ -79,10 +85,10 @@ class CacheBatchSetShould {
     fun `not throw exception when value in entry in values map is null`() {
         runBlocking {
             // given we have a cache
-            whenever(cache.set(anyString(), MockitoKotlin.any())).then { GlobalScope.async {} }
+            whenever(cache.set(anyString(), any())).then { Unit }
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized<String>()), Pair("key3", "value3")))
+            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
 
             // then no exception is thrown
         }

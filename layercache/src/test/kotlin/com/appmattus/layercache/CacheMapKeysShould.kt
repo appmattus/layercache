@@ -16,11 +16,13 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
@@ -50,15 +52,15 @@ class CacheMapKeysShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
         val fInv: (Int) -> String = { int: Int -> int.toString() }
-        Mockito.`when`(cache.keyTransform(fInv)).thenCallRealMethod()
+        whenever(cache.keyTransform(fInv)).thenCallRealMethod()
         mappedKeysCache = cache.keyTransform(fInv)
 
         val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.keyTransform(errorFInv)).thenCallRealMethod()
+        whenever(cache.keyTransform(errorFInv)).thenCallRealMethod()
         mappedKeysCacheWithError = cache.keyTransform(errorFInv)
 
         val nullFInv: (Int) -> String = { _: Int -> TestUtils.uninitialized() }
-        Mockito.`when`(cache.keyTransform(nullFInv)).thenCallRealMethod()
+        whenever(cache.keyTransform(nullFInv)).thenCallRealMethod()
         mappedKeysCacheWithNull = cache.keyTransform(nullFInv)
     }
 
@@ -70,7 +72,7 @@ class CacheMapKeysShould {
             return
         }
 
-        Assert.assertThat(localCache.parents, IsEqual.equalTo(listOf<Cache<*, *>>(cache)))
+        assertThat(localCache.parents, IsEqual.equalTo(listOf<Cache<*, *>>(cache)))
     }
 
     // get
@@ -78,7 +80,7 @@ class CacheMapKeysShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { "value" }
+            whenever(cache.get("1")).then { "value" }
 
             // when we get the value
             val result = mappedKeysCache.get(1)
@@ -103,7 +105,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { "value" }
+            whenever(cache.get("1")).then { "value" }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCacheWithError.get(1)
@@ -116,7 +118,7 @@ class CacheMapKeysShould {
     fun `throw exception when get throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("1")).then { throw TestException() }
+            whenever(cache.get("1")).then { throw TestException() }
 
             // when we get the value from a map
             mappedKeysCache.get(1)
@@ -129,7 +131,7 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during get`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.get("1")).then { runBlocking { delay(250) } }
+            whenever(cache.get("1")).then { runBlocking { delay(250) } }
 
             // when we cancel the job
             val job = async { mappedKeysCache.get(1) }
@@ -146,7 +148,7 @@ class CacheMapKeysShould {
     fun `map int value in set to string`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
+            whenever(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we set the value
             mappedKeysCache.set(1, "1")
@@ -172,7 +174,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
+            whenever(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCacheWithError.set(1, "1")
@@ -185,7 +187,7 @@ class CacheMapKeysShould {
     fun `throw exception when set throws`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { throw TestException() }
+            whenever(cache.set(anyString(), anyString())).then { throw TestException() }
 
             // when we set the value from a map
             mappedKeysCache.set(1, "1")
@@ -199,7 +201,7 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during set`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.set(anyString(), anyString())).then { runBlocking { delay(250) } }
+            whenever(cache.set(anyString(), anyString())).then { runBlocking { delay(250) } }
 
             // when we cancel the job
             val job = async { mappedKeysCache.set(1, "1") }
@@ -216,7 +218,7 @@ class CacheMapKeysShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { Unit }
+            whenever(cache.evict("1")).then { Unit }
 
             // when we get the value
             mappedKeysCache.evict(1)
@@ -243,7 +245,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { Unit }
+            whenever(cache.evict("1")).then { Unit }
 
             // when we get the value
             mappedKeysCacheWithError.evict(1)
@@ -256,7 +258,7 @@ class CacheMapKeysShould {
     fun `throw exception when evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("1")).then { throw TestException() }
+            whenever(cache.evict("1")).then { throw TestException() }
 
             // when we get the value
             mappedKeysCache.evict(1)
@@ -269,7 +271,7 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evict`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evict("1")).then { runBlocking { delay(250) } }
+            whenever(cache.evict("1")).then { runBlocking { delay(250) } }
 
             // when we cancel the job
             val job = async { mappedKeysCache.evict(1) }
@@ -286,7 +288,7 @@ class CacheMapKeysShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { Unit }
+            whenever(cache.evictAll()).then { Unit }
 
             // when we evict the value
             mappedKeysCache.evictAll()
@@ -300,7 +302,7 @@ class CacheMapKeysShould {
     fun `no exception when transform returns null during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { Unit }
+            whenever(cache.evictAll()).then { Unit }
 
             // when the mapping function returns null and we evictAll
             mappedKeysCacheWithNull.evictAll()
@@ -313,7 +315,7 @@ class CacheMapKeysShould {
     fun `no exception when transform throws during evictAll`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { Unit }
+            whenever(cache.evictAll()).then { Unit }
 
             // when the mapping function throws an exception and we evictAll
             mappedKeysCacheWithError.evictAll()
@@ -326,7 +328,7 @@ class CacheMapKeysShould {
     fun `throw exception when evictAll throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evictAll()).then { throw TestException() }
+            whenever(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
             mappedKeysCache.evictAll()
@@ -339,7 +341,7 @@ class CacheMapKeysShould {
     fun `throw exception when cancelled during evictAll`() {
         runBlocking {
             // given we have a long running job
-            Mockito.`when`(cache.evictAll()).then { runBlocking { delay(250) } }
+            whenever(cache.evictAll()).then { runBlocking { delay(250) } }
 
             // when we cancel the job
             val job = async { mappedKeysCache.evictAll() }

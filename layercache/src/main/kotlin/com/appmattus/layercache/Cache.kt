@@ -188,6 +188,7 @@ interface Cache<Key : Any, Value : Any> {
      * Return data associated with multiple keys.
      */
     suspend fun batchGet(keys: List<Key>): List<Value?> {
+        requireNotNull(keys)
         keys.requireNoNulls()
 
         return keys.map { GlobalScope.async { this@Cache.get(it) } }.awaitAll()

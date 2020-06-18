@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -44,7 +46,7 @@ class FetcherReuseInflightShould {
     @Before
     fun before() {
         MockitoAnnotations.initMocks(this)
-        Mockito.`when`(cache.reuseInflight()).thenCallRealMethod()
+        whenever(cache.reuseInflight()).thenCallRealMethod()
         reuseInflightCache = cache.reuseInflight()
 
         Mockito.verify(cache).reuseInflight()
@@ -67,7 +69,7 @@ class FetcherReuseInflightShould {
     fun `single call to get returns the value`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { "value" }
+            whenever(cache.get("key")).then { "value" }
 
             // when we get the value
             val result = reuseInflightCache.get("key")
@@ -84,7 +86,7 @@ class FetcherReuseInflightShould {
 
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then {
+            whenever(cache.get("key")).then {
                 runBlocking {
                     delay(100)
                 }
@@ -110,7 +112,7 @@ class FetcherReuseInflightShould {
 
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then {
+            whenever(cache.get("key")).then {
                 runBlocking {
                     delay(100)
 
@@ -139,7 +141,7 @@ class FetcherReuseInflightShould {
     fun `propogate exception on get`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { throw TestException() }
+            whenever(cache.get("key")).then { throw TestException() }
 
             // when we get the value
             reuseInflightCache.get("key")
@@ -183,7 +185,7 @@ class FetcherReuseInflightShould {
             reuseInflightCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 }

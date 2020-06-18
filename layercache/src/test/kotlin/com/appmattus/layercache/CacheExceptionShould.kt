@@ -16,11 +16,11 @@
 
 package com.appmattus.layercache
 
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsInstanceOf.instanceOf
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException

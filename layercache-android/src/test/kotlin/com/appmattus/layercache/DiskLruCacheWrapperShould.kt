@@ -17,37 +17,25 @@
 package com.appmattus.layercache
 
 import com.jakewharton.disklrucache.DiskLruCache
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 
 class DiskLruCacheWrapperShould {
 
-    @Mock
-    private lateinit var lruCache: DiskLruCache
-
-    @Mock
-    private lateinit var snapshot: DiskLruCache.Snapshot
-
-    private lateinit var wrappedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        wrappedCache = Cache.fromDiskLruCache(lruCache)
-    }
+    private val lruCache = mock<DiskLruCache>()
+    private val snapshot = mock<DiskLruCache.Snapshot>()
+    private val wrappedCache: Cache<String, String> = Cache.fromDiskLruCache(lruCache)
 
     // get
     @Test
     fun get_returns_value_from_cache() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(snapshot.getString(0)).thenReturn("value")
-            Mockito.`when`(lruCache.get("key")).thenReturn(snapshot)
+            whenever(snapshot.getString(0)).thenReturn("value")
+            whenever(lruCache.get("key")).thenReturn(snapshot)
 
             // when we get the value
             val result = wrappedCache.get("key")
@@ -61,7 +49,7 @@ class DiskLruCacheWrapperShould {
     fun get_throws() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(lruCache.get("key")).then { throw TestException() }
+            whenever(lruCache.get("key")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.get("key")
@@ -80,7 +68,7 @@ class DiskLruCacheWrapperShould {
             wrappedCache.set("key", "value").await()
 
             // then put is called
-            Mockito.verify(lruCache).put("key", "value")
+            verify(lruCache).put("key", "value")
         }
     }
 
@@ -88,7 +76,7 @@ class DiskLruCacheWrapperShould {
     fun set_throws() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(lruCache.put("key", "value")).then { throw TestException() }
+            whenever(lruCache.put("key", "value")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.set("key", "value").await()
@@ -108,7 +96,7 @@ class DiskLruCacheWrapperShould {
 
             // then we return the value
             //assertEquals("value", result)
-            Mockito.verify(lruCache).remove("key")
+            verify(lruCache).remove("key")
         }
     }
 
@@ -116,7 +104,7 @@ class DiskLruCacheWrapperShould {
     fun evict_throws() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(lruCache.remove("key")).then { throw TestException() }
+            whenever(lruCache.remove("key")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.evict("key").await()

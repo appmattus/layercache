@@ -23,13 +23,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
+import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import java.util.concurrent.TimeUnit
@@ -38,38 +37,41 @@ class CacheBatchGetShould {
 
     private val requestTimeInMills = 250L
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
     private val cache = mock<AbstractCache<String, String>>()
 
     @Before
     fun before() {
-        whenever(runBlocking { cache.batchGet(Mockito.anyList<String>()) }).thenCallRealMethod()
-        whenever(runBlocking { cache.batchGet(MockitoKotlin.any()) }).thenCallRealMethod()
+        whenever(runBlocking { cache.batchGet(anyList()) }).thenCallRealMethod()
+        whenever(runBlocking { cache.batchGet(TestUtils.uninitialized()) }).thenCallRealMethod()
     }
 
     @Test
     fun `throw exception when keys list is null`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
             // when key is null
-            cache.batchGet(TestUtils.uninitialized<List<String>>())
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    cache.batchGet(TestUtils.uninitialized())
+                }
+            }
+
+            // expect exception
+            assertTrue(throwable.message!!.startsWith("Required value was null"))
         }
     }
 
     @Test
     fun `throw exception when key in list is null`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("null element found in"))
-
             // when key in list is null
-            cache.batchGet(listOf("key1", TestUtils.uninitialized<String>(), "key3"))
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    cache.batchGet(listOf("key1", TestUtils.uninitialized(), "key3"))
+                }
+            }
+
+            // expect exception
+            assertTrue(throwable.message!!.startsWith("null element found in"))
         }
     }
 

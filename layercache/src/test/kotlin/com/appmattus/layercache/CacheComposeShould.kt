@@ -16,36 +16,32 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 
 class CacheComposeShould {
 
     @get:Rule
     var thrown: ExpectedException = ExpectedException.none()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
+    private val firstCache = mock<AbstractCache<String, String>>()
+    private val secondCache = mock<AbstractCache<String, String>>()
 
     private lateinit var composedCache: Cache<String, String>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(MockitoKotlin.any())).thenCallRealMethod()
-        Mockito.`when`(secondCache.compose(MockitoKotlin.any())).thenCallRealMethod()
+        whenever(firstCache.compose(any())).thenCallRealMethod()
+        whenever(secondCache.compose(any())).thenCallRealMethod()
         composedCache = firstCache.compose(secondCache)
     }
 
@@ -54,8 +50,12 @@ class CacheComposeShould {
         thrown.expect(IllegalArgumentException::class.java)
         thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
 
-        val nullCache: Cache<String, String> = TestUtils.uninitialized()
-        firstCache.compose(nullCache)
+        object : AbstractCache<String, String>() {
+            override suspend fun get(key: String): String? = null
+            override suspend fun set(key: String, value: String) = Unit
+            override suspend fun evict(key: String) = Unit
+            override suspend fun evictAll() = Unit
+        }.compose(TestUtils.uninitialized())
     }
 
     @Test

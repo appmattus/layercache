@@ -16,6 +16,8 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -58,7 +60,7 @@ class CacheComposeSetShould {
     @Before
     fun before() {
         MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(secondCache)).thenCallRealMethod()
+        whenever(firstCache.compose(secondCache)).thenCallRealMethod()
         composedCache = firstCache.compose(secondCache)
         verify(firstCache).compose(secondCache)
     }
@@ -82,8 +84,8 @@ class CacheComposeSetShould {
             thrown.expect(IllegalArgumentException::class.java)
             thrown.expectMessage(StringStartsWith("Required value was null"))
 
-            Mockito.`when`(firstCache.set(anyString(), MockitoKotlin.any())).then { "" }
-            Mockito.`when`(secondCache.set(anyString(), MockitoKotlin.any())).then { "" }
+            whenever(firstCache.set(anyString(), any())).then { Unit }
+            whenever(secondCache.set(anyString(), any())).then { Unit }
 
             // when value is null
             composedCache.set("key", TestUtils.uninitialized())
@@ -96,12 +98,12 @@ class CacheComposeSetShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to set a value
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
@@ -121,8 +123,8 @@ class CacheComposeSetShould {
     fun `execute set for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async {} }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then { GlobalScope.async {} }
+            whenever(firstCache.set(anyString(), anyString())).then { Unit }
+            whenever(secondCache.set(anyString(), anyString())).then { Unit }
 
             // when we set the value
             composedCache.set("key", "value")
@@ -145,10 +147,10 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 throw TestException()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 runBlocking {
                     delay(50)
                     executions.execute()
@@ -174,13 +176,13 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the second cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 throw TestException()
             }
 
@@ -202,10 +204,10 @@ class CacheComposeSetShould {
             thrown.expectCause(isA(TestException::class.java))
 
             // given both caches throw an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 throw TestException()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 throw TestException()
             }
 
@@ -228,12 +230,12 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     delay(250)
                 }
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     executions.execute()
                 }
@@ -260,12 +262,12 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     executions.execute()
                 }
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     delay(250)
                 }
@@ -292,13 +294,13 @@ class CacheComposeSetShould {
             executions.expect(0)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
+            whenever(firstCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     delay(50)
                     executions.execute()
                 }
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
+            whenever(secondCache.set(anyString(), anyString())).then {
                 GlobalScope.async {
                     delay(50)
                     executions.execute()

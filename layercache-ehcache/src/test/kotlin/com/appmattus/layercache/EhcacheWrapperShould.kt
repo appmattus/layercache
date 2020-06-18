@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheManagerBuilder
@@ -57,7 +58,7 @@ class EhcacheWrapperShould {
     fun `get returns value from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.get("key")).thenReturn("value")
+            whenever(ehcache.get("key")).thenReturn("value")
 
             // when we get the value
             val result = wrappedCache.get("key")
@@ -71,7 +72,7 @@ class EhcacheWrapperShould {
     fun `get throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.get("key")).then { throw TestException() }
+            whenever(ehcache.get("key")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.get("key")
@@ -98,7 +99,7 @@ class EhcacheWrapperShould {
     fun `set throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.put("key", "value")).then { throw TestException() }
+            whenever(ehcache.put("key", "value")).then { throw TestException() }
 
             // when we set the value
             wrappedCache.set("key", "value")
@@ -125,7 +126,7 @@ class EhcacheWrapperShould {
     fun `evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.remove("key")).then { throw TestException() }
+            whenever(ehcache.remove("key")).then { throw TestException() }
 
             // when we evict the value
             wrappedCache.evict("key")
@@ -152,7 +153,7 @@ class EhcacheWrapperShould {
     fun `evictAll throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.clear()).then { throw TestException() }
+            whenever(ehcache.clear()).then { throw TestException() }
 
             // when we evictAll values
             wrappedCache.evictAll()

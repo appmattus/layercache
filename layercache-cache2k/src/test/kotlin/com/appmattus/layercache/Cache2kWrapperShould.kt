@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.cache2k.Cache2kBuilder
 import org.junit.Assert.assertEquals
@@ -49,7 +50,7 @@ class Cache2kWrapperShould {
                 .build()
             integratedCache = Cache.fromCache2k(cache2k)
 
-            Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { "hello" }
+            whenever(loaderFetcher.get(Mockito.anyString())).then { "hello" }
 
             val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
                 .expireAfterWrite(5, TimeUnit.MINUTES) // expire/refresh after 5 minutes
@@ -66,7 +67,7 @@ class Cache2kWrapperShould {
     fun `get returns value from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.get("key")).thenReturn("value")
+            whenever(cache2k.get("key")).thenReturn("value")
 
             // when we get the value
             val result = wrappedCache.get("key")
@@ -80,7 +81,7 @@ class Cache2kWrapperShould {
     fun `get throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.get("key")).then { throw TestException() }
+            whenever(cache2k.get("key")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.get("key")
@@ -107,7 +108,7 @@ class Cache2kWrapperShould {
     fun `set throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.put("key", "value")).then { throw TestException() }
+            whenever(cache2k.put("key", "value")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.set("key", "value")
@@ -135,7 +136,7 @@ class Cache2kWrapperShould {
     fun `evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.remove("key")).then { throw TestException() }
+            whenever(cache2k.remove("key")).then { throw TestException() }
 
             // when we get the value
             wrappedCache.evict("key")

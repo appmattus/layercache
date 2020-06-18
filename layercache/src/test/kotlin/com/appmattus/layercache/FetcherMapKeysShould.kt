@@ -16,10 +16,12 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
@@ -48,7 +50,7 @@ class FetcherMapKeysShould {
     fun before() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(cache.keyTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
+        whenever(cache.keyTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
 
         mappedKeysCache = cache.keyTransform(function)
 
@@ -63,7 +65,7 @@ class FetcherMapKeysShould {
             return
         }
 
-        Assert.assertThat(localCache.parents, IsEqual.equalTo(listOf<Cache<*, *>>(cache)))
+        assertThat(localCache.parents, IsEqual.equalTo(listOf<Cache<*, *>>(cache)))
     }
 
     // get
@@ -72,7 +74,7 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { "value" }
+            whenever(cache.get("1")).then { "value" }
 
             // when we get the value
             val result = mappedKeysCache.get(1)
@@ -85,7 +87,7 @@ class FetcherMapKeysShould {
     fun `throw exception when transform returns null during get`() {
         runBlocking {
             // given transform returns null
-            Mockito.`when`(function.invoke(Mockito.anyInt())).then { TestUtils.uninitialized() }
+            whenever(function.invoke(Mockito.anyInt())).then { TestUtils.uninitialized() }
 
             // expect exception
             thrown.expect(IllegalArgumentException::class.java)
@@ -100,9 +102,9 @@ class FetcherMapKeysShould {
     fun `throw exception when transform throws during get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(function.invoke(Mockito.anyInt())).then { throw TestException() }
+            whenever(function.invoke(Mockito.anyInt())).then { throw TestException() }
 
-            // Mockito.`when`(cache.get("1")).then { async(CommonPool) { "value" } }
+            // whenever(cache.get("1")).then { async(CommonPool) { "value" } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCache.get(1)
@@ -116,7 +118,7 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a string
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { throw TestException() }
+            whenever(cache.get("1")).then { throw TestException() }
 
             // when we get the value from a map
             mappedKeysCache.get(1)
@@ -130,7 +132,7 @@ class FetcherMapKeysShould {
         runBlocking {
             // given we have a long running job
             transformConvertsIntToString()
-            Mockito.`when`(cache.get("1")).then { runBlocking { delay(250) } }
+            whenever(cache.get("1")).then { runBlocking { delay(250) } }
 
             // when we cancel the job
             val job = async { mappedKeysCache.get(1) }
@@ -218,6 +220,6 @@ class FetcherMapKeysShould {
     }
 
     private fun transformConvertsIntToString() {
-        Mockito.`when`(function.invoke(Mockito.anyInt())).then { it.getArgument<Int>(0).toString() }
+        whenever(function.invoke(Mockito.anyInt())).then { it.getArgument<Int>(0).toString() }
     }
 }

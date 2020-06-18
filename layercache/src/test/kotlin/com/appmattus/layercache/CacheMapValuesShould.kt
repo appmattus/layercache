@@ -16,6 +16,7 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -40,12 +41,12 @@ class CacheMapValuesShould {
         MockitoAnnotations.initMocks(this)
         val f: (String) -> Int = { str: String -> str.toInt() }
         val fInv: (Int) -> String = { int: Int -> int.toString() }
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
+        whenever(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
         mappedValuesCache = cache.valueTransform(f, fInv)
 
         val errorF: (String) -> Int = { _: String -> throw TestException() }
         val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java)))
+        whenever(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java)))
             .thenCallRealMethod()
         mappedValuesCacheWithError = cache.valueTransform(errorF, errorFInv)
     }
@@ -55,7 +56,7 @@ class CacheMapValuesShould {
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { "1" }
+            whenever(cache.get("key")).then { "1" }
 
             // when we get the value
             val result = mappedValuesCache.get("key")
@@ -70,7 +71,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { "1" }
+            whenever(cache.get("key")).then { "1" }
 
             // when we get the value from a map with exception throwing functions
             mappedValuesCacheWithError.get("key")
@@ -83,7 +84,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { throw TestException() }
+            whenever(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
             mappedValuesCache.get("key")
@@ -97,7 +98,7 @@ class CacheMapValuesShould {
     fun `map int value in set to string`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
+            whenever(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we set the value
             mappedValuesCache.set("key", 1)
@@ -111,7 +112,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
+            whenever(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we get the value from a map with exception throwing functions
             mappedValuesCacheWithError.set("key", 1)
@@ -124,7 +125,7 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { throw TestException() }
+            whenever(cache.set(anyString(), anyString())).then { throw TestException() }
 
             // when we get the value from a map
             mappedValuesCache.set("key", 1)
@@ -138,7 +139,7 @@ class CacheMapValuesShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { Unit }
+            whenever(cache.evict("key")).then { Unit }
 
             // when we get the value
             mappedValuesCache.evict("key")
@@ -153,7 +154,7 @@ class CacheMapValuesShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { throw TestException() }
+            whenever(cache.evict("key")).then { throw TestException() }
 
             // when we get the value
             mappedValuesCache.evict("key")
@@ -167,7 +168,7 @@ class CacheMapValuesShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { Unit }
+            whenever(cache.evictAll()).then { Unit }
 
             // when we evictAll values
             mappedValuesCache.evictAll()
@@ -181,7 +182,7 @@ class CacheMapValuesShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { throw TestException() }
+            whenever(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
             mappedValuesCache.evictAll()

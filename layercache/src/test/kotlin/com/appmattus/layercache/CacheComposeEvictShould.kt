@@ -16,8 +16,12 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -26,14 +30,10 @@ import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -45,20 +45,20 @@ class CacheComposeEvictShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
+    private val firstCache = mock<AbstractCache<String, String>> {
+        onGeneric { toString() } doReturn "firstCache"
+    }
+    private val secondCache = mock<AbstractCache<String, String>> {
+        onGeneric { toString() } doReturn "secondCache"
+    }
 
     private lateinit var composedCache: Cache<String, String>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(secondCache)).thenCallRealMethod()
+        whenever(firstCache.compose(secondCache)).thenCallRealMethod()
         composedCache = firstCache.compose(secondCache)
-        Mockito.verify(firstCache).compose(secondCache)
+        verify(firstCache).compose(secondCache)
     }
 
     @Test
@@ -79,12 +79,12 @@ class CacheComposeEvictShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to evict a value
-            Mockito.`when`(firstCache.evict(anyString())).then {
+            whenever(firstCache.evict(anyString())).then {
                 async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
+            whenever(secondCache.evict(anyString())).then {
                 async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                     TestUtils.blockingTask(jobTimeInMillis)
                 }
@@ -104,17 +104,17 @@ class CacheComposeEvictShould {
     fun `execute evict for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.evict(anyString())).then { GlobalScope.async {} }
-            Mockito.`when`(secondCache.evict(anyString())).then { GlobalScope.async {} }
+            whenever(firstCache.evict(anyString())).then { Unit }
+            whenever(secondCache.evict(anyString())).then { Unit }
 
             // when we evict the value
             composedCache.evict("key")
 
             // then evict is called on both caches
-            Mockito.verify(firstCache).evict("key")
-            Mockito.verify(secondCache).evict("key")
-            Mockito.verifyNoMoreInteractions(firstCache)
-            Mockito.verifyNoMoreInteractions(secondCache)
+            verify(firstCache).evict("key")
+            verify(secondCache).evict("key")
+            verifyNoMoreInteractions(firstCache)
+            verifyNoMoreInteractions(secondCache)
         }
     }
 
@@ -129,10 +129,10 @@ class CacheComposeEvictShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
+            whenever(firstCache.evict(anyString())).then {
                 throw TestException()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
+            whenever(secondCache.evict(anyString())).then {
                 runBlocking {
                     delay(50)
                     executions.execute()
@@ -157,13 +157,13 @@ class CacheComposeEvictShould {
             executions.expect(1)
 
             // given the second cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
+            whenever(firstCache.evict(anyString())).then {
                 runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
+            whenever(secondCache.evict(anyString())).then {
                 throw TestException()
             }
 
@@ -184,10 +184,10 @@ class CacheComposeEvictShould {
             thrown.expectCause(isA(TestException::class.java))
 
             // given both caches throw an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
+            whenever(firstCache.evict(anyString())).then {
                 throw TestException()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
+            whenever(secondCache.evict(anyString())).then {
                 throw TestException()
             }
 
@@ -200,24 +200,21 @@ class CacheComposeEvictShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on evict and first cache is executing`() {
         runBlocking {
             // expect exception and successful execution of secondCache
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
+            whenever(firstCache.evict(anyString())).then {
+                runBlocking {
                     delay(250)
                 }
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+            whenever(secondCache.evict(anyString())).then {
+                executions.execute()
             }
 
             // when we evict the value
@@ -231,22 +228,19 @@ class CacheComposeEvictShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on evict and second cache is executing`() {
         runBlocking {
             // expect exception and successful execution of firstCache
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+            whenever(firstCache.evict(anyString())).then {
+                executions.execute()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
+            whenever(secondCache.evict(anyString())).then {
+                runBlocking {
                     delay(250)
                 }
             }
@@ -262,23 +256,22 @@ class CacheComposeEvictShould {
     }
 
     @Test
-    @Ignore("No longer true in latest coroutine library")
     fun `throw exception when job cancelled on evict and both caches executing`() {
         runBlocking {
             // expect exception and no execution of caches
             thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
+            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
+            whenever(firstCache.evict(anyString())).then {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
+            whenever(secondCache.evict(anyString())).then {
+                runBlocking {
                     delay(50)
                     executions.execute()
                 }

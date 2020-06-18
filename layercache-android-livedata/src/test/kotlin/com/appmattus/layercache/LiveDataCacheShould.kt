@@ -17,14 +17,12 @@
 package com.appmattus.layercache
 
 import android.util.LruCache
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -39,13 +37,7 @@ class LiveDataCacheShould {
         val TIMEOUT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
     }
 
-    @Mock
-    private lateinit var lruCache: LruCache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-    }
+    private val lruCache = mock<LruCache<String, String>>()
 
     @Test
     fun receive_value() {
@@ -53,7 +45,7 @@ class LiveDataCacheShould {
             val latch = CountDownLatch(1)
 
             // given value available in first cache only
-            Mockito.`when`(lruCache.get("key")).then { "value" }
+            whenever(lruCache.get("key")).then { "value" }
 
             val liveDataCache = Cache.fromLruCache(lruCache).toLiveData()
 
