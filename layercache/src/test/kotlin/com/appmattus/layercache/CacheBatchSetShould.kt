@@ -26,12 +26,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.core.StringStartsWith
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
@@ -40,44 +37,41 @@ class CacheBatchSetShould {
 
     private val requestTimeInMills = 250L
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    private val cache = mock<AbstractCache<String, String>>()
-
-    @Before
-    fun before() {
-        runBlocking {
-            whenever(cache.batchSet(any())).thenCallRealMethod()
-        }
+    private val cache = mock<AbstractCache<String, String>> {
+        onBlocking { batchSet(any()) }.thenCallRealMethod()
     }
 
     @Test
     fun `throw exception when values map is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when values map is null
-            object : AbstractCache<String, String>() {
-                override suspend fun get(key: String): String? = null
-                override suspend fun set(key: String, value: String) = Unit
-                override suspend fun evict(key: String) = Unit
-                override suspend fun evictAll() = Unit
-            }.batchSet(TestUtils.uninitialized())
+        // when values map is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                object : AbstractCache<String, String>() {
+                    override suspend fun get(key: String): String? = null
+                    override suspend fun set(key: String, value: String) = Unit
+                    override suspend fun evict(key: String) = Unit
+                    override suspend fun evictAll() = Unit
+                }.batchSet(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertTrue(throwable.message!!.startsWith("Required value was null"))
     }
 
     @Test
     fun `throw exception when key in entry in values map is null`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("null element found in"))
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized(), "value2"), Pair("key3", "value3")))
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized(), "value2"), Pair("key3", "value3")))
+                }
+            }
+
+            // expect exception
+            assertTrue(throwable.message!!.startsWith("null element found in"))
         }
     }
 

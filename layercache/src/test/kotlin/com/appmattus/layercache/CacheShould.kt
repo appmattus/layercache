@@ -23,33 +23,26 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
-import org.junit.Before
 import org.junit.Test
 
 class CacheShould {
 
-    lateinit var cache: Cache<String, String>
+    val cache: Cache<String, String> = object : Cache<String, String> {
+        override suspend fun get(key: String): String? {
+            delay(500)
+            return "value"
+        }
 
-    @Before
-    fun before() {
+        override suspend fun set(key: String, value: String) {
+            delay(500)
+        }
 
-        cache = object : Cache<String, String> {
-            override suspend fun get(key: String): String? {
-                delay(500)
-                return "value"
-            }
+        override suspend fun evict(key: String) {
+            delay(500)
+        }
 
-            override suspend fun set(key: String, value: String) {
-                delay(500)
-            }
-
-            override suspend fun evict(key: String) {
-                delay(500)
-            }
-
-            override suspend fun evictAll() {
-                delay(500)
-            }
+        override suspend fun evictAll() {
+            delay(500)
         }
     }
 
@@ -132,7 +125,7 @@ class CacheShould {
     @Test
     fun `onFailure`() {
         runBlocking {
-            cache = object : Cache<String, String> {
+            val cache = object : Cache<String, String> {
                 override suspend fun get(key: String): String? {
                     throw Exception("Forced failure")
                 }
@@ -169,7 +162,7 @@ class CacheShould {
     @Test
     fun `onFailure cancelled`() {
         runBlocking {
-            cache = object : Cache<String, String> {
+            val cache = object : Cache<String, String> {
                 override suspend fun get(key: String): String? {
                     delay(500)
                     return "value"
@@ -207,7 +200,7 @@ class CacheShould {
     @Test
     fun `onCompletion cancelled`() {
         runBlocking {
-            cache = object : Cache<String, String> {
+            val cache = object : Cache<String, String> {
                 override suspend fun get(key: String): String? {
                     delay(500)
                     return "value"

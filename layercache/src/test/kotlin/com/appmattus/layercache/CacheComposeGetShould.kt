@@ -20,23 +20,22 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verifyNoInteractions
 
 class CacheComposeGetShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     @get:Rule
     var executions = ExecutionExpectation()
@@ -55,14 +54,15 @@ class CacheComposeGetShould {
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when key is null
-            composedCache.get(TestUtils.uninitialized())
+        // when key is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                composedCache.get(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
@@ -155,67 +155,76 @@ class CacheComposeGetShould {
     @Test
     fun `throw exception when job cancelled on get and first cache is executing get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
-
             // given the first cache throws an exception
             whenever(firstCache.get(anyString())).then { runBlocking { delay(250) } }
             whenever(secondCache.get(anyString())).then { executions.execute() }
 
             // when we get the value
-            val job = async { composedCache.get("key") }
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on get and second cache is executing get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
-
             // given the first cache throws an exception
             whenever(firstCache.get(anyString())).then { null }
             whenever(secondCache.get(anyString())).then { runBlocking { delay(250) } }
 
             // when we get the value
-            val job = async { composedCache.get("key") }
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on get and first cache is executing set after get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
-
             // given the first cache throws an exception
             whenever(firstCache.get(anyString())).then { null }
             whenever(secondCache.get(anyString())).then { "value" }
             whenever(firstCache.set(anyString(), anyString())).then { runBlocking { delay(250) } }
 
             // when we get the value
-            val job = async { composedCache.get("key") }
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 }

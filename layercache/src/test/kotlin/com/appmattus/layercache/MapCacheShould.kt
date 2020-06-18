@@ -17,7 +17,8 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -39,7 +40,7 @@ class MapCacheShould {
             val result = mapCache.get("key")
 
             // then it is null
-            Assert.assertNull(result)
+            assertNull(result)
         }
     }
 
@@ -53,7 +54,7 @@ class MapCacheShould {
             val result = mapCache.get("key")
 
             // then it is returned
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -67,7 +68,7 @@ class MapCacheShould {
             mapCache.evict("key")
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key"))
+            assertNull(mapCache.get("key"))
         }
     }
 
@@ -81,7 +82,7 @@ class MapCacheShould {
             mapCache.evictAll()
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key"))
+            assertNull(mapCache.get("key"))
         }
     }
 }

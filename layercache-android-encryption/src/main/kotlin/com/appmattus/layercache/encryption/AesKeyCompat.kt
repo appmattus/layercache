@@ -52,18 +52,13 @@ internal class AesKeyCompat(
         const val AES_ALGORITHM = "AES"
     }
 
-    private var mImpl: AESKey
-    private val keyStore by lazy { KeyStore.getInstance(ANDROID_KEYSTORE_PROVIDER).apply { load(null) } }
-
-    init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mImpl = AESKeyApi23()
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            mImpl = AesKeyBase()
-        } else {
-            throw IllegalStateException("Requires API 18 or higher")
-        }
+    private val mImpl: AESKey = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> AESKeyApi23()
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 -> AesKeyBase()
+        else -> throw IllegalStateException("Requires API 18 or higher")
     }
+
+    private val keyStore by lazy { KeyStore.getInstance(ANDROID_KEYSTORE_PROVIDER).apply { load(null) } }
 
     internal fun retrieveConfidentialityKey(keystoreAlias: String): SecretKey =
         mImpl.retrieveConfidentialityKey(keystoreAlias)
@@ -102,17 +97,18 @@ internal class AesKeyCompat(
             @Suppress("DEPRECATION")
             val specBuilder = android.security.KeyPairGeneratorSpec.Builder(context)
                 .setAlias(keystoreAlias)
-                .setEndDate(end.getTime())
-                .setStartDate(start.getTime())
+                .setEndDate(end.time)
+                .setStartDate(start.time)
                 .setSerialNumber(BigInteger.ONE)
                 .setSubject(X500Principal("CN=$keystoreAlias"))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                @Suppress("MagicNumber")
+                @Suppress("MagicNumber", "DEPRECATION")
                 specBuilder.setKeySize(2048).setKeyType(KEY_ALGORITHM_RSA)
             }
 
             return KeyPairGenerator.getInstance(KEY_ALGORITHM_RSA, ANDROID_KEYSTORE_PROVIDER).apply {
+                @Suppress("DEPRECATION")
                 initialize(specBuilder.build())
             }.generateKeyPair()
         }

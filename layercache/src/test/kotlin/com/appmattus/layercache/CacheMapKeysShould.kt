@@ -28,17 +28,13 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.mockito.Answers
 import org.mockito.ArgumentMatchers.anyString
 
 class CacheMapKeysShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     private val cache = mock<AbstractCache<String, Any>>()
 
@@ -88,14 +84,15 @@ class CacheMapKeysShould {
 
     @Test
     fun `throw exception when transform returns null during get`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when the mapping function returns null
-            mappedKeysCacheWithNull.get(1)
+        // when the mapping function returns null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                mappedKeysCacheWithNull.get(1)
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test(expected = TestException::class)
@@ -157,14 +154,15 @@ class CacheMapKeysShould {
 
     @Test
     fun `throw exception when transform returns null during set`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when the mapping function returns null
-            mappedKeysCacheWithNull.set(1, "value")
+        // when the mapping function returns null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                mappedKeysCacheWithNull.set(1, "value")
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test(expected = TestException::class)
@@ -228,14 +226,15 @@ class CacheMapKeysShould {
 
     @Test
     fun `throw exception when transform returns null during evict`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when the mapping function returns null
-            mappedKeysCacheWithNull.evict(1)
+        // when the mapping function returns null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                mappedKeysCacheWithNull.evict(1)
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test(expected = TestException::class)

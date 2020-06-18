@@ -24,28 +24,21 @@ import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verifyNoInteractions
 
 class CacheMapValuesOneWayShould {
 
-    private val cache = mock<AbstractCache<Any, String>>()
+    private val cache = mock<AbstractCache<Any, String>> {
+        on { valueTransform(any<(String) -> Int>()) }.thenCallRealMethod()
+    }
 
     private val function = mock<(String) -> Int>()
 
     private val functionInverse = mock<(Int) -> String>()
 
-    private lateinit var mappedValuesCache: Fetcher<Any, Int>
-
-    @Suppress("DEPRECATION")
-    @Before
-    fun before() {
-        whenever(cache.valueTransform(any<(String) -> Int>())).thenCallRealMethod()
-
-        mappedValuesCache = cache.valueTransform(function)
-
+    private val mappedValuesCache: Fetcher<Any, Int> = cache.valueTransform(function).also {
         verify(cache, atLeastOnce()).valueTransform(any<(String) -> Any>())
     }
 

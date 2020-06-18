@@ -21,33 +21,31 @@ import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsInstanceOf.instanceOf
 import org.hamcrest.core.StringStartsWith
-import org.junit.Rule
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 class CacheExceptionShould {
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
     @Test
     fun `throw exception when exceptions is null`() {
-        // expect exception
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
         // when exception list is null
-        CacheException("hi", TestUtils.uninitialized())
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            CacheException("hi", TestUtils.uninitialized())
+        }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when exceptions is empty`() {
-        // expect exception
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("You must provide at least one Exception"))
-
         // when exception list is null
-        CacheException("hi", listOf())
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            CacheException("hi", listOf())
+        }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("You must provide at least one Exception"))
     }
 
     @Test

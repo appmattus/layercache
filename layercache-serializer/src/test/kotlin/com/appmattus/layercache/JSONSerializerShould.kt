@@ -20,17 +20,14 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonDecodingException
 import kotlinx.serialization.serializer
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
-import org.junit.Rule
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 class JSONSerializerShould {
-
-    @get:Rule
-    var thrown = ExpectedException.none()
 
     @Serializable
     internal data class ValueClass(val value: Int)
@@ -81,33 +78,37 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform(TestUtils.uninitialized())
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform(TestUtils.uninitialized())
+        assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when parameter to inverseTransform is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).inverseTransform(TestUtils.uninitialized())
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).inverseTransform(TestUtils.uninitialized())
+        assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when parameter to transform is not json`() {
-        thrown.expect(JsonDecodingException::class.java)
-        thrown.expectMessage(StringStartsWith("Unexpected JSON token"))
+        val throwable = assertThrows(JsonDecodingException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform("junk")
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform("junk")
+        assertThat(throwable.message, StringStartsWith("Unexpected JSON token"))
     }
 
     @Test
     fun `throw exception when parameter to transform contains field that is not expected`() {
-        thrown.expect(JsonDecodingException::class.java)
-        thrown.expectMessage(StringContains("Encountered an unknown key 'result'"))
+        val throwable = assertThrows(JsonDecodingException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
+        assertThat(throwable.message, StringContains("Encountered an unknown key 'result'"))
     }
 }

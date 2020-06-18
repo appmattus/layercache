@@ -26,16 +26,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import java.util.concurrent.atomic.AtomicInteger
 
 class FetcherReuseInflightShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     private val cache = mock<AbstractFetcher<Any, Any>>()
 
@@ -52,12 +49,13 @@ class FetcherReuseInflightShould {
     @Test
     fun `throw exception when directly chained`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalStateException::class.java)
-            thrown.expectMessage("Do not directly chain reuseInflight")
-
             // when reuseInflight called again
-            reuseInflightCache.reuseInflight()
+            val throwable = assertThrows(IllegalStateException::class.java) {
+                reuseInflightCache.reuseInflight()
+            }
+
+            // expect exception
+            assertEquals(throwable.message, "Do not directly chain reuseInflight")
         }
     }
 

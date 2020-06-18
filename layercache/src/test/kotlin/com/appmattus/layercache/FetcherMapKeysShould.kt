@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
@@ -29,30 +30,26 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.verifyNoInteractions
 
 class FetcherMapKeysShould {
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    private val cache = mock<AbstractFetcher<String, Any>>()
+    private val cache = mock<AbstractFetcher<String, Any>> {
+        on { keyTransform(any<(Int) -> String>()) }.thenCallRealMethod()
+    }
     private val function = mock<(Int) -> String>()
 
     private lateinit var mappedKeysCache: Fetcher<Int, Any>
 
     @Before
     fun before() {
-        whenever(cache.keyTransform(any<(Int) -> String>())).thenCallRealMethod()
-
         mappedKeysCache = cache.keyTransform(function)
 
-        verify(cache, Mockito.atLeastOnce()).keyTransform(any<(Int) -> String>())
+        verify(cache, atLeastOnce()).keyTransform(any<(Int) -> String>())
     }
 
     @Test
@@ -85,14 +82,17 @@ class FetcherMapKeysShould {
     fun `throw exception when transform returns null during get`() {
         runBlocking {
             // given transform returns null
-            whenever(function.invoke(Mockito.anyInt())).then { TestUtils.uninitialized() }
-
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
+            whenever(function.invoke(anyInt())).then { TestUtils.uninitialized() }
 
             // when the mapping function returns null
-            mappedKeysCache.get(1)
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    mappedKeysCache.get(1)
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("Required value was null"))
         }
     }
 
@@ -100,7 +100,7 @@ class FetcherMapKeysShould {
     fun `throw exception when transform throws during get`() {
         runBlocking {
             // given we have a string
-            whenever(function.invoke(Mockito.anyInt())).then { throw TestException() }
+            whenever(function.invoke(anyInt())).then { throw TestException() }
 
             // whenever(cache.get("1")).then { async(CommonPool) { "value" } }
 
@@ -218,6 +218,6 @@ class FetcherMapKeysShould {
     }
 
     private fun transformConvertsIntToString() {
-        whenever(function.invoke(Mockito.anyInt())).then { it.getArgument<Int>(0).toString() }
+        whenever(function.invoke(anyInt())).then { it.getArgument<Int>(0).toString() }
     }
 }

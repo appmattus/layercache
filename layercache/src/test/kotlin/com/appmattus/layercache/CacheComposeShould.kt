@@ -18,106 +18,106 @@ package com.appmattus.layercache
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
-import org.hamcrest.core.StringStartsWith
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 class CacheComposeShould {
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    private val firstCache = mock<AbstractCache<String, String>>()
-    private val secondCache = mock<AbstractCache<String, String>>()
-
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        whenever(firstCache.compose(any())).thenCallRealMethod()
-        whenever(secondCache.compose(any())).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
+    private val firstCache = mock<AbstractCache<String, String>> {
+        on { compose(any()) }.thenCallRealMethod()
     }
+    private val secondCache = mock<AbstractCache<String, String>> {
+        on { compose(any()) }.thenCallRealMethod()
+    }
+
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when second cache is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            object : AbstractCache<String, String>() {
+                override suspend fun get(key: String): String? = null
+                override suspend fun set(key: String, value: String) = Unit
+                override suspend fun evict(key: String) = Unit
+                override suspend fun evictAll() = Unit
+            }.compose(TestUtils.uninitialized())
+        }
 
-        object : AbstractCache<String, String>() {
-            override suspend fun get(key: String): String? = null
-            override suspend fun set(key: String, value: String) = Unit
-            override suspend fun evict(key: String) = Unit
-            override suspend fun evictAll() = Unit
-        }.compose(TestUtils.uninitialized())
+        assertTrue(throwable.message!!.startsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when referencing self`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            firstCache.compose(firstCache)
+        }
 
-        firstCache.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 1`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            firstCache.compose(c)
+        }
 
-        val c = firstCache.compose(secondCache)
-        firstCache.compose(c)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 2`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            c.compose(firstCache)
+        }
 
-        val c = firstCache.compose(secondCache)
-        c.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 3`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            secondCache.compose(c)
+        }
 
-        val c = firstCache.compose(secondCache)
-        secondCache.compose(c)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 4`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            c.compose(secondCache)
+        }
 
-        val c = firstCache.compose(secondCache)
-        c.compose(secondCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference big chain 1`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
+            c.compose(secondCache)
+        }
 
-        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
-        c.compose(secondCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference big chain 2`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
+            c.compose(firstCache)
+        }
 
-        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
-        c.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
@@ -142,11 +142,12 @@ class CacheComposeShould {
             override suspend fun evictAll() = throw Exception("Unimplemented")
         }
 
-        // expect an exception
-        thrown.expect(IllegalStateException::class.java)
-        thrown.expectMessage("Not overridden")
-
         // when we get parents that has not been overridden
-        cache.parents
+        val throwable = assertThrows(IllegalStateException::class.java) {
+            cache.parents
+        }
+
+        // expect an exception
+        assertEquals("Not overridden", throwable.message)
     }
 }

@@ -23,30 +23,22 @@ import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.mockito.Answers
 import org.mockito.ArgumentMatchers.anyString
 
 class CacheMapValuesShould {
 
-    private val cache = mock<AbstractCache<Any, String>>()
-
-    private lateinit var mappedValuesCache: Cache<Any, Int>
-    private lateinit var mappedValuesCacheWithError: Cache<Any, Int>
-
-    @Before
-    fun before() {
+    private val cache = mock<AbstractCache<Any, String>> {
         @Suppress("RemoveExplicitTypeArguments")
-        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>())).thenCallRealMethod()
-        mappedValuesCache = cache.valueTransform({ str: String -> str.toInt() }, { int: Int -> int.toString() })
-
-        @Suppress("RemoveExplicitTypeArguments")
-        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>()))
-            .thenCallRealMethod()
-        @Suppress("RedundantLambdaArrow")
-        mappedValuesCacheWithError = cache.valueTransform({ _: String -> throw TestException() }, { _: Int -> throw TestException() })
+        on { valueTransform(any<(String) -> Int>(), any<(Int) -> String>()) }.thenCallRealMethod()
     }
+
+    private val mappedValuesCache: Cache<Any, Int> = cache.valueTransform({ str: String -> str.toInt() }, { int: Int -> int.toString() })
+
+    @Suppress("RedundantLambdaArrow")
+    private val mappedValuesCacheWithError: Cache<Any, Int> =
+        cache.valueTransform({ _: String -> throw TestException() }, { _: Int -> throw TestException() })
 
     // get
     @Test
