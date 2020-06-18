@@ -68,7 +68,7 @@ interface Cache<Key : Any, Value : Any> {
 
             override suspend fun evict(key: Key) {
                 requireNotNull(key)
-                executeInParallel2(listOf(this@Cache, b), "evict") {
+                executeInParallel(listOf(this@Cache, b), "evict") {
                     it.evict(key)
                 }
             }
@@ -86,13 +86,13 @@ interface Cache<Key : Any, Value : Any> {
                 requireNotNull(key)
                 requireNotNull(value)
 
-                executeInParallel2(listOf(this@Cache, b), "set") {
+                executeInParallel(listOf(this@Cache, b), "set") {
                     it.set(key, value)
                 }
             }
 
             override suspend fun evictAll() {
-                executeInParallel2(listOf(this@Cache, b), "evictAll") {
+                executeInParallel(listOf(this@Cache, b), "evictAll") {
                     it.evictAll()
                 }
             }
@@ -221,14 +221,6 @@ interface Cache<Key : Any, Value : Any> {
     }
 
     private suspend fun <K : Any, V : Any, T> executeInParallel(
-        caches: List<Cache<K, V>>, message: String,
-        methodCall: (Cache<K, V>) -> Deferred<T>
-    ): List<T> {
-        val jobs = caches.map { methodCall(it) }
-        return executeJobsInParallel(jobs) { index -> "${message} failed for ${caches[index]}" }
-    }
-
-    private suspend fun <K : Any, V : Any, T> executeInParallel2(
         caches: List<Cache<K, V>>, message: String,
         methodCall: suspend (Cache<K, V>) -> T
     ): List<T> {

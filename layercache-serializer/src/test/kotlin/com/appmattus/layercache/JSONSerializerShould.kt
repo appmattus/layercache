@@ -16,9 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonDecodingException
@@ -46,7 +43,10 @@ class JSONSerializerShould {
                 var lastValue: String? = null
 
                 override suspend fun get(key: String): String? = lastValue
-                override suspend fun set(key: String, value: String) { lastValue = value }
+                override suspend fun set(key: String, value: String) {
+                    lastValue = value
+                }
+
                 override suspend fun evict(key: String) = TODO("not implemented")
                 override suspend fun evictAll() = TODO("not implemented")
             }

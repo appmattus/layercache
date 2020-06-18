@@ -16,10 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 /**
  * Fetcher is a special kind of cache that is just used to retrieve data. It is not possible to cache any values
  * and so implements no-op for set and evict. An example would be a network fetcher.

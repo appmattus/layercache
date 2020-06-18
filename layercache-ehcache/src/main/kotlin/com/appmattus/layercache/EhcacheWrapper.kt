@@ -16,10 +16,6 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 /**
  * Wrapper around EhCache (http://www.ehcache.org/)
  * @property cache  Ehcache cache
@@ -39,7 +35,7 @@ internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehc
     }
 
     override suspend fun evictAll() {
-            cache.clear()
+        cache.clear()
     }
 }
 
