@@ -25,7 +25,7 @@ import kotlinx.coroutines.awaitAll
 /**
  * A standard cache which stores and retrieves data
  */
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "RedundantRequireNotNullCall")
 interface Cache<Key : Any, Value : Any> {
     /**
      * Companion object for 'static' extension functions
@@ -211,9 +211,9 @@ interface Cache<Key : Any, Value : Any> {
 
         val jobsWithExceptions = jobs.filter { it.isCancelled }
         if (jobsWithExceptions.isNotEmpty()) {
-            val errorMessage = jobsWithExceptions.map { "${lazyMessage(jobs.indexOf(it))}" }.joinToString()
+            val errorMessage = jobsWithExceptions.joinToString { "${lazyMessage(jobs.indexOf(it))}" }
 
-            val exceptions = jobsWithExceptions.map { it.getCompletionExceptionOrNull() }.filterNotNull()
+            val exceptions = jobsWithExceptions.mapNotNull { it.getCompletionExceptionOrNull() }
 
             throw CacheException(errorMessage, exceptions)
         }

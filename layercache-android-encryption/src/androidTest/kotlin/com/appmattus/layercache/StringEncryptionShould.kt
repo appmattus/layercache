@@ -29,19 +29,15 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
 import java.security.KeyStore
 
 @RunWith(JUnitParamsRunner::class)
 class StringEncryptionShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     @Before
     fun setup() {
@@ -106,11 +102,11 @@ class StringEncryptionShould {
                 val mappedCache = cache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
                 // when we set a value and retrieve it
-                mappedCache.set("key", "value").await()
+                mappedCache.set("key", "value")
 
                 // then the value is encrypted in the original cache and decrypted in the wrapped cache
-                assertNotEquals("value", cache.get("key").await())
-                assertEquals("value", mappedCache.get("key").await())
+                assertNotEquals("value", cache.get("key"))
+                assertEquals("value", mappedCache.get("key"))
             }
         }
     }
@@ -130,16 +126,16 @@ class StringEncryptionShould {
 
                 val chained = encryptedDiskCache.compose(networkCache)
 
-                assertNull(diskCache.get("key").await())
-                assertNull(encryptedDiskCache.get("key").await())
+                assertNull(diskCache.get("key"))
+                assertNull(encryptedDiskCache.get("key"))
 
-                val valueFromNetwork = chained.get("key").await()
+                val valueFromNetwork = chained.get("key")
                 assertEquals("value", valueFromNetwork)
 
-                val valueFromDiskCache = encryptedDiskCache.get("key").await()
+                val valueFromDiskCache = encryptedDiskCache.get("key")
                 assertEquals("value", valueFromDiskCache)
 
-                val valueFromRawCacheEncrypted = diskCache.get("key").await()
+                val valueFromRawCacheEncrypted = diskCache.get("key")
                 assertNotEquals(valueFromRawCacheEncrypted, valueFromDiskCache)
             }
         }
@@ -167,10 +163,10 @@ class StringEncryptionShould {
     @SuppressLint("NewApi")
     fun throw_exception_when_sdk_too_low_for_cbc() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            thrown.expect(IllegalStateException::class.java)
-
-            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
-            StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+            assertThrows(IllegalStateException::class.java) {
+                val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
+                StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+            }
         }
     }
 
@@ -178,10 +174,10 @@ class StringEncryptionShould {
     @SuppressLint("NewApi")
     fun throw_exception_when_sdk_too_low_for_gcm() {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            thrown.expect(IllegalStateException::class.java)
-
-            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
-            StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+            assertThrows(IllegalStateException::class.java) {
+                val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
+                StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+            }
         }
     }
 
@@ -222,8 +218,6 @@ class StringEncryptionShould {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun decrypt_using_new_encryptor_using_new_key(encryptor: StringEncryption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            thrown.expect(Exception::class.java)
-
             val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
 
             // given we encrypt some data
@@ -241,21 +235,23 @@ class StringEncryptionShould {
             }
 
             // when we decrypt using a new encryptor using the same alias but different keys
+            assertThrows(Exception::class.java) {
 
-            val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
-                    appContext,
-                    EncryptionFactory.Mode.AES_GCM_NoPadding,
-                    "testGcm"
-                )
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
-                    appContext,
-                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
-                    "testCbc"
-                )
-                else -> throw IllegalStateException("Unimplemented")
+                val newEncryptor = when (encryptor.toString()) {
+                    EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                        appContext,
+                        EncryptionFactory.Mode.AES_GCM_NoPadding,
+                        "testGcm"
+                    )
+                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                        appContext,
+                        EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                        "testCbc"
+                    )
+                    else -> throw IllegalStateException("Unimplemented")
+                }
+                newEncryptor.transform(encryptedData)
             }
-            newEncryptor.transform(encryptedData)
 
             // then the data is unable to be decrypted, and an exception is thrown
         }

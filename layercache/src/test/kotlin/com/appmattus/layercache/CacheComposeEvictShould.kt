@@ -22,25 +22,23 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.isA
+import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.mockito.Mockito.anyString
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeEvictShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     @get:Rule
     var executions = ExecutionExpectation()
@@ -63,14 +61,15 @@ class CacheComposeEvictShould {
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when key is null
-            composedCache.evict(TestUtils.uninitialized())
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                // when key is null
+                composedCache.evict(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
@@ -80,13 +79,13 @@ class CacheComposeEvictShould {
 
             // given we have two caches with a long running job to evict a value
             whenever(firstCache.evict(anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
+                async(Dispatchers.IO) {
+                    delay(jobTimeInMillis)
                 }
             }
             whenever(secondCache.evict(anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
+                async(Dispatchers.IO) {
+                    delay(jobTimeInMillis)
                 }
             }
 
@@ -96,7 +95,7 @@ class CacheComposeEvictShould {
 
             // then evict is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-            Assert.assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
+            assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
         }
     }
 
@@ -121,11 +120,6 @@ class CacheComposeEvictShould {
     @Test
     fun `throw internal exception on evict when the first cache throws`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for firstCache")
-            thrown.expectCause(isA(TestException::class.java))
-
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -139,21 +133,25 @@ class CacheComposeEvictShould {
                 }
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
 
-            // then evict on the second cache still completes and an exception is thrown
-            job.await()
+                    // then evict on the second cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, IsEqual("evict failed for firstCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw internal exception on evict when the second cache throws`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the second cache throws an exception
@@ -167,22 +165,25 @@ class CacheComposeEvictShould {
                 throw TestException()
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, IsEqual("evict failed for secondCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw internal exception on evict when both caches throws`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for firstCache, evict failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-
             // given both caches throw an exception
             whenever(firstCache.evict(anyString())).then {
                 throw TestException()
@@ -191,20 +192,25 @@ class CacheComposeEvictShould {
                 throw TestException()
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, IsEqual("evict failed for firstCache, evict failed for secondCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and first cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -217,22 +223,26 @@ class CacheComposeEvictShould {
                 executions.execute()
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
-            delay(50)
-            job.cancel()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(50)
+                    job.cancel()
 
-            // then evict on the second cache still completes and an exception is thrown
-            job.await()
+                    // then evict on the second cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and second cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -245,22 +255,26 @@ class CacheComposeEvictShould {
                 }
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
-            delay(50)
-            job.cancel()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(50)
+                    job.cancel()
 
-            // then evict on the first cache still completes and an exception is thrown
-            job.await()
+                    // then evict on the first cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and both caches executing`() {
         runBlocking {
-            // expect exception and no execution of caches
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
@@ -277,13 +291,20 @@ class CacheComposeEvictShould {
                 }
             }
 
-            // when we evict the value
-            val job = async { composedCache.evict("key") }
-            delay(25)
-            job.cancel()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(25)
+                    job.cancel()
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and no execution of caches
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 }

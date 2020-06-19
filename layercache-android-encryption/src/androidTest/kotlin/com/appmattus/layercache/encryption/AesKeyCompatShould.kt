@@ -22,11 +22,10 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -34,9 +33,6 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
 class AesKeyCompatShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     private lateinit var aesKey: AesKeyCompat
 
@@ -65,11 +61,11 @@ class AesKeyCompatShould {
     @SuppressLint("NewApi")
     fun throw_exception_when_sdk_too_low() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            thrown.expect(IllegalStateException::class.java)
-
-            // when we create a new AesKeyCompat
-            val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
-            AesKeyCompat(appContext, BlockMode.CBC, EncryptionPadding.PKCS7, false, IntegrityCheck.HMAC_SHA256)
+            assertThrows(IllegalStateException::class.java) {
+                // when we create a new AesKeyCompat
+                val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
+                AesKeyCompat(appContext, BlockMode.CBC, EncryptionPadding.PKCS7, false, IntegrityCheck.HMAC_SHA256)
+            }
 
             // then an exception is thrown
         }
@@ -135,7 +131,7 @@ class AesKeyCompatShould {
         }
     }
 
-    private fun encrypt(secretKey: SecretKey, value: String): String {
+    private fun encrypt(secretKey: SecretKey, @Suppress("SameParameterValue") value: String): String {
         val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)

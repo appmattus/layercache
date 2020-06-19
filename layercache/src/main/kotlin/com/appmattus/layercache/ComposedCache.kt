@@ -31,9 +31,7 @@ internal abstract class ComposedCache<Key : Any, Value : Any> : Cache<Key, Value
         cacheQueue.addAll(parents)
 
         while (cacheQueue.isNotEmpty()) {
-            val cache = cacheQueue.removeAt(0)
-
-            when (cache) {
+            when (val cache = cacheQueue.removeAt(0)) {
                 is ComposedCache -> cacheQueue.addAll(cache.parents)
                 else -> baseCaches.add(cache)
             }

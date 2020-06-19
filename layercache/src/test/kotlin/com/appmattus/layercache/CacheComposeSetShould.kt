@@ -28,21 +28,20 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeSetShould {
-
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
 
     @get:Rule
     var executions = ExecutionExpectation()
@@ -65,28 +64,32 @@ class CacheComposeSetShould {
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
-            // when key is null
-            composedCache.set(TestUtils.uninitialized(), "value")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                // when key is null
+                composedCache.set(TestUtils.uninitialized(), "value")
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
     fun `throw exception when value is null`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Required value was null"))
-
             whenever(firstCache.set(anyString(), any())).then { Unit }
             whenever(secondCache.set(anyString(), any())).then { Unit }
 
-            // when value is null
-            composedCache.set("key", TestUtils.uninitialized())
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    // when value is null
+                    composedCache.set("key", TestUtils.uninitialized())
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("Required value was null"))
         }
     }
 
@@ -138,10 +141,6 @@ class CacheComposeSetShould {
     @Test
     fun `throw internal exception on set when the first cache throws`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for firstCache")
-            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -155,22 +154,26 @@ class CacheComposeSetShould {
                 }
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            yield()
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
 
-            // then set on the second cache still completes and an exception is thrown
-            job.await()
+                    // then set on the second cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, `is`("set failed for firstCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw internal exception on set when the second cache throws`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
             executions.expect(1)
 
             // given the second cache throws an exception
@@ -184,23 +187,26 @@ class CacheComposeSetShould {
                 throw TestException()
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            yield()
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, `is`("set failed for secondCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw internal exception on set when both caches throws`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for firstCache, set failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-
             // given both caches throw an exception
             whenever(firstCache.set(anyString(), anyString())).then {
                 throw TestException()
@@ -209,21 +215,26 @@ class CacheComposeSetShould {
                 throw TestException()
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            yield()
+            val throwable = assertThrows(CacheException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, `is`("set failed for firstCache, set failed for secondCache"))
+            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and first cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -236,23 +247,27 @@ class CacheComposeSetShould {
                 executions.execute()
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            delay(50)
-            job.cancel()
-            yield()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    delay(50)
+                    job.cancel()
+                    yield()
 
-            // then set on the second cache still completes and an exception is thrown
-            job.await()
+                    // then set on the second cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and second cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
@@ -265,23 +280,27 @@ class CacheComposeSetShould {
                 }
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            delay(50)
-            job.cancel()
-            yield()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    delay(50)
+                    job.cancel()
+                    yield()
 
-            // then set on the first cache still completes and an exception is thrown
-            job.await()
+                    // then set on the first cache still completes and an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and both caches executing`() {
         runBlocking {
-            // expect exception and no execution of caches
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("DeferredCoroutine was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
@@ -298,14 +317,21 @@ class CacheComposeSetShould {
                 }
             }
 
-            // when we set the value
-            val job = async { composedCache.set("key", "value") }
-            delay(25)
-            job.cancel()
-            yield()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    delay(25)
+                    job.cancel()
+                    yield()
 
-            // then an exception is thrown
-            job.await()
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception and no execution of caches
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 }
