@@ -1,8 +1,6 @@
 # layercache [![CircleCI](https://circleci.com/gh/appmattus/layercache/tree/master.svg?style=svg)](https://circleci.com/gh/appmattus/layercache/tree/master) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
 
-
 Caching made simple for Android and Kotlin.
-
 
 An important component of building [offline-first architectures](https://developer.android.com/develop/quality-guidelines/building-for-billions-connectivity.html#network-duplicate) is to implement caching.
 
@@ -107,29 +105,6 @@ transformations that take time to execute.
 val newCache: Cache<Key, Value> = cache.reuseInflight()
 ```
 
-### Retrofit module
-
-```groovy
-implementation 'com.appmattus:layercache-retrofit:<latest-version>'
-```
-
-Given a Retrofit service that returns a Call<Value>, we can turn this into a Cache with `Cache.fromRetrofit`:
-
-```kotlin
-interface RetrofitService {
-    @GET("get/{key}")
-    fun aRequest(@Path("key") key: Key): Call<Value>
-}
-
-val service = retrofit.create(RetrofitService::class.java)
-
-...
-
-val cache : Cache<Key, Value> = Cache.fromRetrofit { key: Key ->
-    service.aRequest(key)
-}
-```
-
 ### Serializer module
 
 ```groovy
@@ -218,9 +193,6 @@ dependencies {
     // Provides support for ehcache
     implementation 'com.appmattus:layercache-ehcache:<latest-version>'
 
-    // Enables converting Retrofit calls to Cache
-    implementation 'com.appmattus:layercache-retrofit:<latest-version>'
-
     // Provides LruCache & DiskLruCache support for Android
     implementation 'com.appmattus:layercache-android:<latest-version>'
 
@@ -239,7 +211,7 @@ All contributions, large or small, major features, bug fixes, additional languag
 
 ## License [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-Copyright 2017 Appmattus Limited
+Copyright 2020 Appmattus Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

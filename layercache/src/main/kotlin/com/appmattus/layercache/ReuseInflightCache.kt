@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.appmattus.layercache
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.sync.Mutex
 
 @Suppress("UnnecessaryAbstractClass", "ExceptionRaisedInUnexpectedLocation") // incorrectly reported
 internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>) : ComposedCache<Key, Value>() {
@@ -34,8 +33,6 @@ internal abstract class ReuseInflightCache<Key : Any, Value : Any>(private val c
     }
 
     val map = mutableMapOf<Key, Deferred<Value?>>()
-
-    private val mutex = Mutex()
 
     final override suspend fun get(key: Key): Value? {
         return (map[key] ?: GlobalScope.async { cache.get(key) }.apply {

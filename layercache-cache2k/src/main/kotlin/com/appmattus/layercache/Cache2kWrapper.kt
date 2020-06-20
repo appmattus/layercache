@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package com.appmattus.layercache
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.cache2k.integration.FunctionalCacheLoader
 
 /**
@@ -25,23 +27,13 @@ import org.cache2k.integration.FunctionalCacheLoader
  */
 internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) : Cache<Key, Value> {
 
-    override suspend fun evict(key: Key) {
-        cache.remove(key)
-    }
+    override suspend fun evict(key: Key) = withContext(Dispatchers.IO) { cache.remove(key) }
 
-    override suspend fun get(key: Key): Value? {
-        return cache.get(key)
-    }
+    override suspend fun get(key: Key): Value? = withContext(Dispatchers.IO) { cache.get(key) }
 
-    override suspend fun set(key: Key, value: Value) {
-        cache.put(key, value)
-    }
+    override suspend fun set(key: Key, value: Value) = withContext(Dispatchers.IO) { cache.put(key, value) }
 
-    override suspend fun evictAll() {
-        cache.clear()
-
-        // FunctionalCacheLoader
-    }
+    override suspend fun evictAll() = withContext(Dispatchers.IO) { cache.clear() }
 }
 
 /**

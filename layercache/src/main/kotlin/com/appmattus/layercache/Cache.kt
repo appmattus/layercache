@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020s Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,4 +229,8 @@ interface Cache<Key : Any, Value : Any> {
         val jobs = caches.map { GlobalScope.async { methodCall(it) } }
         return executeJobsInParallel(jobs) { index -> "$message failed for ${caches[index]}" }
     }
+}
+
+fun <K : Any, V : Any> cache(block: suspend (K) -> V): Fetcher<K, V> = object : Fetcher<K, V> {
+    override suspend fun get(key: K) = block(key)
 }
