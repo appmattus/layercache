@@ -34,8 +34,8 @@ class LiveDataCache<Key : Any, Value : Any>(private val cache: Cache<Key, Value>
         emit(LiveDataResult.Loading)
         try {
             emit(LiveDataResult.Success(withContext(Dispatchers.IO) { cache.get(key) }))
-        } catch (exception: Exception) {
-            emit(LiveDataResult.Failure(exception))
+        } catch (expected: Exception) {
+            emit(LiveDataResult.Failure(expected))
         }
     }
 

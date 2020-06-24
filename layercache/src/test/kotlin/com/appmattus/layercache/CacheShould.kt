@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,26 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class CacheShould {
 
     val cache: Cache<String, String> = object : Cache<String, String> {
         override suspend fun get(key: String): String? {
-            delay(500)
+            delay(250)
             return "value"
         }
 
-        override suspend fun set(key: String, value: String) {
-            delay(500)
-        }
-
-        override suspend fun evict(key: String) {
-            delay(500)
-        }
-
-        override suspend fun evictAll() {
-            delay(500)
-        }
+        override suspend fun set(key: String, value: String) = delay(500)
+        override suspend fun evict(key: String) = delay(500)
+        override suspend fun evictAll() = delay(500)
     }
 
     @Test(expected = CancellationException::class)
@@ -106,61 +99,33 @@ class CacheShould {
     fun `execute onSuccess when job completes as expected`() {
         runBlocking {
             // given we call get
-            val job = async { cache.get("key") }
-
-            var called = false
-            job.onSuccess { called = true }
-            job.onCompletion { fail() }
-
-            // when we wait for the job
-            job.await()
-
-            delay(100)
+            val result = cache.get("key")
 
             // then onSuccess is executed
-            assertEquals(true, called)
+            assertEquals("value", result)
         }
     }
 
     @Test
-    fun `onFailure`() {
-        runBlocking {
-            val cache = object : Cache<String, String> {
-                override suspend fun get(key: String): String? {
-                    throw Exception("Forced failure")
-                }
+    fun `throws exception when get fails`() {
+        val cache = object : Cache<String, String> {
+            override suspend fun get(key: String): String? = throw IllegalStateException("Forced failure")
+            override suspend fun set(key: String, value: String) = Unit
+            override suspend fun evict(key: String) = Unit
+            override suspend fun evictAll() = Unit
+        }
 
-                override suspend fun set(key: String, value: String) {
-                    delay(500)
-                }
-
-                override suspend fun evict(key: String) {
-                    delay(500)
-                }
-
-                override suspend fun evictAll() {
-                    delay(500)
-                }
+        // given we call get
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                val job = async(Dispatchers.IO) { cache.get("key") }
+                job.await()
             }
-
-            // given we call get
-            val job = async { cache.get("key") }
-
-            job.onSuccess { println("Result $it") }
-            job.onCancel { println("Exception $it") }
-
-            // when we cancel the job
-            job.cancel()
-
-            // then the job is cancelled and exception returned
-            job.join()
-
-            yield()
         }
     }
 
     @Test
-    fun `onFailure cancelled`() {
+    fun `throws cancellation exception when get cancelled`() {
         runBlocking {
             val cache = object : Cache<String, String> {
                 override suspend fun get(key: String): String? {
@@ -168,32 +133,23 @@ class CacheShould {
                     return "value"
                 }
 
-                override suspend fun set(key: String, value: String) {
-                    delay(500)
-                }
-
-                override suspend fun evict(key: String) {
-                    delay(500)
-                }
-
-                override suspend fun evictAll() {
-                    delay(500)
-                }
+                override suspend fun set(key: String, value: String) = Unit
+                override suspend fun evict(key: String) = Unit
+                override suspend fun evictAll() = Unit
             }
 
             // given we call evict
-            val job = async { cache.get("key") }
-
-            job.onSuccess { result -> println("Result $result") }
-            job.onCancel { exception -> println("Cancelled exception $exception") }
+            val job = async(Dispatchers.IO) { cache.get("key") }
 
             // when we cancel the job
             job.cancel()
 
             // then the job is cancelled and exception returned
-            job.join()
-
-            yield()
+            assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
         }
     }
 
@@ -206,31 +162,13 @@ class CacheShould {
                     return "value"
                 }
 
-                override suspend fun set(key: String, value: String) {
-                    delay(500)
-                }
-
-                override suspend fun evict(key: String) {
-                    delay(500)
-                }
-
-                override suspend fun evictAll() {
-                    delay(500)
-                }
+                override suspend fun set(key: String, value: String) = Unit
+                override suspend fun evict(key: String) = Unit
+                override suspend fun evictAll() = Unit
             }
 
             // given we call evict
-            val job = async { cache.get("key") }
-
-            job.onCompletion {
-                when (it) {
-                    is DeferredResult.Success -> println("Result ${it.value}")
-                    is DeferredResult.Cancelled -> println("Cancelled exception ${it.exception}")
-                }
-            }
-
-            job.onSuccess { value -> println("Result $value") }
-            job.onCancel { exception -> println("Cancelled exception $exception") }
+            val job = async(Dispatchers.IO) { cache.get("key") }
 
             // when we cancel the job
             job.cancel()
