@@ -1,8 +1,6 @@
-# layercache [![CircleCI](https://circleci.com/gh/appmattus/layercache/tree/master.svg?style=svg)](https://circleci.com/gh/appmattus/layercache/tree/master) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
-
+# layercache  ![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/appmattus/layercache/branch/master/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
 
 Caching made simple for Android and Kotlin.
-
 
 An important component of building [offline-first architectures](https://developer.android.com/develop/quality-guidelines/building-for-billions-connectivity.html#network-duplicate) is to implement caching.
 
