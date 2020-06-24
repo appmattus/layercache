@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ThirdParty-layercache.iml" filepath="$PROJECT_DIR$/.idea/modules/ThirdParty-layercache.iml" group="layercache" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/ThirdParty-layercache-layercache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/ThirdParty-layercache-layercache.iml" group="layercache/layercache" />
       <module fileurl="file://$PROJECT_DIR$/layercache.iml" filepath="$PROJECT_DIR$/layercache.iml" />
       <module fileurl="file://$PROJECT_DIR$/layercache-android/layercache-android.iml" filepath="$PROJECT_DIR$/layercache-android/layercache-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/layercache-android-encryption/layercache-android-encryption.iml" filepath="$PROJECT_DIR$/layercache-android-encryption/layercache-android-encryption.iml" />
@@ -9,8 +11,16 @@
       <module fileurl="file://$PROJECT_DIR$/layercache-cache2k/layercache-cache2k.iml" filepath="$PROJECT_DIR$/layercache-cache2k/layercache-cache2k.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-ehcache.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache/layercache-layercache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-android/layercache-layercache-android.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-android/layercache-layercache-android.iml" group="layercache/layercache-android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-android-encryption/layercache-layercache-android-encryption.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-android-encryption/layercache-layercache-android-encryption.iml" group="layercache/layercache-android-encryption" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-android-livedata/layercache-layercache-android-livedata.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-android-livedata/layercache-layercache-android-livedata.iml" group="layercache/layercache-android-livedata" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-cache2k/layercache-layercache-cache2k.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-cache2k/layercache-layercache-cache2k.iml" group="layercache/layercache-cache2k" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-layercache-ehcache.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-ehcache/layercache-layercache-ehcache.iml" group="layercache/layercache-ehcache" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-retrofit/layercache-layercache-retrofit.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-retrofit/layercache-layercache-retrofit.iml" group="layercache/layercache-retrofit" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-layercache-serializer.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-layercache-serializer.iml" group="layercache/layercache-serializer" />
       <module fileurl="file://$PROJECT_DIR$/layercache-retrofit/layercache-retrofit.iml" filepath="$PROJECT_DIR$/layercache-retrofit/layercache-retrofit.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer.iml" filepath="$PROJECT_DIR$/.idea/modules/layercache-serializer/layercache-serializer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/testutils/layercache-testutils.iml" filepath="$PROJECT_DIR$/.idea/modules/testutils/layercache-testutils.iml" group="layercache/testutils" />
       <module fileurl="file://$PROJECT_DIR$/testutils/testutils.iml" filepath="$PROJECT_DIR$/testutils/testutils.iml" />
     </modules>
   </component>
