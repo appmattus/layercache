@@ -1,4 +1,4 @@
-# layercache [![CircleCI](https://circleci.com/gh/appmattus/layercache/tree/master.svg?style=svg)](https://circleci.com/gh/appmattus/layercache/tree/master) [![Coverage Status](https://coveralls.io/repos/github/appmattus/layercache/badge.svg?branch=master)](https://coveralls.io/github/appmattus/layercache?branch=master)
+# layercache  ![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/appmattus/layercache/branch/master/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
 
 Caching made simple for Android and Kotlin.
 
@@ -144,11 +144,11 @@ val memoryCache: Cache<Key, Value> = Cache.fromLruCache(...)
 #### DiskLruCache
 
 ```kotlin
-val memoryCache: Cache<String, String> = Cache.createDiskLruCache(directory: File, maxSize: Long)
+val diskCache: Cache<String, String> = Cache.createDiskLruCache(directory: File, maxSize: Long)
 
 // or
 
-val memoryCache: Cache<String, String> = Cache.fromDiskLruCache(...)
+val diskCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 ```
 
 ### Android LiveData module
