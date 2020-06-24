@@ -169,11 +169,11 @@ val memoryCache: Cache<Key, Value> = Cache.fromLruCache(...)
 #### DiskLruCache
 
 ```kotlin
-val memoryCache: Cache<String, String> = Cache.createDiskLruCache(directory: File, maxSize: Long)
+val diskCache: Cache<String, String> = Cache.createDiskLruCache(directory: File, maxSize: Long)
 
 // or
 
-val memoryCache: Cache<String, String> = Cache.fromDiskLruCache(...)
+val diskCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 ```
 
 ### Android LiveData module
