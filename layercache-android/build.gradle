@@ -61,7 +61,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':layercache')
+    api project(':layercache')
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
