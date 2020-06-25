@@ -32,5 +32,5 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { ta
     task.kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"]
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

@@ -20,7 +20,7 @@ apply from: "$rootDir/bintray.gradle"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
     compileOnly "androidx.annotation:annotation:1.1.0"
@@ -34,8 +34,8 @@ check { //noinspection GroovyAssignabilityCheck
     finalizedBy rootProject.tasks.named("detekt")
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 task myProguardTask(type: proguard.gradle.ProGuardTask) {
     configuration file("$rootDir/proguard-rules.pro")
