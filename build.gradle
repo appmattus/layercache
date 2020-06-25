@@ -140,11 +140,9 @@ dokka {
                 ':layercache:compileKotlin',
                 ':layercache-cache2k:compileKotlin',
                 ':layercache-ehcache:compileKotlin',
-                ':layercache-retrofit:compileKotlin',
                 ':layercache-serializer:compileKotlin',
                 ':layercache-android:compileReleaseKotlin',
-                ':layercache-android-encryption:compileReleaseKotlin',
-                ':layercache-android-livedata:compileReleaseKotlin'
+                ':layercache-android-encryption:compileReleaseKotlin'
         ]
     }
 
