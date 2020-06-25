@@ -8,6 +8,9 @@ max_line_length = 145
 indent_size = 4
 trim_trailing_whitespace = true
 
+[*.gradle]
+ij_continuation_indent_size = 8
+
 [{*.kt, *.kts}]
 ij_continuation_indent_size = 4
 ij_kotlin_assignment_wrap = normal

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-apply plugin: 'org.jetbrains.dokka-android'
+apply plugin: 'org.jetbrains.dokka'
 
 dokka {
     outputFormat = 'html'
     //noinspection GroovyAssignabilityCheck
     outputDirectory = "$buildDir/docs/javadoc"
 
-    cacheRoot = 'default'
-    skipDeprecated = true
+    configuration {
+        cacheRoot = 'default'
+        skipDeprecated = true
 
-    linkMapping {
-        dir = "$rootDir"
-        url = "https://github.com/appmattus/layercache/blob/master/"
-        suffix = "#L"
+        sourceLink {
+            path = "$rootDir"
+            url = "https://github.com/appmattus/layercache/blob/master/"
+            lineSuffix = "#L"
+        }
     }
 }
 
