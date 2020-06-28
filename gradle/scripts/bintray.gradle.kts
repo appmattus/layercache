@@ -38,7 +38,7 @@ apply<MavenPublishPlugin>()
 
 if (project.plugins.hasPlugin("java")) {
     configure<JavaPluginExtension> {
-        //withSourcesJar()
+        // withSourcesJar()
     }
 }
 
@@ -80,9 +80,9 @@ afterEvaluate {
     }
 }
 
-tasks.withType(GenerateModuleMetadata::class.java) {
-    enabled = false
-}
+// tasks.withType(GenerateModuleMetadata::class.java) {
+//    enabled = false
+// }
 
 configure<BintrayExtension> {
     user = System.getenv("BINTRAY_USER") ?: System.getProperty("BINTRAY_USER") ?: "unknown"
