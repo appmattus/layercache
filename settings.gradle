@@ -22,5 +22,6 @@ include ':layercache-serializer'
 include ':layercache-android'
 include ':layercache-android-encryption'
 include ':layercache-android-livedata'
+include ':layercache-androidx-security'
 
 include ':testutils'

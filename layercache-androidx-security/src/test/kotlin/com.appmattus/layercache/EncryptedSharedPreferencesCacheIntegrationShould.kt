@@ -31,15 +31,15 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class SharedPreferencesCacheIntegrationShould {
+class EncryptedSharedPreferencesCacheIntegrationShould {
 
     private lateinit var stringCache: Cache<String, String>
     private lateinit var intCache: Cache<String, Int>
 
     @Before
     fun before() {
-        stringCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
-        intCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
+        stringCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
+        intCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
     }
 
     @After
@@ -67,7 +67,7 @@ class SharedPreferencesCacheIntegrationShould {
     @Test(expected = IllegalArgumentException::class)
     fun return_value_when_cache_has_value_3() {
         runBlocking {
-            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
+            val cache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
 
             // given we have a cache with a value
             cache.set("key", TestUtils.uninitialized())
@@ -79,7 +79,7 @@ class SharedPreferencesCacheIntegrationShould {
     @Test
     fun return_value_when_cache_has_value_4() {
         runBlocking {
-            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
+            val cache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
 
             // given we have a cache with a value
             cache.set("key", 5)
