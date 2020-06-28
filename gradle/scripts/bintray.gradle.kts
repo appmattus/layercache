@@ -38,7 +38,7 @@ apply<MavenPublishPlugin>()
 
 if (project.plugins.hasPlugin("java")) {
     configure<JavaPluginExtension> {
-        withSourcesJar()
+        //withSourcesJar()
     }
 }
 
