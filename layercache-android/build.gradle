@@ -40,13 +40,12 @@ android {
     buildTypes {
         debug {
             multiDexEnabled true
-            matchingFallbacks = ["debug", "release"]
+            matchingFallbacks = ["debug", "release", "default"]
         }
 
         release {
             minifyEnabled false
-            matchingFallbacks = ["release", "debug"]
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "$rootDir/proguard-rules.pro"
+            matchingFallbacks = ["release", "debug", "default"]
         }
     }
 

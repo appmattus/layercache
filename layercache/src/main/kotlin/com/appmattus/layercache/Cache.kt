@@ -206,6 +206,7 @@ interface Cache<Key : Any, Value : Any> {
         }.awaitAll()
     }
 
+    @Suppress("EXPERIMENTAL_API_USAGE")
     private suspend fun <T> executeJobsInParallel(jobs: List<Deferred<T>>, lazyMessage: (index: Int) -> Any): List<T> {
         jobs.forEach { it.join() }
 
