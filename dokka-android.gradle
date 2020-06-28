@@ -34,11 +34,6 @@ dokka {
 }
 
 task dokkaJar(type: Jar, dependsOn: dokka) {
-    classifier = 'javadoc'
+    archiveClassifier.set("javadoc")
     from "$buildDir/docs/javadoc"
-}
-
-afterEvaluate {
-    releaseAndroidJavadocs.enabled false
-    bintrayUpload.dependsOn(dokkaJar)
 }

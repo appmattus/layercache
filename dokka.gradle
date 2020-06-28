@@ -34,11 +34,6 @@ dokka {
 }
 
 task dokkaJar(type: Jar, dependsOn: dokka) {
-    classifier = 'javadoc'
+    archiveClassifier.set("javadoc")
     from javadoc.destinationDir
-}
-
-afterEvaluate {
-    mavenJavadocJar.enabled false
-    bintrayUpload.dependsOn(dokkaJar)
 }

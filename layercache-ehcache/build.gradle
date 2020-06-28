@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 apply plugin: 'kotlin'
 apply from: "$rootDir/jacoco.gradle"
-apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    implementation project(':layercache')
+    api project(':layercache')
     implementation "org.ehcache:ehcache:3.8.1"
 
     testImplementation project(':testutils')
