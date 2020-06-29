@@ -27,5 +27,5 @@ dependencies {
     testImplementation "org.slf4j:slf4j-nop:1.7.30"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
