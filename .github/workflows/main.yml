@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       
     - name: set up JDK 1.8
       uses: actions/setup-java@v1
@@ -34,17 +34,17 @@ jobs:
 #        restore-keys: |
 #          ${{ runner.os }}-gradle-
 
-    - name: gradle wrapper cache
-      uses: actions/cache@v1
-      with:
-        path: ~/.gradle/wrapper/dists
-        key: ${{ runner.os }}-gradlewrapper
+#    - name: gradle wrapper cache
+#      uses: actions/cache@v1
+#      with:
+#        path: ~/.gradle/wrapper/dists
+#        key: ${{ runner.os }}-gradlewrapper
 
-    - name: NVD CVE cache
-      uses: actions/cache@v1
-      with:
-        path: ~/.gradle/dependency-check-data
-        key: ${{ runner.os }}-dependency-check-data
+#    - name: NVD CVE cache
+#      uses: actions/cache@v1
+#      with:
+#        path: ~/.gradle/dependency-check-data
+#        key: ${{ runner.os }}-dependency-check-data
 
     - name: Build with Gradle
       run: ./gradlew assemble check --stacktrace
