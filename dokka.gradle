@@ -16,19 +16,21 @@
 
 apply plugin: 'org.jetbrains.dokka'
 
-dokka {
-    outputFormat = 'html'
-    //noinspection GroovyAssignabilityCheck
-    outputDirectory = javadoc.destinationDir
+afterEvaluate {
+    dokka {
+        outputFormat = 'html'
+        //noinspection GroovyAssignabilityCheck
+        outputDirectory = javadoc.destinationDir
 
-    configuration {
-        cacheRoot = 'default'
-        skipDeprecated = true
+        configuration {
+            cacheRoot = 'default'
+            skipDeprecated = true
 
-        sourceLink {
-            path = "$rootDir"
-            url = "https://github.com/appmattus/layercache/blob/master/"
-            lineSuffix = "#L"
+            sourceLink {
+                path = "$rootDir"
+                url = "https://github.com/appmattus/layercache/blob/master/"
+                lineSuffix = "#L"
+            }
         }
     }
 }
