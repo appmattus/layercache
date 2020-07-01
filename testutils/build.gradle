@@ -26,6 +26,13 @@ dependencies {
     api "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
 
     api 'com.github.stefanbirkner:system-rules:1.19.0'
+
+    Properties localProps = new Properties()
+    localProps.load(project.rootProject.file('local.properties').newDataInputStream())
+    compileOnly files("${localProps.getProperty('sdk.dir')}/platforms/android-29/android.jar")
+
+    //noinspection GradleDependency
+    implementation("org.bouncycastle:bcprov-jdk15on:1.64")
 }
 
 test { finalizedBy jacocoTestReport }

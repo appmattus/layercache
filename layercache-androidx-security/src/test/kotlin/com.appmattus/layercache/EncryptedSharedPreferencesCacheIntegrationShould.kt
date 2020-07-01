@@ -20,6 +20,7 @@ package com.appmattus.layercache
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.appmattus.layercache.keystore.RobolectricKeyStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -134,7 +135,7 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            FakeAndroidKeyStore.setup
+            RobolectricKeyStore.setup
         }
     }
 }
