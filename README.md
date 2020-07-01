@@ -37,8 +37,8 @@ or watch the talk from [droidcon London 2017](https://skillsmatter.com/skillscas
 
 ### Base module
 
-```groovy
-implementation 'com.appmattus:layercache:<latest-version>'
+```kotlin
+implementation("com.appmattus:layercache:<latest-version>")
 ```
 
 #### Composing two caches
@@ -81,6 +81,25 @@ val fetcher: Fetcher<Key, Value> = ...
 val valueTransform: Cache<Key, MappedValue> = cache.valueTransform(OneWayTransform)
 ```
 
+##### Encrypting values
+
+```kotlin
+implementation("com.appmattus:layercache-android-encryption:<latest-version>")
+```
+
+There is support for encrypting values (in any cache) on Android with the `layercache-android-encryption` module.
+
+```kotlin
+val cache: Cache<Key, String> = ...
+val encryptedCache = cache.encryptValues(context, EncryptionFactory.Mode.AES_GCM_NoPadding, "keystoreAlias")
+
+// or
+
+val cache: Cache<Key, String> = ...
+val encryptedCache = cache.encryptValues(context, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "keystoreAlias")
+
+```
+
 #### Transforming keys
 
 Transform keys to a different data type. i.e. `Cache<Key, Value> → Cache<MappedKey, Value>`
@@ -107,8 +126,8 @@ val newCache: Cache<Key, Value> = cache.reuseInflight()
 
 ### Serializer module
 
-```groovy
-implementation 'com.appmattus:layercache-serializer:<latest-version>'
+```kotlin
+implementation("com.appmattus:layercache-serializer:<latest-version>")
 ```
 
 Configures a transformation from JSON to a serialisable data class and
@@ -127,8 +146,8 @@ val objectCache: Cache<Key, Value> = cache.jsonSerializer(Value::class.serialize
 
 ### Android base module
 
-```groovy
-implementation 'com.appmattus:layercache-android:<latest-version>'
+```kotlin
+implementation("com.appmattus:layercache-android:<latest-version>")
 ```
 
 #### LruCache
@@ -151,10 +170,46 @@ val diskCache: Cache<String, String> = Cache.createDiskLruCache(directory: File,
 val diskCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 ```
 
+#### SharedPreferences
+
+Create a cache backed by shared preferences.
+
+```kotlin
+val stringValueCache = SharedPreferencesCache(context, preferenceFileKey).withString()
+
+val intValueCache = SharedPreferencesCache(context, preferenceFileKey).withInt()
+
+val floatValueCache = SharedPreferencesCache(context, preferenceFileKey).withFloat()
+
+val booleanValueCache = SharedPreferencesCache(context, preferenceFileKey).withBoolean()
+
+val longValueCache = SharedPreferencesCache(context, preferenceFileKey).withLong()
+```
+
+##### EncryptedSharedPreferences
+
+```kotlin
+implementation("com.appmattus:layercache-androidx-security:<latest-version>")
+```
+
+Use Jetpack Security to provide a cache backed by encrypted shared preferences where both keys and values are encrypted.
+
+```kotlin
+val stringValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withString()
+
+val intValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withInt()
+
+val floatValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withFloat()
+
+val booleanValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withBoolean()
+
+val longValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withLong()
+```
+
 ### Android LiveData module
 
-```groovy
-implementation 'com.appmattus:layercache-android-livedata:<latest-version>'
+```kotlin
+implementation("com.appmattus:layercache-android-livedata:<latest-version>")
 ```
 
 Given a cache we can convert it for use with LiveData. This makes the getter
@@ -183,24 +238,30 @@ liveDataCache.get("key").observe(owner) { liveDataResult ->
 
 Available from jcenter()
 
-```groovy
+```kotlin
 dependencies {
-    implementation 'com.appmattus:layercache:<latest-version>'
+    implementation("com.appmattus:layercache:<latest-version>")
 
     // To use with the Kotlin serializer
-    implementation 'com.appmattus:layercache-serializer:<latest-version>'
+    implementation("com.appmattus:layercache-serializer:<latest-version>")
 
     // Provides support for ehcache
-    implementation 'com.appmattus:layercache-ehcache:<latest-version>'
+    implementation("com.appmattus:layercache-ehcache:<latest-version>")
+
+    // Provides support for cache2k
+    implementation("com.appmattus:layercache-cache2k:<latest-version>")
 
     // Provides LruCache & DiskLruCache support for Android
-    implementation 'com.appmattus:layercache-android:<latest-version>'
+    implementation("com.appmattus:layercache-android:<latest-version>")
 
     // Provides one-line String encryption for Android
-    implementation 'com.appmattus:layercache-android-encryption:<latest-version>'
+    implementation("com.appmattus:layercache-android-encryption:<latest-version>")
+
+    // Provides one-line String encryption for Android using Jetpack Security
+    implementation("com.appmattus:layercache-androidx-security:<latest-version>")
 
     // Provides conversion from Cache into LiveData for Android
-    implementation 'com.appmattus:layercache-android-livedata:<latest-version>'
+    implementation("com.appmattus:layercache-android-livedata:<latest-version>")
 }
 ```
 
