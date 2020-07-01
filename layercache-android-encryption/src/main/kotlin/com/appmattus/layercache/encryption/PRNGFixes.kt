@@ -249,9 +249,7 @@ internal object PRNGFixes {
                         // PRNG output performance and can live with future PRNG
                         // output being pulled into this process prematurely.
                         sUrandomIn = try {
-                            DataInputStream(
-                                FileInputStream(URANDOM_FILE)
-                            )
+                            DataInputStream(FileInputStream(URANDOM_FILE))
                         } catch (e: IOException) {
                             throw SecurityException("Failed to open $URANDOM_FILE for reading", e)
                         }
