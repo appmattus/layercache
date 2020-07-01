@@ -16,7 +16,7 @@
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-//apply from: "$rootDir/jacoco-android.gradle"
+apply from: "$rootDir/jacoco-android.gradle"
 apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka-android.gradle"
 
@@ -40,7 +40,6 @@ android {
     buildTypes {
         debug {
             multiDexEnabled true
-            testCoverageEnabled true
         }
 
         release {
@@ -65,22 +64,11 @@ dependencies {
     api project(':layercache-android')
     compileOnly "androidx.annotation:annotation:1.1.0"
 
-    api "androidx.security:security-crypto:1.1.0-alpha01"
-
-    implementation "androidx.preference:preference-ktx:1.1.1"
+    implementation "androidx.security:security-crypto:1.1.0-alpha01"
 
     testImplementation project(':testutils')
     testImplementation "org.robolectric:robolectric:4.3.1"
-
-    androidTestImplementation project(':testutils')
-
-    androidTestImplementation 'pl.pragmatists:JUnitParams:1.1.1'
-    androidTestImplementation('androidx.test:runner:1.2.0')
-    androidTestImplementation 'androidx.multidex:multidex:2.0.1'
-
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.2.0', {
-        exclude group: 'androidx.annotation', module: 'annotation'
-    })
+    testImplementation "androidx.test.ext:junit-ktx:1.1.1"
 }
 
 task sourcesJar(type: Jar) {

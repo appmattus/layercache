@@ -19,18 +19,18 @@
 package com.appmattus.layercache
 
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE)
+@RunWith(AndroidJUnit4::class)
+@Config(manifest = Config.NONE, sdk = [22, 28])
 class EncryptedSharedPreferencesCacheIntegrationShould {
 
     private lateinit var stringCache: Cache<String, String>
@@ -40,10 +40,7 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
     fun before() {
         stringCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
         intCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
-    }
 
-    @After
-    fun after() {
         runBlocking {
             stringCache.evictAll()
             intCache.evictAll()
@@ -130,6 +127,14 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
 
             // then the value is null
             assertNull(stringCache.get("key"))
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            FakeAndroidKeyStore.setup
         }
     }
 }

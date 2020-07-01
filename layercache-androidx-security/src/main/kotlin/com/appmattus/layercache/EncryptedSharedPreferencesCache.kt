@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import androidx.security.crypto.MasterKey
  */
 class EncryptedSharedPreferencesCache(context: Context, preferenceFileKey: String) {
 
-    private val masterKey = MasterKey.Builder(context).build()
+    private val masterKey = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
     private val sharedPreferences = EncryptedSharedPreferences.create(
         context,

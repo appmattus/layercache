@@ -30,9 +30,6 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        classpath('com.dicedmelon.gradle:jacoco-android:0.1.4') {
-            exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-        }
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.3'
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.28.0'

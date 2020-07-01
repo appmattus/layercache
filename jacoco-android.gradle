@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-apply plugin: 'jacoco-android'
+apply plugin: 'jacoco'
 
-jacocoAndroidUnitTestReport {
-    csv.enabled false
-    html.enabled true
-    xml.enabled true
+task jacocoTestReport(type: JacocoReport, dependsOn: ["testDebugUnitTest"]) {
+    reports {
+        xml.enabled true
+        html.enabled true
+        csv.enabled false
+    }
+
+    def fileFilter = ["**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*", "**/*Test*.*",
+                      "android/**/*.*"]
+    def debugTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug", excludes: fileFilter)
+    def mainSrc = "${project.buildDir}/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
+            "jacoco/testDebugUnitTest.exec"
+    ]))
 }
 
 check { finalizedBy jacocoTestReport }

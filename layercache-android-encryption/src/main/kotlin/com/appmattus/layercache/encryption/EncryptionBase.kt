@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.appmattus.layercache.encryption
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import java.nio.charset.Charset
 import java.security.GeneralSecurityException
 import java.security.spec.AlgorithmParameterSpec
 import javax.crypto.Cipher
@@ -115,7 +114,7 @@ internal abstract class EncryptionBase(private val context: Context, private val
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
 
-        return cipher.doFinal(cipherText).toString(Charset.forName("UTF8"))
+        return cipher.doFinal(cipherText).toString(Charsets.UTF_8)
     }
 
     private fun constantTimeEquals(a: ByteArray, b: ByteArray): Boolean {

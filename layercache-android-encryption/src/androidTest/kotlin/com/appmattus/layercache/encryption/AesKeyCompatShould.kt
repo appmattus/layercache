@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -156,6 +155,6 @@ class AesKeyCompatShould {
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
 
-        return cipher.doFinal(cipherText).toString(Charset.forName("UTF8"))
+        return cipher.doFinal(cipherText).toString(Charsets.UTF_8)
     }
 }
