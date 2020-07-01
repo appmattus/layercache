@@ -30,7 +30,6 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.3'
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.28.0'
     }
@@ -59,74 +58,6 @@ task clean(type: Delete) {
 }
 
 apply from: "gradle/scripts/detekt.gradle.kts"
-
-apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
-
-task jacocoTestReport(type: JacocoReport) {
-    // sourceDirectories(files())
-    // classDirectories(files())
-    // executionData(files())
-
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        csv.enabled = false
-    }
-
-    // Work-around to allow us to build list of executionData files in doFirst
-    onlyIf = {
-        true
-    }
-
-    // Builds list of source dirs, class dirs, and executionData files
-    // when task is run, not at script evaluation time
-    doFirst {
-        subprojects.findAll { subproject ->
-            subproject.pluginManager.hasPlugin('jacoco')
-        }.each { subproject ->
-            subproject.tasks.findAll { task ->
-                task instanceof JacocoReport
-            }.each { JacocoReport task ->
-                additionalSourceDirs task.sourceDirectories
-                additionalClassDirs task.classDirectories
-                executionData task.executionData
-            }
-        }
-
-        executionData.setFrom(files(executionData.findAll {
-            it.exists()
-        }))
-
-        additionalSourceDirs.setFrom(files(additionalSourceDirs.findAll {
-            it.exists()
-        }))
-
-        additionalClassDirs.setFrom(files(additionalClassDirs.findAll {
-            it.exists()
-        }))
-
-        println(executionData.size())
-        executionData.forEach {
-            println it
-        }
-
-        println(additionalSourceDirs)
-        println(additionalClassDirs)
-
-        coveralls.sourceDirs = additionalSourceDirs.findAll()
-    }
-}
-
-coveralls {
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-}
-
-jacocoTestReport { finalizedBy tasks.coveralls }
-
-tasks.coveralls {
-    onlyIf { System.env.'CI' }
-}
 
 apply plugin: 'org.jetbrains.dokka'
 

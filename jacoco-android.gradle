@@ -26,7 +26,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ["testDebugUnitTest"]) {
     def fileFilter = ["**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*", "**/*Test*.*",
                       "android/**/*.*"]
     def debugTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug", excludes: fileFilter)
-    def mainSrc = "${project.buildDir}/src/main/java"
+    def mainSrc = "${project.projectDir}/src/main/kotlin"
 
     sourceDirectories.setFrom(files([mainSrc]))
     classDirectories.setFrom(files([debugTree]))
@@ -36,5 +36,3 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ["testDebugUnitTest"]) {
 }
 
 check { finalizedBy jacocoTestReport }
-
-jacocoTestReport { finalizedBy rootProject.jacocoTestReport }
