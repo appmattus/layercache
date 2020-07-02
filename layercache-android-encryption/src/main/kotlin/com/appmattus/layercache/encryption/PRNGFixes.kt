@@ -54,6 +54,7 @@ internal object PRNGFixes {
      *
      * @throws SecurityException if the fix is needed but could not be applied.
      */
+    @Suppress("MagicNumber")
     @SuppressLint("ObsoleteSdkInt")
     @Throws(SecurityException::class)
     private fun applyOpenSSLFix() {
@@ -77,8 +78,8 @@ internal object PRNGFixes {
             if (bytesRead != 1024) {
                 throw IOException("Unexpected number of bytes read from Linux PRNG: $bytesRead")
             }
-        } catch (e: Exception) {
-            throw SecurityException("Failed to seed OpenSSL PRNG", e)
+        } catch (expected: Exception) {
+            throw SecurityException("Failed to seed OpenSSL PRNG", expected)
         }
     }
 
@@ -89,6 +90,7 @@ internal object PRNGFixes {
      *
      * @throws SecurityException if the fix is needed but could not be applied.
      */
+    @Suppress("ThrowsCount")
     @Throws(SecurityException::class)
     private fun installLinuxPRNGSecureRandom() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -99,9 +101,9 @@ internal object PRNGFixes {
         // Install a Linux PRNG-based SecureRandom implementation as the
         // default, if not yet installed.
         val secureRandomProviders = Security.getProviders("SecureRandom.SHA1PRNG")
-        if (secureRandomProviders == null
-            || secureRandomProviders.isEmpty()
-            || LinuxPRNGSecureRandomProvider::class.java != secureRandomProviders[0].javaClass
+        if (secureRandomProviders == null ||
+            secureRandomProviders.isEmpty() ||
+            LinuxPRNGSecureRandomProvider::class.java != secureRandomProviders[0].javaClass
         ) {
             Security.insertProviderAt(LinuxPRNGSecureRandomProvider(), 1)
         }
@@ -170,7 +172,8 @@ internal object PRNGFixes {
 
             return try {
                 result.toString().toByteArray(Charsets.UTF_8)
-            } catch (e: UnsupportedEncodingException) {
+            } catch (expected: UnsupportedEncodingException) {
+                @Suppress("TooGenericExceptionThrown")
                 throw RuntimeException("UTF-8 encoding not supported")
             }
         }

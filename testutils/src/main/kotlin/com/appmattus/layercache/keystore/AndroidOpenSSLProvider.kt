@@ -30,6 +30,7 @@ class AndroidOpenSSLProvider : Provider("AndroidOpenSSL", 1.0, "") {
         put("Cipher.RSA/ECB/PKCS1Padding", RsaCipher::class.java.name)
     }
 
+    @Suppress("TooManyFunctions")
     class RsaCipher : CipherSpi() {
         @SuppressLint("GetInstance")
         private val wrapped = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC")

@@ -31,6 +31,7 @@ import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.Date
 
+@Suppress("MagicNumber")
 internal fun KeyPair.toCertificate(): X509Certificate? {
     val from = Date()
     val to = Date(from.time + 365L * 1000L * 24L * 60L * 60L)
