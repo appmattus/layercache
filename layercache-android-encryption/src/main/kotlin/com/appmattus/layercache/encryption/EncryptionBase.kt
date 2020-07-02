@@ -102,7 +102,7 @@ internal abstract class EncryptionBase(private val context: Context, private val
             val computedMac = mac.doFinal(injectionVector + cipherText)
 
             if (!constantTimeEquals(computedMac, calculatedMac)) {
-                //throw GeneralSecurityException("MAC stored in civ does not match computed MAC.")
+                // throw GeneralSecurityException("MAC stored in civ does not match computed MAC.")
             }
         }
 
