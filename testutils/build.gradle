@@ -33,7 +33,7 @@ dependencies {
         localProps.load(localPropsFile.newDataInputStream())
         compileOnly files("${localProps.getProperty('sdk.dir')}/platforms/android-29/android.jar")
     } else {
-        compileOnly files("${env.ANDROID_HOME}/platforms/android-29/android.jar")
+        compileOnly files("${System.env.ANDROID_HOME}/platforms/android-29/android.jar")
     }
 
     //noinspection GradleDependency
