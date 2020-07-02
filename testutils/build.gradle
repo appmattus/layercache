@@ -28,8 +28,13 @@ dependencies {
     api 'com.github.stefanbirkner:system-rules:1.19.0'
 
     Properties localProps = new Properties()
-    localProps.load(project.rootProject.file('local.properties').newDataInputStream())
-    compileOnly files("${localProps.getProperty('sdk.dir')}/platforms/android-29/android.jar")
+    File localPropsFile = new File(rootDir, "local.properties")
+    if (localPropsFile.exists()) {
+        localProps.load(localPropsFile.newDataInputStream())
+        compileOnly files("${localProps.getProperty('sdk.dir')}/platforms/android-29/android.jar")
+    } else {
+        compileOnly files("${env.ANDROID_HOME}/platforms/android-29/android.jar")
+    }
 
     //noinspection GradleDependency
     implementation("org.bouncycastle:bcprov-jdk15on:1.64")
