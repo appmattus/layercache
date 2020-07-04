@@ -63,21 +63,19 @@ apply plugin: 'org.jetbrains.dokka'
 
 dokka {
     outputFormat = "html"
-    outputDirectory = "$buildDir/docs/dokka"
+    outputDirectory = "$buildDir/reports/dokka"
+
+    subProjects = [
+            "layercache",
+            "layercache-cache2k",
+            "layercache-ehcache",
+            "layercache-serializer",
+            "layercache-android",
+            "layercache-android-encryption"
+    ]
 
     configuration {
         skipDeprecated = true
-
-        kotlinTasks {
-            defaultKotlinTasks() + [
-                    ':layercache:compileKotlin',
-                    ':layercache-cache2k:compileKotlin',
-                    ':layercache-ehcache:compileKotlin',
-                    ':layercache-serializer:compileKotlin',
-                    ':layercache-android:compileReleaseKotlin',
-                    ':layercache-android-encryption:compileReleaseKotlin'
-            ]
-        }
 
         sourceLink {
             path = "$rootDir"
