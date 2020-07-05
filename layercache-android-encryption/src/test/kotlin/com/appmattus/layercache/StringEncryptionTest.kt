@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ class StringEncryptionTest {
 
         runBlocking {
             // given we have a cache where we map the values using encryption
-            val cache = Cache.createLruCache<String, String>(10)
+            val cache = MapCache()
             val mappedCache = cache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
             // when we set a value and retrieve it
@@ -146,7 +146,7 @@ class StringEncryptionTest {
 
         runBlocking {
             // given we have a cache where we map the values using encryption
-            val cache = Cache.createLruCache<String, String>(10)
+            val cache = MapCache()
             val mappedCache = cache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
             // when we set a value and retrieve it
@@ -164,10 +164,10 @@ class StringEncryptionTest {
         val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         runBlocking {
-            val networkCache = Cache.createLruCache<String, String>(10)
+            val networkCache = MapCache()
             networkCache.set("key", "value")
 
-            val diskCache = Cache.createLruCache<String, String>(10)
+            val diskCache = MapCache()
             val encryptedDiskCache = diskCache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
             val chained = encryptedDiskCache.compose(networkCache)
@@ -192,10 +192,10 @@ class StringEncryptionTest {
         val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
 
         runBlocking {
-            val networkCache = Cache.createLruCache<String, String>(10)
+            val networkCache = MapCache()
             networkCache.set("key", "value")
 
-            val diskCache = Cache.createLruCache<String, String>(10)
+            val diskCache = MapCache()
             val encryptedDiskCache = diskCache.valueTransform(encryptor::transform, encryptor::inverseTransform)
 
             val chained = encryptedDiskCache.compose(networkCache)

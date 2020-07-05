@@ -22,7 +22,7 @@ import java.security.Security
 object RobolectricKeyStore {
 
     val setup by lazy {
-        Security.insertProviderAt(AndroidKeyStoreProvider(), 0)
+        Security.addProvider(AndroidKeyStoreProvider())
         Security.addProvider(BouncyCastleProvider())
         Security.addProvider(AndroidOpenSSLProvider())
     }
