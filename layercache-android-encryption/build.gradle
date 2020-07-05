@@ -54,6 +54,10 @@ android {
 
     testBuildType "debug"
     testOptions.unitTests.includeAndroidResources = true
+
+    defaultConfig {
+        testInstrumentationRunnerArguments = ["notPackage": "org.bouncycastle"]
+    }
 }
 
 tasks.withType(Test) {

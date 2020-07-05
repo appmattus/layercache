@@ -48,7 +48,7 @@ class StringEncryptionShould {
             // cleanup old keys
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
             keyStore.load(null)
-            keyStore.aliases().asSequence().forEach { keyStore.deleteEntry(it) }
+            keyStore.aliases().toList().forEach { keyStore.deleteEntry(it) }
 
             // cleanup old preferences
             val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(appContext)
@@ -226,7 +226,7 @@ class StringEncryptionShould {
             // cleanup old keys
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
             keyStore.load(null)
-            keyStore.aliases().asSequence().forEach { keyStore.deleteEntry(it) }
+            keyStore.aliases().toList().forEach { keyStore.deleteEntry(it) }
 
             // cleanup old preferences
             val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(appContext)

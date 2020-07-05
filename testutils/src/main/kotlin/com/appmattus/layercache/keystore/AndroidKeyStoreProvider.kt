@@ -117,11 +117,17 @@ class AndroidKeyStoreProvider : Provider("AndroidKeyStore", 1.0, "") {
 
     class HmacSHA256KeyGenerator : KeyGeneratorSpi() {
         private val wrapped = KeyGenerator.getInstance("HmacSHA256", "BC")
+        private var lastSpec: AlgorithmParameterSpec? = null
 
-        override fun engineInit(random: SecureRandom?) = Unit
-        override fun engineInit(params: AlgorithmParameterSpec?, random: SecureRandom?) = Unit
+        override fun engineInit(random: SecureRandom?) = wrapped.init(random)
+        override fun engineInit(params: AlgorithmParameterSpec?, random: SecureRandom?) = wrapped.init(random).also {
+            lastSpec = params
+        }
+
         override fun engineInit(keysize: Int, random: SecureRandom?) = Unit
-        override fun engineGenerateKey(): SecretKey = wrapped.generateKey()
+        override fun engineGenerateKey(): SecretKey = wrapped.generateKey().also {
+            AndroidKeyStore.storedKeys[lastSpec!!.keystoreAlias] = KeyStore.SecretKeyEntry(it)
+        }
     }
 
     class RsaKeyPairGenerator : KeyPairGeneratorSpi() {
