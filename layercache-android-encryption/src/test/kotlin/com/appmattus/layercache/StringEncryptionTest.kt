@@ -22,7 +22,6 @@ import android.os.Build
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.appmattus.layercache.encryption.EncryptionFactory
 import com.appmattus.layercache.keystore.RobolectricKeyStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -63,7 +62,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_string_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         assertNotEquals("hello world", encryptor.inverseTransform("hello world"))
     }
@@ -71,7 +70,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_string_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         assertNotEquals("hello world", encryptor.inverseTransform("hello world"))
     }
@@ -79,7 +78,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_back_to_original_string_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         assertEquals("hello world", encryptor.transform(encryptor.inverseTransform("hello world")))
     }
@@ -87,7 +86,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_back_to_original_string_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         assertEquals("hello world", encryptor.transform(encryptor.inverseTransform("hello world")))
     }
@@ -95,7 +94,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_differently_each_time_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         val conversion1 = encryptor.inverseTransform("hello world")
         val conversion2 = encryptor.inverseTransform("hello world")
@@ -109,7 +108,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_differently_each_time_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         val conversion1 = encryptor.inverseTransform("hello world")
         val conversion2 = encryptor.inverseTransform("hello world")
@@ -123,7 +122,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun map_encrypted_values_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         runBlocking {
             // given we have a cache where we map the values using encryption
@@ -142,7 +141,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun map_encrypted_values_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         runBlocking {
             // given we have a cache where we map the values using encryption
@@ -161,7 +160,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_values_when_value_retrieved_from_composed_cache_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         runBlocking {
             val networkCache = MapCache()
@@ -189,7 +188,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun encrypt_values_when_value_retrieved_from_composed_cache_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         runBlocking {
             val networkCache = MapCache()
@@ -219,12 +218,12 @@ class StringEncryptionTest {
 
         // API 18
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            params.add(arrayOf(StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")))
+            params.add(arrayOf(StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")))
         }
 
         // API 19
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            params.add(arrayOf(StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")))
+            params.add(arrayOf(StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")))
         }
 
         return params.toTypedArray()
@@ -236,14 +235,14 @@ class StringEncryptionTest {
     fun throw_exception_when_sdk_too_low_for_gcm() {
         assertThrows(IllegalStateException::class.java) {
             val appContext = ApplicationProvider.getApplicationContext<Context>()
-            StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+            StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
         }
     }
 
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_using_new_encryptor_using_same_key_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         // given we encrypt some data
         val encryptedData = encryptor.inverseTransform("hello world")
@@ -251,14 +250,14 @@ class StringEncryptionTest {
         // when we decrypt using a new encryptor using the same alias (as the keys will be the same)
         val appContext = ApplicationProvider.getApplicationContext<Context>()
         val newEncryptor = when (encryptor.toString()) {
-            EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+            EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                 appContext,
-                EncryptionFactory.Mode.AES_GCM_NoPadding,
+                EncryptionMode.AES_GCM_NoPadding,
                 "testGcm"
             )
-            EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+            EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                 appContext,
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                 "testCbc"
             )
             else -> throw IllegalStateException("Unimplemented")
@@ -272,7 +271,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_using_new_encryptor_using_same_key_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         // given we encrypt some data
         val encryptedData = encryptor.inverseTransform("hello world")
@@ -280,14 +279,14 @@ class StringEncryptionTest {
         // when we decrypt using a new encryptor using the same alias (as the keys will be the same)
         val appContext = ApplicationProvider.getApplicationContext<Context>()
         val newEncryptor = when (encryptor.toString()) {
-            EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+            EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                 appContext,
-                EncryptionFactory.Mode.AES_GCM_NoPadding,
+                EncryptionMode.AES_GCM_NoPadding,
                 "testGcm"
             )
-            EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+            EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                 appContext,
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                 "testCbc"
             )
             else -> throw IllegalStateException("Unimplemented")
@@ -301,7 +300,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [18, 19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_using_new_encryptor_using_new_key_with_AES_CBC_PKCS7Padding_with_HMAC() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
 
         val appContext = ApplicationProvider.getApplicationContext<Context>()
 
@@ -323,14 +322,14 @@ class StringEncryptionTest {
         assertThrows(Exception::class.java) {
 
             val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_GCM_NoPadding,
+                    EncryptionMode.AES_GCM_NoPadding,
                     "testGcm"
                 )
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                    EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                     "testCbc"
                 )
                 else -> throw IllegalStateException("Unimplemented")
@@ -344,7 +343,7 @@ class StringEncryptionTest {
     @Test
     @Config(sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
     fun decrypt_using_new_encryptor_using_new_key_with_AES_GCM_NoPadding() {
-        val encryptor = StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+        val encryptor = StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
 
         val appContext = ApplicationProvider.getApplicationContext<Context>()
 
@@ -366,14 +365,14 @@ class StringEncryptionTest {
         assertThrows(Exception::class.java) {
 
             val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_GCM_NoPadding,
+                    EncryptionMode.AES_GCM_NoPadding,
                     "testGcm"
                 )
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                    EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                     "testCbc"
                 )
                 else -> throw IllegalStateException("Unimplemented")

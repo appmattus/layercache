@@ -25,9 +25,13 @@ import com.appmattus.layercache.encryption.EncryptionFactory
  * Two-way transform to encrypt and decrypt values stored in a cache
  */
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-class StringEncryption(context: Context, private val mode: EncryptionFactory.Mode, keystoreAlias: String) : TwoWayTransform<String, String> {
+internal class StringEncryption(
+    context: Context,
+    private val encryptionMode: EncryptionMode,
+    keystoreAlias: String
+) : TwoWayTransform<String, String> {
 
-    private val encryption = EncryptionFactory.get(context, mode, keystoreAlias)
+    private val encryption = EncryptionFactory.get(context, encryptionMode, keystoreAlias)
 
     /**
      * Decrypt the value or return null on error
@@ -43,10 +47,13 @@ class StringEncryption(context: Context, private val mode: EncryptionFactory.Mod
      * Output the encryption mode
      */
     override fun toString(): String {
-        return mode.toString()
+        return encryptionMode.toString()
     }
 }
 
+/**
+ * Two-way transform using the [encryptionMode] to encrypt and decrypt [String] values stored in the cache
+ */
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-fun <Key : Any> Cache<Key, String>.encryptValues(context: Context, mode: EncryptionFactory.Mode, keystoreAlias: String) =
-    this.valueTransform(StringEncryption(context, mode, keystoreAlias))
+fun <Key : Any> Cache<Key, String>.encryptValues(context: Context, encryptionMode: EncryptionMode, keystoreAlias: String) =
+    valueTransform(StringEncryption(context, encryptionMode, keystoreAlias))
