@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ internal abstract class MapKeysCache<Key : Any, Value : Any, MappedKey : Any>(
     final override val parents: List<Cache<*, *>>
         get() = listOf(cache)
 
+    @Suppress("RedundantRequireNotNullCall")
     final override suspend fun get(key: MappedKey): Value? {
         val mappedKey = requireNotNull(transform(key)) { "Required value was null. Key '$key' mapped to null" }
         return cache.get(mappedKey)
