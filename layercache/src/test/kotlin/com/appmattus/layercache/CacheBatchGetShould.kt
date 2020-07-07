@@ -20,7 +20,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -81,7 +80,7 @@ class CacheBatchGetShould {
         runBlocking {
             // given we request the values for 3 keys
             whenever(cache.get(anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(requestTimeInMills)
                     "value"
                 }

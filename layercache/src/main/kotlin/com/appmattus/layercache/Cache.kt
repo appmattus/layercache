@@ -17,10 +17,12 @@
 package com.appmattus.layercache
 
 import androidx.annotation.NonNull
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 /**
  * A standard cache which stores and retrieves data
@@ -191,7 +193,9 @@ interface Cache<Key : Any, Value : Any> {
         requireNotNull(keys)
         keys.requireNoNulls()
 
-        return keys.map { GlobalScope.async { this@Cache.get(it) } }.awaitAll()
+        return coroutineScope {
+            keys.map { async(Dispatchers.IO) { this@Cache.get(it) } }.awaitAll()
+        }
     }
 
     /**
@@ -201,9 +205,11 @@ interface Cache<Key : Any, Value : Any> {
         requireNotNull(values)
         values.keys.requireNoNulls()
 
-        values.map { entry: Map.Entry<Key, Value> ->
-            GlobalScope.async { this@Cache.set(entry.key, entry.value) }
-        }.awaitAll()
+        coroutineScope {
+            values.map { entry: Map.Entry<Key, Value> ->
+                async(Dispatchers.IO) { this@Cache.set(entry.key, entry.value) }
+            }.awaitAll()
+        }
     }
 
     @Suppress("EXPERIMENTAL_API_USAGE")
@@ -227,7 +233,7 @@ interface Cache<Key : Any, Value : Any> {
         message: String,
         methodCall: suspend (Cache<K, V>) -> T
     ): List<T> {
-        val jobs = caches.map { GlobalScope.async { methodCall(it) } }
+        val jobs = caches.map { CoroutineScope(Dispatchers.IO).async { methodCall(it) } }
         return executeJobsInParallel(jobs) { index -> "$message failed for ${caches[index]}" }
     }
 }

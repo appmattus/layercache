@@ -20,7 +20,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -169,7 +168,7 @@ class CacheMapKeysShould {
     fun `throw exception when transform throws during set`() {
         runBlocking {
             // given we have a string
-            whenever(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
+            whenever(cache.set(anyString(), anyString())).then { runBlocking { } }
 
             // when we get the value from a map with exception throwing functions
             mappedKeysCacheWithError.set(1, "1")

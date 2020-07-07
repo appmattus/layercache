@@ -22,7 +22,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -93,7 +92,7 @@ class CacheBatchSetShould {
         runBlocking {
             // given we set values into a cache
             whenever(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+                runBlocking {
                     delay(requestTimeInMills)
                 }
             }
@@ -133,7 +132,7 @@ class CacheBatchSetShould {
     fun `execute set for each key`() {
         runBlocking {
             // given we set the values for 3 keys
-            whenever(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
+            whenever(cache.set(anyString(), anyString())).then { runBlocking { } }
             val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
