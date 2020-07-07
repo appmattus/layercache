@@ -17,6 +17,8 @@
 package com.appmattus.layercache
 
 import com.jakewharton.disklrucache.DiskLruCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -25,26 +27,39 @@ import java.io.File
 internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<String, String> {
 
     override suspend fun evict(key: String) {
-        cache.remove(key)
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            cache.remove(key)
+        }
     }
 
     override suspend fun get(key: String): String? {
-        return cache.get(key)?.getString(0)
+        return withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            cache.get(key)?.getString(0)
+        }
     }
 
     override suspend fun set(key: String, value: String) {
-        val editor = cache.edit(key)
-        editor.set(0, value)
-        editor.commit()
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            cache.edit(key).apply {
+                set(0, value)
+                commit()
+            }
+        }
     }
 
     override suspend fun evictAll() {
-        // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
-        // by calling flush immediately we ensure this happens in the same call
-        cache.maxSize.let {
-            cache.maxSize = 0
-            cache.flush()
-            cache.maxSize = it
+        withContext(Dispatchers.IO) {
+            // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
+            // by calling flush immediately we ensure this happens in the same call
+            @Suppress("BlockingMethodInNonBlockingContext")
+            cache.maxSize.let {
+                cache.maxSize = 0
+                cache.flush()
+                cache.maxSize = it
+            }
         }
     }
 }

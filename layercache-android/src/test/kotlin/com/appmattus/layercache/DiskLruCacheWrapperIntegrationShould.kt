@@ -18,6 +18,7 @@ package com.appmattus.layercache
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.jakewharton.disklrucache.DiskLruCache
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -25,11 +26,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 @Config(manifest = Config.NONE)
 class DiskLruCacheWrapperIntegrationShould {
 

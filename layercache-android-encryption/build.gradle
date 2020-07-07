@@ -60,10 +60,6 @@ android {
     }
 }
 
-tasks.withType(Test) {
-    systemProperty "kotlinx.coroutines.blocking.checker", "disable"
-}
-
 dependencies {
     api project(':layercache-android')
     compileOnly "androidx.annotation:annotation:1.1.0"

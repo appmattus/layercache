@@ -16,17 +16,16 @@
 
 package com.appmattus.layercache
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 @Config(manifest = Config.NONE)
 class LruCacheWrapperIntegrationShould {
 
@@ -60,7 +59,7 @@ class LruCacheWrapperIntegrationShould {
             val result = integratedCache.get("key")
 
             // then it is returned
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 

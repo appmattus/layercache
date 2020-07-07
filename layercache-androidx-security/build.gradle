@@ -54,10 +54,7 @@ android {
     }
 
     testBuildType "debug"
-}
-
-tasks.withType(Test) {
-    systemProperty "kotlinx.coroutines.blocking.checker", "disable"
+    testOptions.unitTests.includeAndroidResources = true
 }
 
 dependencies {

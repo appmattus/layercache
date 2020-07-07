@@ -19,6 +19,8 @@ package com.appmattus.layercache
 import android.annotation.TargetApi
 import android.os.Build
 import android.util.LruCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Wrapper around Android's built in LruCache
@@ -28,19 +30,27 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
     constructor(maxSize: Int) : this(LruCache(maxSize))
 
     override suspend fun evict(key: Key) {
-        cache.remove(key)
+        withContext(Dispatchers.IO) {
+            cache.remove(key)
+        }
     }
 
     override suspend fun get(key: Key): Value? {
-        return cache.get(key)
+        return withContext(Dispatchers.IO) {
+            cache.get(key)
+        }
     }
 
     override suspend fun set(key: Key, value: Value) {
-        cache.put(key, value)
+        withContext(Dispatchers.IO) {
+            cache.put(key, value)
+        }
     }
 
     override suspend fun evictAll() {
-        cache.evictAll()
+        withContext(Dispatchers.IO) {
+            cache.evictAll()
+        }
     }
 }
 
