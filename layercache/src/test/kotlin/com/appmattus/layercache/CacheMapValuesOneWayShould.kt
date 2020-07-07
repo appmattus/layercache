@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with parent set`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
@@ -119,7 +119,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with transform during set`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
@@ -132,7 +132,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with parent evict`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
@@ -144,7 +144,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with transform during evict`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.evict("1")
 
             // then the parent cache is not called
@@ -157,7 +157,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with parent evictAll`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called
@@ -169,7 +169,7 @@ class CacheMapValuesOneWayShould {
     fun `not interact with transform during evictAll`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             mappedValuesCache.evictAll()
 
             // then the parent cache is not called

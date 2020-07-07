@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import com.appmattus.layercache.encryption.EncryptionFactory
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import junitparams.naming.TestCaseName
@@ -37,7 +36,7 @@ import org.junit.runner.RunWith
 import java.security.KeyStore
 
 @RunWith(JUnitParamsRunner::class)
-class StringEncryptionShould {
+internal class StringEncryptionShould {
 
     @Before
     fun setup() {
@@ -148,12 +147,12 @@ class StringEncryptionShould {
 
         // API 18
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            params.add(arrayOf(StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")))
+            params.add(arrayOf(StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")))
         }
 
         // API 19
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            params.add(arrayOf(StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")))
+            params.add(arrayOf(StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")))
         }
 
         return params.toTypedArray()
@@ -165,7 +164,7 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             assertThrows(IllegalStateException::class.java) {
                 val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
-                StringEncryption(appContext, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
+                StringEncryption(appContext, EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC, "testCbc")
             }
         }
     }
@@ -176,7 +175,7 @@ class StringEncryptionShould {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR2) {
             assertThrows(IllegalStateException::class.java) {
                 val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
-                StringEncryption(appContext, EncryptionFactory.Mode.AES_GCM_NoPadding, "testGcm")
+                StringEncryption(appContext, EncryptionMode.AES_GCM_NoPadding, "testGcm")
             }
         }
     }
@@ -193,14 +192,14 @@ class StringEncryptionShould {
             // when we decrypt using a new encryptor using the same alias (as the keys will be the same)
             val appContext = InstrumentationRegistry.getInstrumentation().context.applicationContext
             val newEncryptor = when (encryptor.toString()) {
-                EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_GCM_NoPadding,
+                    EncryptionMode.AES_GCM_NoPadding,
                     "testGcm"
                 )
-                EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                     appContext,
-                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                    EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                     "testCbc"
                 )
                 else -> throw IllegalStateException("Unimplemented")
@@ -238,14 +237,14 @@ class StringEncryptionShould {
             assertThrows(Exception::class.java) {
 
                 val newEncryptor = when (encryptor.toString()) {
-                    EncryptionFactory.Mode.AES_GCM_NoPadding.toString() -> StringEncryption(
+                    EncryptionMode.AES_GCM_NoPadding.toString() -> StringEncryption(
                         appContext,
-                        EncryptionFactory.Mode.AES_GCM_NoPadding,
+                        EncryptionMode.AES_GCM_NoPadding,
                         "testGcm"
                     )
-                    EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
+                    EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC.toString() -> StringEncryption(
                         appContext,
-                        EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC,
+                        EncryptionMode.AES_CBC_PKCS7Padding_with_HMAC,
                         "testCbc"
                     )
                     else -> throw IllegalStateException("Unimplemented")

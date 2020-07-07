@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -71,7 +70,7 @@ class FetcherReuseInflightShould {
 
             // then we return the value
             verify(cache).get("key")
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -97,7 +96,7 @@ class FetcherReuseInflightShould {
             jobs.forEach { it.await() }
 
             // then get is only called once
-            Assert.assertEquals(1, count.get())
+            assertEquals(1, count.get())
         }
     }
 
@@ -128,7 +127,7 @@ class FetcherReuseInflightShould {
             jobs.forEach { it.await() }
 
             // then get is only called once
-            Assert.assertEquals(2, count.get())
+            assertEquals(2, count.get())
         }
     }
 
@@ -150,7 +149,7 @@ class FetcherReuseInflightShould {
     fun `not interact with parent set`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             reuseInflightCache.set("1", 1)
 
             // then the parent cache is not called
@@ -163,7 +162,7 @@ class FetcherReuseInflightShould {
     fun `not interact with parent evict`() {
         runBlocking {
             // when we evict the value
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             reuseInflightCache.evict("1")
 
             // then the parent cache is not called
@@ -176,7 +175,7 @@ class FetcherReuseInflightShould {
     fun `not interact with parent evictAll`() {
         runBlocking {
             // when evictAll values
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             reuseInflightCache.evictAll()
 
             // then the parent cache is not called
