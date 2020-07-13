@@ -34,7 +34,7 @@ class CacheMapKeysShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    private val cache = TestCache<String, Any>("firstCache")
+    private val cache = TestCache<String, Any>()
 
     private val mappedKeysCache: Cache<Int, Any> = cache.keyTransform { int: Int -> int.toString() }
     private val mappedKeysCacheWithError: Cache<Int, Any> = cache.keyTransform { throw TestException() }
