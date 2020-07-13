@@ -26,7 +26,6 @@ import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,16 +36,9 @@ class CacheMapKeysShould {
 
     private val cache = TestCache<String, Any>("firstCache")
 
-    private lateinit var mappedKeysCache: Cache<Int, Any>
-    private lateinit var mappedKeysCacheWithError: Cache<Int, Any>
-    private lateinit var mappedKeysCacheWithNull: Cache<Int, Any>
-
-    @Before
-    fun before() {
-        mappedKeysCache = cache.keyTransform { int: Int -> int.toString() }
-        mappedKeysCacheWithError = cache.keyTransform { throw TestException() }
-        mappedKeysCacheWithNull = cache.keyTransform { TestUtils.uninitialized() }
-    }
+    private val mappedKeysCache: Cache<Int, Any> = cache.keyTransform { int: Int -> int.toString() }
+    private val mappedKeysCacheWithError: Cache<Int, Any> = cache.keyTransform { throw TestException() }
+    private val mappedKeysCacheWithNull: Cache<Int, Any> = cache.keyTransform { TestUtils.uninitialized() }
 
     @Test
     fun `contain cache in composed parents`() {
