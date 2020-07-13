@@ -30,7 +30,7 @@ class CacheBatchGetShould {
 
     private val requestTimeInMills = 250L
 
-    private val cache = TestCache()
+    private val cache = TestCache<String, String>()
 
     @Test
     fun `throw exception when keys list is null`() {

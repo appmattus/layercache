@@ -26,8 +26,8 @@ import org.junit.Test
 
 class CacheComposeShould {
 
-    private val firstCache = TestCache("firstCache")
-    private val secondCache = TestCache("secondCache")
+    private val firstCache = TestCache<String, String>()("firstCache")
+    private val secondCache = TestCache<String, String>()("secondCache")
     private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test

@@ -16,15 +16,15 @@
 
 package com.appmattus.layercache
 
-open class TestCache(private val cacheName: String = "") : Cache<String, String> {
-    var getFn: suspend (key: String) -> String? = { null }
-    var setFn: suspend (key: String, value: String) -> Unit = { _, _ -> }
-    var evictFn: suspend () -> Unit = { }
+open class TestCache<Key : Any, Value : Any>(private val cacheName: String = "") : Cache<Key, Value> {
+    var getFn: suspend (key: Key) -> Value? = { null }
+    var setFn: suspend (key: Key, value: Value) -> Unit = { _, _ -> }
+    var evictFn: suspend (key: Key) -> Unit = { }
     var evictAllFn: suspend () -> Unit = { }
 
-    override suspend fun get(key: String): String? = getFn(key)
-    override suspend fun set(key: String, value: String) = setFn(key, value)
-    override suspend fun evict(key: String) = evictFn()
+    override suspend fun get(key: Key): Value? = getFn(key)
+    override suspend fun set(key: Key, value: Value) = setFn(key, value)
+    override suspend fun evict(key: Key) = evictFn(key)
     override suspend fun evictAll() = evictAllFn()
 
     override fun toString() = cacheName

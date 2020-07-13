@@ -35,7 +35,7 @@ class CacheMapKeysShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    private val cache = TestCacheAny("firstCache")
+    private val cache = TestCache<String, Any>("firstCache")
 
     private lateinit var mappedKeysCache: Cache<Int, Any>
     private lateinit var mappedKeysCacheWithError: Cache<Int, Any>
