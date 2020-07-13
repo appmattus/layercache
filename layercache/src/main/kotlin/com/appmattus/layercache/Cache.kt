@@ -17,8 +17,6 @@
 package com.appmattus.layercache
 
 import androidx.annotation.NonNull
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -70,7 +68,7 @@ interface Cache<Key : Any, Value : Any> {
 
             override suspend fun evict(key: Key) {
                 requireNotNull(key)
-                executeInParallel(listOf(this@Cache, b), "evict") {
+                executeInParallel(listOf(this@Cache, b)) {
                     it.evict(key)
                 }
             }
@@ -88,13 +86,13 @@ interface Cache<Key : Any, Value : Any> {
                 requireNotNull(key)
                 requireNotNull(value)
 
-                executeInParallel(listOf(this@Cache, b), "set") {
+                executeInParallel(listOf(this@Cache, b)) {
                     it.set(key, value)
                 }
             }
 
             override suspend fun evictAll() {
-                executeInParallel(listOf(this@Cache, b), "evictAll") {
+                executeInParallel(listOf(this@Cache, b)) {
                     it.evictAll()
                 }
             }
@@ -212,29 +210,13 @@ interface Cache<Key : Any, Value : Any> {
         }
     }
 
-    @Suppress("EXPERIMENTAL_API_USAGE")
-    private suspend fun <T> executeJobsInParallel(jobs: List<Deferred<T>>, lazyMessage: (index: Int) -> Any): List<T> {
-        jobs.forEach { it.join() }
-
-        val jobsWithExceptions = jobs.filter { it.isCancelled }
-        if (jobsWithExceptions.isNotEmpty()) {
-            val errorMessage = jobsWithExceptions.joinToString { "${lazyMessage(jobs.indexOf(it))}" }
-
-            val exceptions = jobsWithExceptions.mapNotNull { it.getCompletionExceptionOrNull() }
-
-            throw CacheException(errorMessage, exceptions)
-        }
-
-        return jobs.map { it.getCompleted() }
-    }
-
     private suspend fun <K : Any, V : Any, T> executeInParallel(
         caches: List<Cache<K, V>>,
-        message: String,
         methodCall: suspend (Cache<K, V>) -> T
     ): List<T> {
-        val jobs = caches.map { CoroutineScope(Dispatchers.IO).async { methodCall(it) } }
-        return executeJobsInParallel(jobs) { index -> "$message failed for ${caches[index]}" }
+        return coroutineScope {
+            caches.map { async(Dispatchers.IO) { methodCall(it) } }.awaitAll()
+        }
     }
 }
 

@@ -20,7 +20,7 @@ import com.jakewharton.disklrucache.DiskLruCache
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class DiskLruCacheWrapperShould {
@@ -41,7 +41,7 @@ class DiskLruCacheWrapperShould {
             val result = wrappedCache.get("key")
 
             // then we return the value
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 

@@ -29,8 +29,9 @@ import kotlinx.coroutines.runBlocking
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
@@ -56,7 +57,7 @@ class FetcherMapKeysShould {
     fun `contain cache in composed parents`() {
         val localCache = mappedKeysCache
         if (localCache !is ComposedCache<*, *>) {
-            Assert.fail()
+            fail()
             return
         }
 
@@ -74,7 +75,7 @@ class FetcherMapKeysShould {
             // when we get the value
             val result = mappedKeysCache.get(1)
 
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 

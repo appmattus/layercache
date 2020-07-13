@@ -16,29 +16,24 @@
 
 package com.appmattus.layercache
 
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
-import org.hamcrest.core.Is.isA
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
 import org.junit.Assert.assertThrows
-import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeSetShould {
@@ -46,21 +41,10 @@ class CacheComposeSetShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    private val firstCache = mock<AbstractCache<String, String>> {
-        onGeneric { toString() } doReturn "firstCache"
-    }
-    private val secondCache = mock<AbstractCache<String, String>> {
-        onGeneric { toString() } doReturn "secondCache"
-    }
+    private val firstCache = TestCache("firstCache")
+    private val secondCache = TestCache("secondCache")
 
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        whenever(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        verify(firstCache).compose(secondCache)
-    }
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when key is null`() {
@@ -78,8 +62,8 @@ class CacheComposeSetShould {
     @Test
     fun `throw exception when value is null`() {
         runBlocking {
-            whenever(firstCache.set(anyString(), any())).then { Unit }
-            whenever(secondCache.set(anyString(), any())).then { Unit }
+            firstCache.setFn = { _, _ -> }
+            secondCache.setFn = { _, _ -> }
 
             val throwable = assertThrows(IllegalArgumentException::class.java) {
                 runBlocking {
@@ -99,15 +83,11 @@ class CacheComposeSetShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to set a value
-            whenever(firstCache.set(anyString(), anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            firstCache.setFn = { _, _ ->
+                delay(jobTimeInMillis)
             }
-            whenever(secondCache.set(anyString(), anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            secondCache.setFn = { _, _ ->
+                delay(jobTimeInMillis)
             }
 
             // when we set the value and start the timer
@@ -116,7 +96,7 @@ class CacheComposeSetShould {
 
             // then set is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-            Assert.assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
+            assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
         }
     }
 
@@ -124,8 +104,15 @@ class CacheComposeSetShould {
     fun `execute set for each cache`() {
         runBlocking {
             // given we have two caches
-            whenever(firstCache.set(anyString(), anyString())).then { Unit }
-            whenever(secondCache.set(anyString(), anyString())).then { Unit }
+            val firstCache = mock<AbstractCache<String, String>> {
+                onBlocking { set(anyString(), anyString()) } doReturn Unit
+            }
+            val secondCache = mock<AbstractCache<String, String>> {
+                onBlocking { set(anyString(), anyString()) } doReturn Unit
+            }
+            whenever(firstCache.compose(secondCache)).thenCallRealMethod()
+            val composedCache = firstCache.compose(secondCache)
+            verify(firstCache).compose(secondCache)
 
             // when we set the value
             composedCache.set("key", "value")
@@ -141,20 +128,12 @@ class CacheComposeSetShould {
     @Test
     fun `throw internal exception on set when the first cache throws`() {
         runBlocking {
-            executions.expect(1)
-
             // given the first cache throws an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
+            firstCache.setFn = { _, _ ->
                 throw TestException()
             }
-            whenever(secondCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
-            }
 
-            val throwable = assertThrows(CacheException::class.java) {
+            assertThrows(TestException::class.java) {
                 runBlocking {
                     // when we set the value
                     val job = async { composedCache.set("key", "value") }
@@ -165,57 +144,19 @@ class CacheComposeSetShould {
                 }
             }
 
-            // expect exception and successful execution of secondCache
-            assertThat(throwable.message, `is`("set failed for firstCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on set when the second cache throws`() {
         runBlocking {
-            executions.expect(1)
-
             // given the second cache throws an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
-            }
-            whenever(secondCache.set(anyString(), anyString())).then {
+            secondCache.setFn = { _, _ ->
                 throw TestException()
             }
 
-            val throwable = assertThrows(CacheException::class.java) {
-                runBlocking {
-                    // when we set the value
-                    val job = async { composedCache.set("key", "value") }
-                    yield()
-
-                    // then an exception is thrown
-                    job.await()
-                }
-            }
-
-            // expect exception and successful execution of firstCache
-            assertThat(throwable.message, `is`("set failed for secondCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
-        }
-    }
-
-    @Test
-    fun `throw internal exception on set when both caches throws`() {
-        runBlocking {
-            // given both caches throw an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
-                throw TestException()
-            }
-            whenever(secondCache.set(anyString(), anyString())).then {
-                throw TestException()
-            }
-
-            val throwable = assertThrows(CacheException::class.java) {
+            assertThrows(TestException::class.java) {
                 runBlocking {
                     // when we set the value
                     val job = async { composedCache.set("key", "value") }
@@ -227,8 +168,32 @@ class CacheComposeSetShould {
             }
 
             // expect exception
-            assertThat(throwable.message, `is`("set failed for firstCache, set failed for secondCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
+        }
+    }
+
+    @Test
+    fun `throw internal exception on set when both caches throws`() {
+        runBlocking {
+            // given both caches throw an exception
+            firstCache.setFn = { _, _ ->
+                throw TestException()
+            }
+            secondCache.setFn = { _, _ ->
+                throw TestException()
+            }
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
+
+                    // then an exception is thrown
+                    job.await()
+                }
+            }
+
+            // expect exception
         }
     }
 
@@ -238,12 +203,10 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(250)
-                }
+            firstCache.setFn = { _, _ ->
+                delay(250)
             }
-            whenever(secondCache.set(anyString(), anyString())).then {
+            secondCache.setFn = { _, _ ->
                 executions.execute()
             }
 
@@ -271,13 +234,11 @@ class CacheComposeSetShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
+            firstCache.setFn = { _, _ ->
                 executions.execute()
             }
-            whenever(secondCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(250)
-                }
+            secondCache.setFn = { _, _ ->
+                delay(250)
             }
 
             val throwable = assertThrows(CancellationException::class.java) {
@@ -304,24 +265,20 @@ class CacheComposeSetShould {
             executions.expect(0)
 
             // given the first cache throws an exception
-            whenever(firstCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.setFn = { _, _ ->
+                delay(250)
+                executions.execute()
             }
-            whenever(secondCache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            secondCache.setFn = { _, _ ->
+                delay(250)
+                executions.execute()
             }
 
             val throwable = assertThrows(CancellationException::class.java) {
                 runBlocking {
                     // when we set the value
                     val job = async { composedCache.set("key", "value") }
-                    delay(25)
+                    delay(50)
                     job.cancel()
                     yield()
 

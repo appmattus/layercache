@@ -20,7 +20,6 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -29,28 +28,20 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyMap
-import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
 
 class CacheBatchSetShould {
 
     private val requestTimeInMills = 250L
 
-    private val cache = mock<AbstractCache<String, String>> {
-        onBlocking { batchSet(any()) }.thenCallRealMethod()
-    }
+    private val cache = TestCache()
 
     @Test
     fun `throw exception when values map is null`() {
         // when values map is null
         val throwable = assertThrows(IllegalArgumentException::class.java) {
             runBlocking {
-                object : AbstractCache<String, String>() {
-                    override suspend fun get(key: String): String? = null
-                    override suspend fun set(key: String, value: String) = Unit
-                    override suspend fun evict(key: String) = Unit
-                    override suspend fun evictAll() = Unit
-                }.batchSet(TestUtils.uninitialized())
+                cache.batchSet(TestUtils.uninitialized())
             }
         }
 
@@ -75,26 +66,26 @@ class CacheBatchSetShould {
     }
 
     @Test
-    fun `not throw exception when value in entry in values map is null`() {
-        runBlocking {
-            // given we have a cache
-            whenever(cache.set(anyString(), any())).then { Unit }
+    fun `throw exception when value in entry in values map is null`() {
+        // given we have a cache
 
-            // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
-
-            // then no exception is thrown
+        // when key in values map is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
+            }
         }
+
+        // then exception is thrown
+        assertTrue(throwable.message!!.startsWith("Parameter specified as non-null is null"))
     }
 
     @Test(expected = CancellationException::class)
     fun `throw exception when job cancelled`() {
         runBlocking {
             // given we set values into a cache
-            whenever(cache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(requestTimeInMills)
-                }
+            cache.setFn = { _, _ ->
+                delay(requestTimeInMills)
             }
             val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
@@ -110,10 +101,8 @@ class CacheBatchSetShould {
     fun `execute internal requests in parallel`() {
         runBlocking {
             // given we start a timer and set the values for 3 keys
-            whenever(cache.set(anyString(), anyString())).then {
-                runBlocking {
-                    delay(requestTimeInMills)
-                }
+            cache.setFn = { _, _ ->
+                delay(requestTimeInMills)
             }
             val start = System.nanoTime()
             val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
@@ -121,7 +110,7 @@ class CacheBatchSetShould {
             // when we wait for the job to complete
             job.await()
 
-            // then the job completes in less that the time to execute all 3 requests in sequence
+            // then the job completes in less than the time to execute all 3 requests in sequence
             val executionTimeInMills = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
             assertTrue(executionTimeInMills > requestTimeInMills)
             assertTrue(executionTimeInMills < (requestTimeInMills * 3))
@@ -132,7 +121,9 @@ class CacheBatchSetShould {
     fun `execute set for each key`() {
         runBlocking {
             // given we set the values for 3 keys
-            whenever(cache.set(anyString(), anyString())).then { runBlocking { } }
+            val cache = mock<AbstractCache<String, String>> {
+                onBlocking { batchSet(any()) }.thenCallRealMethod()
+            }
             val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
@@ -151,8 +142,7 @@ class CacheBatchSetShould {
     fun `throw internal exception`() {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
-            whenever(cache.set(anyString(), anyString())).then {
-                val key = it.getArgument<String>(0)
+            cache.setFn = { key, _ ->
                 if (key == "key2") {
                     throw TestException()
                 }

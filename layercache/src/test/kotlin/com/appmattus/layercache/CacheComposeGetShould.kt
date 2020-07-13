@@ -16,9 +16,6 @@
 
 package com.appmattus.layercache
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -27,30 +24,20 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.verifyNoInteractions
 
 class CacheComposeGetShould {
 
     @get:Rule
     var executions = ExecutionExpectation()
 
-    private val firstCache = mock<AbstractCache<String, String>>()
-    private val secondCache = mock<AbstractCache<String, String>>()
+    private val firstCache = TestCache("firstCache")
+    private val secondCache = TestCache("secondCache")
 
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        whenever(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        verify(firstCache).compose(secondCache)
-    }
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when key is null`() {
@@ -69,13 +56,15 @@ class CacheComposeGetShould {
     fun `return value from first cache when available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            whenever(firstCache.get("key")).then { "value" }
+            firstCache.getFn = {
+                "value"
+            }
 
             // when we get the value
             val result = composedCache.get("key")
 
             // then we return the value
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -83,30 +72,35 @@ class CacheComposeGetShould {
     fun `not call get on second cache when value available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            whenever(firstCache.get("key")).then { "value" }
+            firstCache.getFn = {
+                "value"
+            }
+            secondCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
             composedCache.get("key")
 
             // then we do not call the second cache
-            verifyNoInteractions(secondCache)
         }
     }
 
     @Test
     fun `return value from second cache when only available in second cache and set on first cache`() {
         runBlocking {
+            executions.expect(1)
+
             // given value available in second cache only
-            whenever(firstCache.get("key")).then { null }
-            whenever(secondCache.get("key")).then { "value" }
-            whenever(firstCache.set(anyString(), anyString())).then { Unit }
+            firstCache.getFn = { null }
+            secondCache.getFn = { "value" }
+            firstCache.setFn = { _, _ -> executions.execute() }
 
             // when we get the value
             val result = composedCache.get("key")
 
             // then we return the value and set it in the first cache
-            Assert.assertEquals("value", result)
-            verify(firstCache).set("key", "value")
+            assertEquals("value", result)
         }
     }
 
@@ -114,7 +108,9 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when the first cache throws`() {
         runBlocking {
             // given the first cache throws an exception on get
-            whenever(firstCache.get(anyString())).then { throw TestException() }
+            firstCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
             composedCache.get("key")
@@ -127,8 +123,12 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when first cache empty and second cache throws`() {
         runBlocking {
             // given the second cache throws an exception on get
-            whenever(firstCache.get(anyString())).then { null }
-            whenever(secondCache.get(anyString())).then { throw TestException() }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
             composedCache.get("key")
@@ -141,9 +141,15 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when first cache empty, second cache returns and set on first cache throws`() {
         runBlocking {
             // given value available in second cache only
-            whenever(firstCache.get("key")).then { null }
-            whenever(secondCache.get("key")).then { "value" }
-            whenever(firstCache.set(anyString(), anyString())).then { throw TestException() }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                "value"
+            }
+            firstCache.setFn = { _, _ ->
+                throw TestException()
+            }
 
             // when we get the value
             composedCache.get("key")
@@ -156,8 +162,14 @@ class CacheComposeGetShould {
     fun `throw exception when job cancelled on get and first cache is executing get`() {
         runBlocking {
             // given the first cache throws an exception
-            whenever(firstCache.get(anyString())).then { runBlocking { delay(250) } }
-            whenever(secondCache.get(anyString())).then { executions.execute() }
+            firstCache.getFn = {
+                delay(250)
+                null
+            }
+            secondCache.getFn = {
+                executions.execute()
+                null
+            }
 
             // when we get the value
             val job = async(Dispatchers.IO) { composedCache.get("key") }
@@ -181,8 +193,13 @@ class CacheComposeGetShould {
     fun `throw exception when job cancelled on get and second cache is executing get`() {
         runBlocking {
             // given the first cache throws an exception
-            whenever(firstCache.get(anyString())).then { null }
-            whenever(secondCache.get(anyString())).then { runBlocking { delay(250) } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                delay(250)
+                null
+            }
 
             // when we get the value
             val job = async(Dispatchers.IO) { composedCache.get("key") }
@@ -206,9 +223,15 @@ class CacheComposeGetShould {
     fun `throw exception when job cancelled on get and first cache is executing set after get`() {
         runBlocking {
             // given the first cache throws an exception
-            whenever(firstCache.get(anyString())).then { null }
-            whenever(secondCache.get(anyString())).then { "value" }
-            whenever(firstCache.set(anyString(), anyString())).then { runBlocking { delay(250) } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                "value"
+            }
+            firstCache.setFn = { _, _ ->
+                delay(250)
+            }
 
             // when we get the value
             val job = async(Dispatchers.IO) { composedCache.get("key") }

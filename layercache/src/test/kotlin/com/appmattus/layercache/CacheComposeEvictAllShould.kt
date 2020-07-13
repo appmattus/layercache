@@ -22,19 +22,15 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
-import org.hamcrest.core.Is.isA
-import org.junit.Assert
 import org.junit.Assert.assertThrows
-import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeEvictAllShould {
@@ -42,21 +38,10 @@ class CacheComposeEvictAllShould {
     @get:Rule
     var executions = ExecutionExpectation()
 
-    private val firstCache = mock<AbstractCache<String, String>> {
-        onGeneric { toString() } doReturn "firstCache"
-    }
-    private val secondCache = mock<AbstractCache<String, String>> {
-        onGeneric { toString() } doReturn "secondCache"
-    }
+    private val firstCache = TestCache("firstCache")
+    private val secondCache = TestCache("secondCache")
 
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        whenever(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        verify(firstCache).compose(secondCache)
-    }
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `execute internal requests on evictAll in parallel`() {
@@ -64,15 +49,11 @@ class CacheComposeEvictAllShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to evict a value
-            whenever(firstCache.evictAll()).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            firstCache.evictAllFn = {
+                delay(jobTimeInMillis)
             }
-            whenever(secondCache.evictAll()).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            secondCache.evictAllFn = {
+                delay(jobTimeInMillis)
             }
 
             // when we evictAll values and start the timer
@@ -81,7 +62,7 @@ class CacheComposeEvictAllShould {
 
             // then evictAll is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-            Assert.assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
+            assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
         }
     }
 
@@ -89,8 +70,15 @@ class CacheComposeEvictAllShould {
     fun `execute evictAll for each cache`() {
         runBlocking {
             // given we have two caches
-            whenever(firstCache.evictAll()).then { Unit }
-            whenever(secondCache.evictAll()).then { Unit }
+            val firstCache = mock<AbstractCache<String, String>> {
+                onBlocking { evictAll() } doReturn Unit
+            }
+            val secondCache = mock<AbstractCache<String, String>> {
+                onBlocking { evictAll() } doReturn Unit
+            }
+            whenever(firstCache.compose(secondCache)).thenCallRealMethod()
+            val composedCache = firstCache.compose(secondCache)
+            verify(firstCache).compose(secondCache)
 
             // when we evictAll values
             composedCache.evictAll()
@@ -106,20 +94,15 @@ class CacheComposeEvictAllShould {
     @Test
     fun `throw internal exception on evictAll when the first cache throws`() {
         runBlocking {
-            executions.expect(1)
-
             // given the first cache throws an exception
-            whenever(firstCache.evictAll()).then {
+            firstCache.evictAllFn = {
                 throw TestException()
             }
-            whenever(secondCache.evictAll()).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            secondCache.evictAllFn = {
+                delay(50)
             }
 
-            val throwable = assertThrows(CacheException::class.java) {
+            assertThrows(TestException::class.java) {
                 runBlocking {
                     // when we evictAll values
                     val job = async { composedCache.evictAll() }
@@ -129,29 +112,22 @@ class CacheComposeEvictAllShould {
                 }
             }
 
-            // expect exception and successful execution of secondCache
-            assertThat(throwable.message, `is`("evictAll failed for firstCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on evictAll when the second cache throws`() {
         runBlocking {
-            executions.expect(1)
-
             // given the second cache throws an exception
-            whenever(firstCache.evictAll()).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.evictAllFn = {
+                delay(50)
             }
-            whenever(secondCache.evictAll()).then {
+            secondCache.evictAllFn = {
                 throw TestException()
             }
 
-            val throwable = assertThrows(CacheException::class.java) {
+            assertThrows(TestException::class.java) {
                 runBlocking {
                     // when we evictAll values
                     val job = async { composedCache.evictAll() }
@@ -161,9 +137,7 @@ class CacheComposeEvictAllShould {
                 }
             }
 
-            // expect exception and successful execution of firstCache
-            assertThat(throwable.message, `is`("evictAll failed for secondCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
+            // expect exception
         }
     }
 
@@ -171,14 +145,14 @@ class CacheComposeEvictAllShould {
     fun `throw internal exception on evictAll when both caches throws`() {
         runBlocking {
             // given both caches throw an exception
-            whenever(firstCache.evictAll()).then {
+            firstCache.evictAllFn = {
                 throw TestException()
             }
-            whenever(secondCache.evictAll()).then {
+            secondCache.evictAllFn = {
                 throw TestException()
             }
 
-            val throwable = assertThrows(CacheException::class.java) {
+            assertThrows(TestException::class.java) {
                 runBlocking {
                     // when we evictAll values
                     val job = async { composedCache.evictAll() }
@@ -188,9 +162,7 @@ class CacheComposeEvictAllShould {
                 }
             }
 
-            // expect exception and successful execution of firstCache
-            assertThat(throwable.message, `is`("evictAll failed for firstCache, evictAll failed for secondCache"))
-            assertThat(throwable.cause as? TestException, isA(TestException::class.java))
+            // expect exception
         }
     }
 
@@ -200,12 +172,10 @@ class CacheComposeEvictAllShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            whenever(firstCache.evictAll()).then {
-                runBlocking {
-                    delay(250)
-                }
+            firstCache.evictAllFn = {
+                delay(250)
             }
-            whenever(secondCache.evictAll()).then {
+            secondCache.evictAllFn = {
                 executions.execute()
             }
 
@@ -232,13 +202,11 @@ class CacheComposeEvictAllShould {
             executions.expect(1)
 
             // given the first cache throws an exception
-            whenever(firstCache.evictAll()).then {
+            firstCache.evictAllFn = {
                 executions.execute()
             }
-            whenever(secondCache.evictAll()).then {
-                runBlocking {
-                    delay(250)
-                }
+            secondCache.evictAllFn = {
+                delay(250)
             }
 
             val throwable = assertThrows(CancellationException::class.java) {
@@ -264,17 +232,13 @@ class CacheComposeEvictAllShould {
             executions.expect(0)
 
             // given the first cache throws an exception
-            whenever(firstCache.evictAll()).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.evictAllFn = {
+                delay(50)
+                executions.execute()
             }
-            whenever(secondCache.evictAll()).then {
-                runBlocking {
-                    delay(50)
-                    executions.execute()
-                }
+            secondCache.evictAllFn = {
+                delay(50)
+                executions.execute()
             }
 
             val throwable = assertThrows(CancellationException::class.java) {

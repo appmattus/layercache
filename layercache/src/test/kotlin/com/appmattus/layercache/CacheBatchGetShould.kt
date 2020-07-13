@@ -16,9 +16,6 @@
 
 package com.appmattus.layercache
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -26,24 +23,14 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyList
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
 import java.util.concurrent.TimeUnit
 
 class CacheBatchGetShould {
 
     private val requestTimeInMills = 250L
 
-    private val cache = mock<AbstractCache<String, String>>()
-
-    @Before
-    fun before() {
-        whenever(runBlocking { cache.batchGet(anyList()) }).thenCallRealMethod()
-        whenever(runBlocking { cache.batchGet(TestUtils.uninitialized()) }).thenCallRealMethod()
-    }
+    private val cache = TestCache()
 
     @Test
     fun `throw exception when keys list is null`() {
@@ -79,11 +66,9 @@ class CacheBatchGetShould {
     fun `throw exception when job cancelled`() {
         runBlocking {
             // given we request the values for 3 keys
-            whenever(cache.get(anyString())).then {
-                runBlocking {
-                    delay(requestTimeInMills)
-                    "value"
-                }
+            cache.getFn = {
+                delay(requestTimeInMills)
+                "value"
             }
             val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
@@ -100,10 +85,9 @@ class CacheBatchGetShould {
         try {
             runBlocking {
                 // given we start a timer and request the values for 3 keys
-                whenever(cache.get(anyString())).then {
-                    runBlocking {
-                        delay(requestTimeInMills); "value"
-                    }
+                cache.getFn = {
+                    delay(requestTimeInMills)
+                    "value"
                 }
 
                 val start = System.nanoTime()
@@ -112,7 +96,7 @@ class CacheBatchGetShould {
                 // when we wait for the job to complete
                 job.await()
 
-                // then the job completes in less that the time to execute all 3 requests in sequence
+                // then the job completes in less than the time to execute all 3 requests in sequence
                 val executionTimeInMills = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
                 assertTrue(executionTimeInMills > requestTimeInMills)
                 assertTrue(executionTimeInMills < (requestTimeInMills * 3))
@@ -126,14 +110,11 @@ class CacheBatchGetShould {
     fun `return values in key sequence`() {
         runBlocking {
             // given we request the values for 3 keys where the second value takes longer to return
-            whenever(cache.get(anyString())).then {
-                runBlocking {
-                    val key = it.getArgument<String>(0)
-                    if (key == "key2") {
-                        delay(requestTimeInMills)
-                    }
-                    key.replace("key", "value")
+            cache.getFn = { key ->
+                if (key == "key2") {
+                    delay(requestTimeInMills)
                 }
+                key.replace("key", "value")
             }
             val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
 
@@ -142,7 +123,6 @@ class CacheBatchGetShould {
 
             // then the job completes with the values in the same sequence as the keys
             assertEquals(listOf("value1", "value2", "value3"), result)
-            verify(cache, Mockito.times(3)).get(anyString())
         }
     }
 
@@ -150,8 +130,7 @@ class CacheBatchGetShould {
     fun `throw internal exception`() {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
-            whenever(cache.get(anyString())).then {
-                val key = it.getArgument<String>(0)
+            cache.getFn = { key ->
                 if (key == "key2") {
                     throw TestException()
                 }

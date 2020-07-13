@@ -16,8 +16,6 @@
 
 package com.appmattus.layercache
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.junit.Assert.assertEquals
@@ -28,13 +26,8 @@ import org.junit.Test
 
 class CacheComposeShould {
 
-    private val firstCache = mock<AbstractCache<String, String>> {
-        on { compose(any()) }.thenCallRealMethod()
-    }
-    private val secondCache = mock<AbstractCache<String, String>> {
-        on { compose(any()) }.thenCallRealMethod()
-    }
-
+    private val firstCache = TestCache("firstCache")
+    private val secondCache = TestCache("secondCache")
     private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test

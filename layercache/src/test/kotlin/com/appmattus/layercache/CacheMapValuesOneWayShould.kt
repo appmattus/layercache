@@ -23,7 +23,8 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verifyNoInteractions
@@ -70,8 +71,8 @@ class CacheMapValuesOneWayShould {
             val result = mappedValuesCache.get("key")
 
             // then it is converted to an integer
-            Assert.assertEquals(1, result)
-            Assert.assertTrue(result is Int)
+            assertEquals(1, result)
+            assertTrue(result is Int)
         }
     }
 

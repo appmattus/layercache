@@ -22,7 +22,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.jakewharton.disklrucache.DiskLruCache
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,7 +57,7 @@ class DiskLruCacheWrapperIntegrationShould {
             val result = integratedCache.get("key")
 
             // then it is null
-            Assert.assertNull(result)
+            assertNull(result)
         }
     }
 
@@ -70,7 +71,7 @@ class DiskLruCacheWrapperIntegrationShould {
             val result = integratedCache.get("key")
 
             // then it is returned
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -84,7 +85,7 @@ class DiskLruCacheWrapperIntegrationShould {
             integratedCache.evict("key")
 
             // then the value is null
-            Assert.assertNull(integratedCache.get("key"))
+            assertNull(integratedCache.get("key"))
         }
     }
 
@@ -103,8 +104,8 @@ class DiskLruCacheWrapperIntegrationShould {
                 singleEntryDiskCache.flush()
 
                 // then only the second value is available
-                Assert.assertNull(cache.get("key1"))
-                Assert.assertEquals("value2", cache.get("key2"))
+                assertNull(cache.get("key1"))
+                assertEquals("value2", cache.get("key2"))
             } finally {
                 singleEntryDiskCache.delete()
             }
@@ -128,9 +129,9 @@ class DiskLruCacheWrapperIntegrationShould {
                 doubleEntryDiskCache.flush()
 
                 // then the 2nd is removed leaving the 1st and 3rd values
-                Assert.assertNull(cache.get("key2"))
-                Assert.assertEquals("value1", cache.get("key1"))
-                Assert.assertEquals("value3", cache.get("key3"))
+                assertNull(cache.get("key2"))
+                assertEquals("value1", cache.get("key1"))
+                assertEquals("value3", cache.get("key3"))
             } finally {
                 doubleEntryDiskCache.delete()
             }
