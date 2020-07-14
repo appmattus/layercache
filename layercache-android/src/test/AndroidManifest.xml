@@ -1,0 +1,5 @@
+<manifest package="com.appmattus.layercache.android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk tools:overrideLibrary="androidx.security" />
+</manifest>

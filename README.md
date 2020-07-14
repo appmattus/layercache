@@ -175,35 +175,70 @@ val diskCache: Cache<String, String> = Cache.fromDiskLruCache(...)
 Create a cache backed by shared preferences.
 
 ```kotlin
-val stringValueCache = SharedPreferencesCache(context, preferenceFileKey).withString()
+val sharedPreferences = context.getSharedPreferences("filename", Context.MODE_PRIVATE)
 
-val intValueCache = SharedPreferencesCache(context, preferenceFileKey).withInt()
+val anyValueCache: Cache<String, Any> =
+        sharedPreferences.asCache()
 
-val floatValueCache = SharedPreferencesCache(context, preferenceFileKey).withFloat()
+val stringValueCache: Cache<String, String> =
+        sharedPreferences.asStringCache()
 
-val booleanValueCache = SharedPreferencesCache(context, preferenceFileKey).withBoolean()
+val stringSetValueCache: Cache<String, Set<String>> =
+        sharedPreferences.asStringSetCache()
 
-val longValueCache = SharedPreferencesCache(context, preferenceFileKey).withLong()
+val intValueCache: Cache<String, Int> =
+        sharedPreferences.asIntCache()
+
+val floatValueCache: Cache<String, Float> =
+        sharedPreferences.asFloatCache()
+
+val booleanValueCache: Cache<String, Boolean> =
+        sharedPreferences.asBooleanCache()
+
+val longValueCache: Cache<String, Long> =
+        sharedPreferences.asLongCache()
 ```
 
 ##### EncryptedSharedPreferences
 
 ```kotlin
-implementation("com.appmattus:layercache-androidx-security:<latest-version>")
+implementation("androidx.security:security-crypto:<latest-version>")
 ```
 
-Use Jetpack Security to provide a cache backed by encrypted shared preferences where both keys and values are encrypted.
+Use Jetpack Security to provide a cache backed by encrypted shared preferences where keys and values are both encrypted.
 
 ```kotlin
-val stringValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withString()
 
-val intValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withInt()
+val masterKey = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
-val floatValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withFloat()
+val sharedPreferences = EncryptedSharedPreferences.create(
+    context,
+    "filename",
+    masterKey,
+    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+)
 
-val booleanValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withBoolean()
+val anyValueCache: Cache<String, Any> =
+        sharedPreferences.asCache()
 
-val longValueCache = EncryptedSharedPreferencesCache(context, preferenceFileKey).withLong()
+val stringValueCache: Cache<String, String> =
+        sharedPreferences.asStringCache()
+
+val stringSetValueCache: Cache<String, Set<String>> =
+        sharedPreferences.asStringSetCache()
+
+val intValueCache: Cache<String, Int> =
+        sharedPreferences.asIntCache()
+
+val floatValueCache: Cache<String, Float> =
+        sharedPreferences.asFloatCache()
+
+val booleanValueCache: Cache<String, Boolean> =
+        sharedPreferences.asBooleanCache()
+
+val longValueCache: Cache<String, Long> =
+        sharedPreferences.asLongCache()
 ```
 
 ### Android LiveData module
@@ -256,9 +291,6 @@ dependencies {
 
     // Provides one-line String encryption for Android
     implementation("com.appmattus:layercache-android-encryption:<latest-version>")
-
-    // Provides one-line String encryption for Android using Jetpack Security
-    implementation("com.appmattus:layercache-androidx-security:<latest-version>")
 
     // Provides conversion from Cache into LiveData for Android
     implementation("com.appmattus:layercache-android-livedata:<latest-version>")

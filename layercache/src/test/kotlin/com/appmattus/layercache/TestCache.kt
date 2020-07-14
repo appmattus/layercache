@@ -16,7 +16,7 @@
 
 package com.appmattus.layercache
 
-open class TestCache<Key : Any, Value : Any>(private val cacheName: String = "") : Cache<Key, Value> {
+class TestCache<Key : Any, Value : Any>(private val cacheName: String = "") : Cache<Key, Value> {
     var getFn: suspend (key: Key) -> Value? = { null }
     var setFn: suspend (key: Key, value: Value) -> Unit = { _, _ -> }
     var evictFn: suspend (key: Key) -> Unit = { }

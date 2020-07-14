@@ -16,92 +16,102 @@
 
 package com.appmattus.layercache
 
-import android.content.Context
 import android.content.SharedPreferences
+
+/**
+ * Any-based value shared preference cache
+ */
+fun SharedPreferences.asCache(): Cache<String, Any> {
+    return BaseCache(this,
+        { sharedPreferences, key -> sharedPreferences.all[key] },
+        { editor, key, value ->
+            when (value) {
+                is String -> editor.putString(key, value)
+                is Set<*> -> @Suppress("UNCHECKED_CAST") editor.putStringSet(key, value as Set<String>)
+                is Int -> editor.putInt(key, value)
+                is Boolean -> editor.putBoolean(key, value)
+                is Long -> editor.putLong(key, value)
+                is Float -> editor.putFloat(key, value)
+                else -> error("Only primitive types can be stored in SharedPreferences")
+            }
+        })
+}
+
+/**
+ * String-based value shared preference cache
+ */
+fun SharedPreferences.asStringCache(): Cache<String, String> = BaseCache(this,
+    { sharedPreferences, key -> sharedPreferences.getString(key, null) },
+    { editor, key, value -> editor.putString(key, value) })
+
+/**
+ * Set<String>-based value shared preference cache
+ */
+fun SharedPreferences.asStringSetCache(): Cache<String, Set<String>> = BaseCache(this,
+    { sharedPreferences, key -> sharedPreferences.getStringSet(key, null) },
+    { editor, key, value -> editor.putStringSet(key, value) })
+
+/**
+ * Int-based value shared preference cache
+ */
+fun SharedPreferences.asIntCache(): Cache<String, Int> = BaseCache(this,
+    { sharedPreferences: SharedPreferences, key: String -> sharedPreferences.getInt(key, 0) },
+    { editor, key, value -> editor.putInt(key, value) })
+
+/**
+ * Float-based value shared preference cache
+ */
+fun SharedPreferences.asFloatCache(): Cache<String, Float> = BaseCache(this,
+    { sharedPreferences, key -> sharedPreferences.getFloat(key, 0f) },
+    { editor, key, value -> editor.putFloat(key, value) })
+
+/**
+ * Boolean-based value shared preference cache
+ */
+fun SharedPreferences.asBooleanCache(): Cache<String, Boolean> = BaseCache(this,
+    { sharedPreferences, key -> sharedPreferences.getBoolean(key, false) },
+    { editor, key, value -> editor.putBoolean(key, value) })
+
+/**
+ * Long-based value shared preference cache
+ */
+fun SharedPreferences.asLongCache(): Cache<String, Long> = BaseCache(this,
+    { sharedPreferences, key -> sharedPreferences.getLong(key, 0) },
+    { editor, key, value -> editor.putLong(key, value) })
 
 /**
  * Simple cache that stores values associated with keys in a shared preferences file with no expiration or cleanup
  * logic. Use at your own risk.
  */
-class SharedPreferencesCache(context: Context, preferenceFileKey: String) {
+private class BaseCache<T : Any>(
+    private val sharedPreferences: SharedPreferences,
+    val getFun: (sharedPreferences: SharedPreferences, key: String) -> T?,
+    val setFun: (editor: SharedPreferences.Editor, key: String, value: T) -> Unit
+) : Cache<String, T> {
 
-    private val sharedPreferences = context.getSharedPreferences(preferenceFileKey, Context.MODE_PRIVATE)
-
-    private class BaseCache<T : Any>(
-        private val sharedPreferences: SharedPreferences,
-        val getFun: (sharedPreferences: SharedPreferences, key: String) -> T?,
-        val setFun: (editor: SharedPreferences.Editor, key: String, value: T) -> Unit
-    ) : Cache<String, T> {
-
-        override suspend fun get(key: String): T? {
-            return if (sharedPreferences.contains(key)) {
-                getFun(sharedPreferences, key)
-            } else {
-                null
-            }
-        }
-
-        override suspend fun set(key: String, value: T) {
-            val editor = sharedPreferences.edit()
-            setFun(editor, key, value)
-            editor.apply()
-        }
-
-        override suspend fun evict(key: String) {
-            val editor = sharedPreferences.edit()
-            editor.remove(key)
-            editor.apply()
-        }
-
-        override suspend fun evictAll() {
-            val editor = sharedPreferences.edit()
-            editor.clear()
-            editor.apply()
+    override suspend fun get(key: String): T? {
+        return if (sharedPreferences.contains(key)) {
+            getFun(sharedPreferences, key)
+        } else {
+            null
         }
     }
 
-    /**
-     * String-based value shared preference cache
-     */
-    fun withString(): Cache<String, String> {
-        return BaseCache(sharedPreferences,
-            { sharedPreferences, key -> sharedPreferences.getString(key, null) },
-            { editor, key, value -> editor.putString(key, value) })
+    override suspend fun set(key: String, value: T) {
+        val editor = sharedPreferences.edit()
+        setFun(editor, key, value)
+        editor.apply()
     }
 
-    /**
-     * Int-based value shared preference cache
-     */
-    fun withInt(): Cache<String, Int> {
-        return BaseCache(sharedPreferences,
-            { sharedPreferences: SharedPreferences, key: String -> sharedPreferences.getInt(key, 0) },
-            { editor, key, value -> editor.putInt(key, value) })
+    override suspend fun evict(key: String) {
+        val editor = sharedPreferences.edit()
+        editor.remove(key)
+        editor.apply()
     }
 
-    /**
-     * Float-based value shared preference cache
-     */
-    fun withFloat(): Cache<String, Float> {
-        return BaseCache(sharedPreferences,
-            { sharedPreferences, key -> sharedPreferences.getFloat(key, 0f) },
-            { editor, key, value -> editor.putFloat(key, value) })
-    }
-
-    /**
-     * Boolean-based value shared preference cache
-     */
-    fun withBoolean(): Cache<String, Boolean> {
-        return BaseCache(sharedPreferences,
-            { sharedPreferences, key -> sharedPreferences.getBoolean(key, false) },
-            { editor, key, value -> editor.putBoolean(key, value) })
-    }
-
-    /**
-     * Long-based value shared preference cache
-     */
-    fun withLong(): Cache<String, Long> {
-        return BaseCache(sharedPreferences,
-            { sharedPreferences, key -> sharedPreferences.getLong(key, 0) },
-            { editor, key, value -> editor.putLong(key, value) })
+    override suspend fun evictAll() {
+        val editor = sharedPreferences.edit()
+        editor.clear()
+        editor.apply()
     }
 }

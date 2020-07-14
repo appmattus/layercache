@@ -18,13 +18,13 @@
 
 package com.appmattus.layercache
 
+import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -33,14 +33,11 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE)
 class SharedPreferencesCacheIntegrationShould {
 
-    private lateinit var stringCache: Cache<String, String>
-    private lateinit var intCache: Cache<String, Int>
+    private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val sharedPreferences = context.getSharedPreferences("test", Context.MODE_PRIVATE)
 
-    @Before
-    fun before() {
-        stringCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
-        intCache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
-    }
+    private val stringCache: Cache<String, String> = sharedPreferences.asStringCache()
+    private val intCache: Cache<String, Int> = sharedPreferences.asIntCache()
 
     @After
     fun after() {
@@ -67,10 +64,8 @@ class SharedPreferencesCacheIntegrationShould {
     @Test(expected = IllegalArgumentException::class)
     fun return_value_when_cache_has_value_3() {
         runBlocking {
-            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
-
             // given we have a cache with a value
-            cache.set("key", TestUtils.uninitialized())
+            stringCache.set("key", TestUtils.uninitialized())
 
             // then exception is thrown
         }
@@ -79,13 +74,11 @@ class SharedPreferencesCacheIntegrationShould {
     @Test
     fun return_value_when_cache_has_value_4() {
         runBlocking {
-            val cache = SharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
-
             // given we have a cache with a value
-            cache.set("key", 5)
+            intCache.set("key", 5)
 
             // when we retrieve a value
-            val result = cache.get("key")
+            val result = intCache.get("key")
 
             // then it is returned
             assertEquals(5, result)

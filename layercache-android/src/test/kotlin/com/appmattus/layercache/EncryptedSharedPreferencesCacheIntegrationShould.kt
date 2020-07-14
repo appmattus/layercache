@@ -18,6 +18,9 @@
 
 package com.appmattus.layercache
 
+import android.content.Context
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.appmattus.layercache.keystore.RobolectricKeyStore
@@ -34,13 +37,25 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE, sdk = [22, 28])
 class EncryptedSharedPreferencesCacheIntegrationShould {
 
+    private val context = ApplicationProvider.getApplicationContext<Context>()
+
+    private val masterKey = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+
+    private val sharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        "test",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
     private lateinit var stringCache: Cache<String, String>
     private lateinit var intCache: Cache<String, Int>
 
     @Before
     fun before() {
-        stringCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
-        intCache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
+        stringCache = sharedPreferences.asStringCache()
+        intCache = sharedPreferences.asIntCache()
 
         runBlocking {
             stringCache.evictAll()
@@ -65,10 +80,8 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
     @Test(expected = IllegalArgumentException::class)
     fun return_value_when_cache_has_value_3() {
         runBlocking {
-            val cache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withString()
-
             // given we have a cache with a value
-            cache.set("key", TestUtils.uninitialized())
+            stringCache.set("key", TestUtils.uninitialized())
 
             // then exception is thrown
         }
@@ -77,13 +90,11 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
     @Test
     fun return_value_when_cache_has_value_4() {
         runBlocking {
-            val cache = EncryptedSharedPreferencesCache(ApplicationProvider.getApplicationContext(), "test").withInt()
-
             // given we have a cache with a value
-            cache.set("key", 5)
+            intCache.set("key", 5)
 
             // when we retrieve a value
-            val result = cache.get("key")
+            val result = intCache.get("key")
 
             // then it is returned
             assertEquals(5, result)
