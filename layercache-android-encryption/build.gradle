@@ -23,12 +23,12 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 17
+        minSdkVersion 19
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "com.appmattus.layercache.AndroidXJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -64,22 +64,17 @@ dependencies {
     api project(':layercache-android')
     compileOnly "androidx.annotation:annotation:1.1.0"
 
-    implementation "androidx.preference:preference-ktx:1.1.1"
+    implementation "com.google.crypto.tink:tink-android:1.4.0-rc2"
 
     androidTestImplementation project(':testutils')
-
-    androidTestImplementation 'pl.pragmatists:JUnitParams:1.1.1'
-    androidTestImplementation('androidx.test:runner:1.2.0')
-    androidTestImplementation 'androidx.multidex:multidex:2.0.1'
-
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.2.0', {
-        exclude group: 'androidx.annotation', module: 'annotation'
-    })
+    androidTestImplementation "androidx.test.ext:junit-ktx:1.1.1"
+    androidTestImplementation "androidx.test:runner:1.2.0"
+    androidTestImplementation "androidx.multidex:multidex:2.0.1"
 
     testImplementation project(':testutils')
-    testImplementation "org.robolectric:robolectric:4.3.1"
     testImplementation "androidx.test.ext:junit-ktx:1.1.1"
-    testImplementation('androidx.test:runner:1.2.0')
+    testImplementation "androidx.test:runner:1.2.0"
+    testImplementation "org.robolectric:robolectric:4.3.1"
 }
 
 task sourcesJar(type: Jar) {

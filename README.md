@@ -87,17 +87,23 @@ val valueTransform: Cache<Key, MappedValue> = cache.valueTransform(OneWayTransfo
 implementation("com.appmattus:layercache-android-encryption:<latest-version>")
 ```
 
-There is support for encrypting values (in any cache) on Android with the `layercache-android-encryption` module.
+There is support for encrypting string keys and string values (in any cache) on Android with the `layercache-android-encryption` module. The
+library is using [Google Tink](https://github.com/google/tink) to perform the encryption using AES-256 SIV for keys and AES-256 GCM for values.
 
 ```kotlin
+// Encrypt key and value when both are strings
+val cache: Cache<String, String> = ...
+val encryptedCache = cache.encrypt(context)
+
+// Both key and value stored encrypted in `cache`
+encryptedCache.set("hello", "world")
+
+// Encrypt values only when just the value is a string
 val cache: Cache<Key, String> = ...
-val encryptedCache = cache.encryptValues(context, EncryptionFactory.Mode.AES_GCM_NoPadding, "keystoreAlias")
+val encryptedCache = cache.encryptValues(context)
 
-// or
-
-val cache: Cache<Key, String> = ...
-val encryptedCache = cache.encryptValues(context, EncryptionFactory.Mode.AES_CBC_PKCS7Padding_with_HMAC, "keystoreAlias")
-
+// Just value stored encrypted in `cache`
+encryptedCache.set("hello", "world")
 ```
 
 #### Transforming keys
