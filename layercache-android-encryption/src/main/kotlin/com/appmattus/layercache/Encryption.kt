@@ -81,12 +81,12 @@ private class Encryption(context: Context, private val fileName: String, keystor
         }
     }
 
-    private fun encryptValue(value: String, encryptedKey: EncryptedKey): String {
-        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), encryptedKey.rawBytes))
+    private fun encryptValue(value: String, associatedData: ByteArray): String {
+        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), associatedData))
     }
 
-    private fun decryptValue(encryptedKey: EncryptedKey, encryptedValue: String): String {
-        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), encryptedKey.rawBytes).toString(Charsets.UTF_8)
+    private fun decryptValue(encryptedValue: String, associatedData: ByteArray): String {
+        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), associatedData).toString(Charsets.UTF_8)
     }
 
     fun encrypt(cache: Cache<String, String>): Cache<String, String> = object : Cache<String, String> {
@@ -96,7 +96,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 val encryptedKey = encryptKey(key)
                 val encryptedValue = cache.get(encryptedKey.base64)
 
-                encryptedValue?.let { decryptValue(encryptedKey, encryptedValue) }
+                encryptedValue?.let { decryptValue(encryptedValue, encryptedKey.rawBytes) }
             } catch (expected: GeneralSecurityException) {
                 null
             }
@@ -106,7 +106,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
             try {
                 val encryptedKey = encryptKey(key)
 
-                cache.set(encryptedKey.base64, encryptValue(value, encryptedKey))
+                cache.set(encryptedKey.base64, encryptValue(value, encryptedKey.rawBytes))
             } catch (expected: GeneralSecurityException) {
             }
         }
@@ -130,9 +130,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 cache.get(key)?.let {
                     val (encryptedValue, salt) = it.split(":")
 
-                    val encryptedKey = EncryptedKey(Base64.decode(salt))
-
-                    decryptValue(encryptedKey, encryptedValue)
+                    decryptValue(encryptedValue, Base64.decode(salt))
                 }
             } catch (expected: GeneralSecurityException) {
                 null
@@ -147,9 +145,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 val salt = ByteArray(16)
                 secureRandom.nextBytes(salt)
 
-                val encryptedKey = EncryptedKey(salt)
-
-                cache.set(key, encryptValue(value, encryptedKey) + ":" + Base64.encode(salt))
+                cache.set(key, encryptValue(value, salt) + ":" + Base64.encode(salt))
             } catch (expected: GeneralSecurityException) {
             }
         }
