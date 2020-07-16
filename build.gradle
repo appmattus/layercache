@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 
 buildscript {
-    ext.kotlin_version = '1.3.0'
-    ext.coroutines_version = '1.0.0'
-    ext.serialization_version = '0.9.0'
-    ext.detekt_version = '1.0.0.RC6'
-    ext.dokka_version = '0.9.17'
+    ext.kotlin_version = '1.3.72'
+    ext.coroutines_version = '1.3.7'
+    ext.serialization_version = '0.20.0'
+    ext.dokka_version = '0.10.1'
 
     repositories {
         google()
@@ -28,19 +27,11 @@ buildscript {
         maven { url "https://kotlin.bintray.com/kotlinx" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:4.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        classpath "gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detekt_version"
-        classpath 'com.novoda:bintray-release:0.8.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-        classpath('com.dicedmelon.gradle:jacoco-android:0.1.3') {
-            exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-        }
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:${dokka_version}"
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.28.0'
     }
 }
 
@@ -53,109 +44,44 @@ allprojects {
     }
 }
 
+subprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            allWarningsAsErrors = true
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-apply plugin: "io.gitlab.arturbosch.detekt"
+apply from: "gradle/scripts/detekt.gradle.kts"
 
-detekt {
-    version = "$detekt_version"
-    profile("main") {
-        //noinspection GroovyAssignabilityCheck
-        input = "$projectDir"
-        filters = ".*test.*,.*androidTest.*,.*/resources/.*,.*/tmp/.*"
-        output = "$buildDir/reports/detekt"
-        config = "$projectDir/detekt.yml"
-    }
-}
-apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
-
-task jacocoTestReport(type: JacocoReport) {
-    sourceDirectories = files()
-    classDirectories = files()
-    executionData = files()
-
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        csv.enabled = false
-    }
-
-    // Work-around to allow us to build list of executionData files in doFirst
-    onlyIf = {
-        true
-    }
-
-    /*
-     * Builds list of source dirs, class dirs, and executionData files
-     * when task is run, not at script evaluation time
-     */
-    doFirst {
-        subprojects.findAll { subproject ->
-            subproject.pluginManager.hasPlugin('jacoco')
-        }.each { subproject ->
-            subproject.tasks.findAll { task ->
-                task instanceof JacocoReport
-            }.each { JacocoReport task ->
-                additionalSourceDirs task.sourceDirectories
-                additionalClassDirs task.classDirectories
-                executionData task.executionData
-            }
-        }
-
-        executionData = files(executionData.findAll {
-            it.exists()
-        })
-
-        additionalSourceDirs = files(additionalSourceDirs.findAll {
-            it.exists()
-        })
-
-        additionalClassDirs = files(additionalClassDirs.findAll {
-            it.exists()
-        })
-
-        coveralls.sourceDirs = additionalSourceDirs.findAll()
-    }
-}
-
-coveralls {
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-}
-
-jacocoTestReport { finalizedBy tasks.coveralls }
-
-tasks.coveralls {
-    onlyIf { System.env.'CI' }
-}
-
-apply plugin: 'org.jetbrains.dokka-android'
+apply plugin: 'org.jetbrains.dokka'
 
 dokka {
     outputFormat = "html"
-    outputDirectory = "$buildDir/docs/dokka"
+    outputDirectory = "$buildDir/reports/dokka"
 
-    skipDeprecated = true
+    subProjects = [
+            "layercache",
+            "layercache-cache2k",
+            "layercache-ehcache",
+            "layercache-serializer",
+            "layercache-android",
+            "layercache-android-encryption"
+    ]
 
-    kotlinTasks {
-        defaultKotlinTasks() + [
-                ':layercache:compileKotlin',
-                ':layercache-cache2k:compileKotlin',
-                ':layercache-ehcache:compileKotlin',
-                ':layercache-retrofit:compileKotlin',
-                ':layercache-serializer:compileKotlin',
-                ':layercache-android:compileReleaseKotlin',
-                ':layercache-android-encryption:compileReleaseKotlin',
-                ':layercache-android-livedata:compileReleaseKotlin'
-        ]
-    }
+    configuration {
+        skipDeprecated = true
 
-    linkMapping {
-        dir = "$rootDir"
-        url = "https://github.com/appmattus/layercache/blob/master/"
-        suffix = "#L"
+        sourceLink {
+            path = "$rootDir"
+            url = "https://github.com/appmattus/layercache/blob/master/"
+            lineSuffix = "#L"
+        }
     }
 }
 
@@ -164,3 +90,22 @@ task check {}
 check { finalizedBy dokka }
 
 apply plugin: 'com.github.ben-manes.versions'
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+dependencyUpdates {
+    // Disallow release candidates as upgradable versions from stable versions
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(it.candidate.version)) {
+                    reject('Release candidate')
+                }
+            }
+        }
+    }
+}

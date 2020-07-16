@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,19 @@
 
 package com.appmattus.layercache
 
-import android.util.LruCache
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.stub
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import org.robolectric.Robolectric
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 @Config(manifest = Config.NONE)
 class LiveDataCacheShould {
 
@@ -38,39 +36,62 @@ class LiveDataCacheShould {
         val TIMEOUT_IN_MILLIS = TimeUnit.SECONDS.toMillis(10)
     }
 
-    @Mock
-    private lateinit var lruCache: LruCache<String, String>
+    private val cache = mock<Cache<String, String>> {
+        onBlocking { get("key") } doReturn "value"
+    }
 
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
+    private val liveDataCache = cache.toLiveData()
+
+    @Test
+    fun emitsLoading() {
+        val latch = CountDownLatch(1)
+
+        liveDataCache["key"].observeForever {
+            if (it is LiveDataResult.Loading) latch.countDown()
+        }
+
+        flushMainThread(latch)
+
+        assertTrue(latch.count == 0L)
     }
 
     @Test
-    fun receive_value() {
+    fun emitsSuccess() {
         val latch = CountDownLatch(1)
 
-        // given value available in first cache only
-        Mockito.`when`(lruCache.get("key")).then { "value" }
-
-        val liveDataCache = Cache.fromLruCache(lruCache).toLiveData()
-
-        val liveData = liveDataCache.get("key")
-
-        liveData.observeForever { liveDataResult ->
-            when (liveDataResult) {
-                is LiveDataResult.Success -> {
-                    latch.countDown()
-                }
-            }
+        liveDataCache["key"].observeForever {
+            if (it is LiveDataResult.Success && it.value == "value") latch.countDown()
         }
 
-        // Force LiveData processing on main thread
+        flushMainThread(latch)
+
+        assertTrue(latch.count == 0L)
+    }
+
+    @Test
+    fun emitsFailure() {
+        val latch = CountDownLatch(1)
+
+        cache.stub {
+            onBlocking { get("key") }.then { throw IllegalStateException() }
+        }
+
+        liveDataCache["key"].observeForever {
+            if (it is LiveDataResult.Failure && it.exception is IllegalStateException) latch.countDown()
+        }
+
+        flushMainThread(latch)
+
+        assertTrue(latch.count == 0L)
+    }
+
+    /**
+     * Force LiveData processing on main thread
+     */
+    private fun flushMainThread(latch: CountDownLatch) {
         val start = System.currentTimeMillis()
         while (latch.count != 0L && (System.currentTimeMillis() - start) < TIMEOUT_IN_MILLIS) {
             Robolectric.flushForegroundThreadScheduler()
         }
-
-        assertTrue(latch.count == 0L)
     }
 }

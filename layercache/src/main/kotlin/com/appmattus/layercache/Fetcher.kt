@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,34 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 /**
- * Fetcher is a special kind of cache that is just used to retrieve data. It is not possible to cache any values
+ * [Fetcher] is a special kind of [Cache] that is just used to retrieve data. It is not possible to cache any values
  * and so implements no-op for set and evict. An example would be a network fetcher.
  */
 interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
     /**
      * No-op as Cache is a Fetcher
      */
-    @Deprecated("set does nothing on a Fetcher")
-    override fun set(key: Key, value: Value): Deferred<Unit> = GlobalScope.async {}
+    @Deprecated("set does nothing on a Fetcher", ReplaceWith(""), level = DeprecationLevel.ERROR)
+    override suspend fun set(key: Key, value: Value) = Unit
 
     /**
      * No-op as Cache is a Fetcher
      */
-    @Deprecated("evict does nothing on a Fetcher")
-    override fun evict(key: Key): Deferred<Unit> = GlobalScope.async {}
+    @Deprecated("evict does nothing on a Fetcher", ReplaceWith(""), level = DeprecationLevel.ERROR)
+    override suspend fun evict(key: Key) = Unit
 
     /**
      * No-op as Cache is a Fetcher
      */
-    @Deprecated("evictAll does nothing on a Fetcher")
-    override fun evictAll(): Deferred<Unit> = GlobalScope.async {}
+    @Deprecated("evictAll does nothing on a Fetcher", ReplaceWith(""), level = DeprecationLevel.ERROR)
+    override suspend fun evictAll() = Unit
 
     @Deprecated("Use valueTransform(transform) on a Fetcher", ReplaceWith("valueTransform(transform)"))
-    override fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue,
-                                                    inverseTransform: (MappedValue) -> Value): Fetcher<Key, MappedValue> {
+    override fun <MappedValue : Any> valueTransform(
+        transform: (Value) -> MappedValue,
+        inverseTransform: (MappedValue) -> Value
+    ): Fetcher<Key, MappedValue> {
         return valueTransform(transform)
     }
 
@@ -55,7 +53,7 @@ interface Fetcher<Key : Any, Value : Any> : Cache<Key, Value> {
     }
 
     override fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Fetcher<MappedKey, Value> =
-            keyTransform(transform::transform)
+        keyTransform(transform::transform)
 
     override fun reuseInflight(): Fetcher<Key, Value> {
         @Suppress("EmptyClassBlock")

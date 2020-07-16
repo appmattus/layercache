@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,60 +16,45 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.core.Is.isA
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.IsEqual
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
-import org.junit.Before
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CacheComposeEvictShould {
 
     @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    @get:Rule
     var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
-
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        Mockito.verify(firstCache).compose(secondCache)
-    }
+    private val firstCache = TestCache<String, String>("firstCache")
+    private val secondCache = TestCache<String, String>("secondCache")
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
-            // when key is null
-            composedCache.evict(TestUtils.uninitialized()).await()
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                // when key is null
+                composedCache.evict(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
@@ -78,24 +63,20 @@ class CacheComposeEvictShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to evict a value
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            firstCache.evictFn = {
+                delay(jobTimeInMillis)
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            secondCache.evictFn = {
+                delay(jobTimeInMillis)
             }
 
             // when we evict the value and start the timer
             val start = System.nanoTime()
-            composedCache.evict("key").await()
+            composedCache.evict("key")
 
             // then evict is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-            Assert.assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
+            assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
         }
     }
 
@@ -103,198 +84,191 @@ class CacheComposeEvictShould {
     fun `execute evict for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.evict(anyString())).then { GlobalScope.async {} }
-            Mockito.`when`(secondCache.evict(anyString())).then { GlobalScope.async {} }
+            val firstCache = mock<AbstractCache<String, String>> {
+                onBlocking { evict(anyString()) } doReturn Unit
+            }
+            val secondCache = mock<AbstractCache<String, String>> {
+                onBlocking { evict(anyString()) } doReturn Unit
+            }
+            whenever(firstCache.compose(secondCache)).thenCallRealMethod()
+            val composedCache = firstCache.compose(secondCache)
+            verify(firstCache).compose(secondCache)
 
             // when we evict the value
-            composedCache.evict("key").await()
+            composedCache.evict("key")
 
             // then evict is called on both caches
-            Mockito.verify(firstCache).evict("key")
-            Mockito.verify(secondCache).evict("key")
-            Mockito.verifyNoMoreInteractions(firstCache)
-            Mockito.verifyNoMoreInteractions(secondCache)
+            verify(firstCache).evict("key")
+            verify(secondCache).evict("key")
+            verifyNoMoreInteractions(firstCache)
+            verifyNoMoreInteractions(secondCache)
         }
     }
 
     @Test
     fun `throw internal exception on evict when the first cache throws`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for firstCache")
-            thrown.expectCause(isA(TestException::class.java))
-
-            executions.expect(1)
-
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+            firstCache.evictFn = {
+                throw TestException()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
+            secondCache.evictFn = {
+                delay(50)
+            }
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+
+                    // then evict on the second cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-
-            // then evict on the second cache still completes and an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on evict when the second cache throws`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-            executions.expect(1)
-
             // given the second cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.evictFn = {
+                delay(50)
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
+            secondCache.evictFn = {
+                throw TestException()
+            }
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-
-            // then an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on evict when both caches throws`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("evict failed for firstCache, evict failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-
             // given both caches throw an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+            firstCache.evictFn = {
+                throw TestException()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
+            secondCache.evictFn = {
+                throw TestException()
+            }
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-
-            // then an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and first cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(250)
-                }
+            firstCache.evictFn = {
+                delay(250)
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
+            secondCache.evictFn = {
+                executions.execute()
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(50)
+                    job.cancel()
+
+                    // then evict on the second cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-            delay(50)
-            job.cancel()
-
-            // then evict on the second cache still completes and an exception is thrown
-            job.await()
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and second cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+            firstCache.evictFn = {
+                executions.execute()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(250)
+            secondCache.evictFn = {
+                delay(250)
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(50)
+                    job.cancel()
+
+                    // then evict on the first cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-            delay(50)
-            job.cancel()
-
-            // then evict on the first cache still completes and an exception is thrown
-            job.await()
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on evict and both caches executing`() {
         runBlocking {
-            // expect exception and no execution of caches
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.evictFn = {
+                delay(50)
+                executions.execute()
             }
-            Mockito.`when`(secondCache.evict(anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
+            secondCache.evictFn = {
+                delay(50)
+                executions.execute()
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we evict the value
+                    val job = async { composedCache.evict("key") }
+                    delay(25)
+                    job.cancel()
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we evict the value
-            val job = composedCache.evict("key")
-            delay(25)
-            job.cancel()
-
-            // then an exception is thrown
-            job.await()
+            // expect exception and no execution of caches
+            assertThat(throwable.message, IsEqual("DeferredCoroutine was cancelled"))
         }
     }
 }

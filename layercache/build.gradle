@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,23 @@
 
 apply plugin: 'kotlin'
 apply from: "$rootDir/jacoco.gradle"
-apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
-    compileOnly "androidx.annotation:annotation:1.0.0"
+    compileOnly "androidx.annotation:annotation:1.1.0"
 
-    testCompile project(':testutils')
+    testImplementation project(':testutils')
+    testImplementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.9.0'
 }
 
 check { //noinspection GroovyAssignabilityCheck
-    finalizedBy rootProject.detektCheck
+    finalizedBy rootProject.tasks.named("detekt")
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
-
-task myProguardTask(type: proguard.gradle.ProGuardTask) {
-    configuration file("$rootDir/proguard-rules.pro")
-    injars file("$buildDir/libs/layercache.jar")
-    libraryjars configurations.runtime.files
-    libraryjars configurations.compileOnly.files
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-    outjars file("$buildDir/libs/layercache_optimised.jar")
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
-    task.kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"]
-}
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

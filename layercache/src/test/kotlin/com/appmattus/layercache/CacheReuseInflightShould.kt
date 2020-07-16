@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,28 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.atomic.AtomicInteger
 
 class CacheReuseInflightShould {
 
     @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
+    var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var cache: AbstractCache<Any, Any>
+    private val cache = TestCache<Any, Any>()
 
     private lateinit var reuseInflightCache: Cache<Any, Any>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(cache.reuseInflight()).thenCallRealMethod()
         reuseInflightCache = cache.reuseInflight()
     }
 
@@ -53,13 +47,12 @@ class CacheReuseInflightShould {
     fun `single call to get returns the value`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "value" } }
+            cache.getFn = { key -> if (key == "key") "value" else null }
 
             // when we get the value
-            val result = reuseInflightCache.get("key").await()
+            val result = reuseInflightCache.get("key")
 
             // then we return the value
-            Mockito.verify(cache).get("key")
             assertEquals("value", result)
         }
     }
@@ -70,10 +63,9 @@ class CacheReuseInflightShould {
 
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then {
-                GlobalScope.async {
+            cache.getFn = { key ->
+                if (key == "key") {
                     delay(100)
-
                     count.getAndIncrement()
                 }
             }
@@ -81,7 +73,7 @@ class CacheReuseInflightShould {
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
             for (i in 1..5) {
-                jobs.add(reuseInflightCache.get("key"))
+                jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }
 
@@ -96,23 +88,22 @@ class CacheReuseInflightShould {
 
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then {
-                GlobalScope.async {
-                    delay(500)
-
-                    count.incrementAndGet()
+            cache.getFn = { key ->
+                if (key == "key") {
+                    delay(100)
+                    count.getAndIncrement()
                 }
             }
 
-            reuseInflightCache.get("key").await()
+            launch { reuseInflightCache.get("key") }
 
             // we yield here as the map that stores the reuse may not have been cleared yet
-            delay(100)
+            delay(200)
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
             for (i in 1..5) {
-                jobs.add(reuseInflightCache.get("key"))
+                jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }
 
@@ -125,10 +116,10 @@ class CacheReuseInflightShould {
     fun `propogate exception on get`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            cache.getFn = { key -> if (key == "key") throw TestException() }
 
             // when we get the value
-            reuseInflightCache.get("key").await()
+            reuseInflightCache.get("key")
 
             // then we throw an exception
         }
@@ -139,14 +130,13 @@ class CacheReuseInflightShould {
     fun `call set from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { "value" } }
+            executions.expect(1)
+            cache.setFn = { key, value -> if (key == "key" && value == "value") executions.execute() }
 
             // when we get the value
-            reuseInflightCache.set("key", "value").await()
+            reuseInflightCache.set("key", "value")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
-            Mockito.verify(cache).set("key", "value")
         }
     }
 
@@ -154,10 +144,10 @@ class CacheReuseInflightShould {
     fun `propagate exception on set`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.set("key", "value")).then { GlobalScope.async { throw TestException() } }
+            cache.setFn = { key, value -> if (key == "key" && value == "value") throw TestException() }
 
             // when we get the value
-            reuseInflightCache.set("key", "value").await()
+            reuseInflightCache.set("key", "value")
 
             // then we throw an exception
         }
@@ -168,14 +158,13 @@ class CacheReuseInflightShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
+            executions.expect(1)
+            cache.evictFn = { key -> if (key == "key") executions.execute() }
 
             // when we get the value
-            reuseInflightCache.evict("key").await()
+            reuseInflightCache.evict("key")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
-            Mockito.verify(cache).evict("key")
         }
     }
 
@@ -183,10 +172,10 @@ class CacheReuseInflightShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async { throw TestException() } }
+            cache.evictFn = { key -> if (key == "key") throw TestException() }
 
             // when we get the value
-            reuseInflightCache.evict("key").await()
+            reuseInflightCache.evict("key")
 
             // then we throw an exception
         }
@@ -197,13 +186,13 @@ class CacheReuseInflightShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
+            executions.expect(1)
+            cache.evictAllFn = { executions.execute() }
 
             // when we evictAll values
-            reuseInflightCache.evictAll().await()
+            reuseInflightCache.evictAll()
 
             // then evictAll is called
-            Mockito.verify(cache).evictAll()
         }
     }
 
@@ -211,10 +200,10 @@ class CacheReuseInflightShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
+            cache.evictAllFn = { throw TestException() }
 
             // when we evictAll values
-            reuseInflightCache.evictAll().await()
+            reuseInflightCache.evictAll()
 
             // then we throw an exception
         }
@@ -223,12 +212,13 @@ class CacheReuseInflightShould {
     @Test
     fun `throw exception when directly chained`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalStateException::class.java)
-            thrown.expectMessage("Do not directly chain reuseInflight")
-
             // when reuseInflight called again
-            reuseInflightCache.reuseInflight()
+            val throwable = assertThrows(IllegalStateException::class.java) {
+                reuseInflightCache.reuseInflight()
+            }
+
+            // expect exception
+            assertEquals(throwable.message, "Do not directly chain reuseInflight")
         }
     }
 }

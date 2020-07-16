@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,89 +16,78 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.core.StringStartsWith
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyMap
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyMap
 import java.util.concurrent.TimeUnit
 
 class CacheBatchSetShould {
 
     private val requestTimeInMills = 250L
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    @Mock
-    private lateinit var cache: AbstractCache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(cache.batchSet(MockitoKotlin.any())).thenCallRealMethod()
-    }
+    private val cache = TestCache<String, String>()
 
     @Test
     fun `throw exception when values map is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
-            // when values map is null
-            cache.batchSet(TestUtils.uninitialized<Map<String, String>>()).await()
+        // when values map is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                cache.batchSet(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertTrue(throwable.message!!.startsWith("Required value was null"))
     }
 
     @Test
     fun `throw exception when key in entry in values map is null`() {
         runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("null element found in"))
 
             // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized<String>(), "value2"), Pair("key3", "value3"))).await()
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    cache.batchSet(mapOf(Pair("key1", "value1"), Pair(TestUtils.uninitialized(), "value2"), Pair("key3", "value3")))
+                }
+            }
+
+            // expect exception
+            assertTrue(throwable.message!!.startsWith("null element found in"))
         }
     }
 
     @Test
-    fun `not throw exception when value in entry in values map is null`() {
-        runBlocking {
-            // given we have a cache
-            Mockito.`when`(cache.set(anyString(), MockitoKotlin.any())).then { GlobalScope.async {} }
+    fun `throw exception when value in entry in values map is null`() {
+        // given we have a cache
 
-            // when key in values map is null
-            cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized<String>()), Pair("key3", "value3"))).await()
-
-            // then no exception is thrown
+        // when key in values map is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
+            }
         }
+
+        // then exception is thrown
+        assertTrue(throwable.message!!.startsWith("Parameter specified as non-null is null"))
     }
 
     @Test(expected = CancellationException::class)
     fun `throw exception when job cancelled`() {
         runBlocking {
             // given we set values into a cache
-            Mockito.`when`(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(requestTimeInMills)
-                }
+            cache.setFn = { _, _ ->
+                delay(requestTimeInMills)
             }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we cancel the job
             job.cancel()
@@ -112,18 +101,16 @@ class CacheBatchSetShould {
     fun `execute internal requests in parallel`() {
         runBlocking {
             // given we start a timer and set the values for 3 keys
-            Mockito.`when`(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(requestTimeInMills)
-                }
+            cache.setFn = { _, _ ->
+                delay(requestTimeInMills)
             }
             val start = System.nanoTime()
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()
 
-            // then the job completes in less that the time to execute all 3 requests in sequence
+            // then the job completes in less than the time to execute all 3 requests in sequence
             val executionTimeInMills = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
             assertTrue(executionTimeInMills > requestTimeInMills)
             assertTrue(executionTimeInMills < (requestTimeInMills * 3))
@@ -134,8 +121,10 @@ class CacheBatchSetShould {
     fun `execute set for each key`() {
         runBlocking {
             // given we set the values for 3 keys
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { } }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val cache = mock<AbstractCache<String, String>> {
+                onBlocking { batchSet(any()) }.thenCallRealMethod()
+            }
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()
@@ -153,16 +142,13 @@ class CacheBatchSetShould {
     fun `throw internal exception`() {
         runBlocking {
             // given we request 3 keys where the second key throws an exception
-            Mockito.`when`(cache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    val key = it.getArgument<String>(0)
-                    if (key == "key2") {
-                        throw TestException()
-                    }
-                    key.replace("key", "value")
+            cache.setFn = { key, _ ->
+                if (key == "key2") {
+                    throw TestException()
                 }
+                key.replace("key", "value")
             }
-            val job = cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3")))
+            val job = async { cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", "value2"), Pair("key3", "value3"))) }
 
             // when we wait for the job to complete
             job.await()

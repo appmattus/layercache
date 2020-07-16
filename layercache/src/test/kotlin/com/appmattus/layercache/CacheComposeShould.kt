@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,109 +16,101 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
-import org.hamcrest.core.StringStartsWith
-import org.junit.Assert.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 
 class CacheComposeShould {
 
-    @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
-
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(MockitoKotlin.any())).thenCallRealMethod()
-        Mockito.`when`(secondCache.compose(MockitoKotlin.any())).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-    }
+    private val firstCache = TestCache<String, String>("firstCache")
+    private val secondCache = TestCache<String, String>("secondCache")
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when second cache is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            object : AbstractCache<String, String>() {
+                override suspend fun get(key: String): String? = null
+                override suspend fun set(key: String, value: String) = Unit
+                override suspend fun evict(key: String) = Unit
+                override suspend fun evictAll() = Unit
+            }.compose(TestUtils.uninitialized())
+        }
 
-        val nullCache: Cache<String, String> = TestUtils.uninitialized()
-        firstCache.compose(nullCache)
+        assertTrue(throwable.message!!.startsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when referencing self`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            firstCache.compose(firstCache)
+        }
 
-        firstCache.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 1`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            firstCache.compose(c)
+        }
 
-        val c = firstCache.compose(secondCache)
-        firstCache.compose(c)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 2`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            c.compose(firstCache)
+        }
 
-        val c = firstCache.compose(secondCache)
-        c.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 3`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            secondCache.compose(c)
+        }
 
-        val c = firstCache.compose(secondCache)
-        secondCache.compose(c)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference 4`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache)
+            c.compose(secondCache)
+        }
 
-        val c = firstCache.compose(secondCache)
-        c.compose(secondCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference big chain 1`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
+            c.compose(secondCache)
+        }
 
-        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
-        c.compose(secondCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
     fun `throw exception when circular reference big chain 2`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage("Cache creates a circular reference")
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
+            c.compose(firstCache)
+        }
 
-        val c = firstCache.compose(secondCache).reuseInflight().keyTransform<String> { it }.valueTransform({ it }, { it }).reuseInflight()
-        c.compose(firstCache)
+        assertEquals("Cache creates a circular reference", throwable.message)
     }
 
     @Test
@@ -133,20 +125,22 @@ class CacheComposeShould {
     }
 
     @Test
+    @Suppress("ThrowsCount")
     fun `throw exception when parents not overridden?`() {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {
-            override fun get(key: String): Deferred<String?> = throw Exception("Unimplemented")
-            override fun set(key: String, value: String): Deferred<Unit> = throw Exception("Unimplemented")
-            override fun evict(key: String): Deferred<Unit> = throw Exception("Unimplemented")
-            override fun evictAll(): Deferred<Unit> = throw Exception("Unimplemented")
+            override suspend fun get(key: String): String? = throw Exception("Unimplemented")
+            override suspend fun set(key: String, value: String) = throw Exception("Unimplemented")
+            override suspend fun evict(key: String) = throw Exception("Unimplemented")
+            override suspend fun evictAll() = throw Exception("Unimplemented")
+        }
+
+        // when we get parents that has not been overridden
+        val throwable = assertThrows(IllegalStateException::class.java) {
+            cache.parents
         }
 
         // expect an exception
-        thrown.expect(IllegalStateException::class.java)
-        thrown.expectMessage("Not overridden")
-
-        // when we get parents that has not been overridden
-        cache.parents
+        assertEquals("Not overridden", throwable.message)
     }
 }

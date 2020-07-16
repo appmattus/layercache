@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
 package com.appmattus.layercache
 
 import androidx.annotation.NonNull
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 /**
  * A standard cache which stores and retrieves data
  */
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "RedundantRequireNotNullCall")
 interface Cache<Key : Any, Value : Any> {
     /**
      * Companion object for 'static' extension functions
@@ -34,22 +35,22 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Return the value associated with the key or null if not present
      */
-    fun get(key: Key): Deferred<Value?>
+    suspend fun get(key: Key): Value?
 
     /**
      * Save the value against the key
      */
-    fun set(key: Key, value: Value): Deferred<Unit>
+    suspend fun set(key: Key, value: Value)
 
     /**
      * Remove the data associated with the key
      */
-    fun evict(key: Key): Deferred<Unit>
+    suspend fun evict(key: Key)
 
     /**
      * Remove the data associated with all keys
      */
-    fun evictAll(): Deferred<Unit>
+    suspend fun evictAll()
 
     /**
      * Compose two caches. Try to fetch from the first cache and, failing that, request the data from the second cache.
@@ -59,47 +60,40 @@ interface Cache<Key : Any, Value : Any> {
     fun compose(@NonNull b: Cache<Key, Value>): Cache<Key, Value> {
         return object : ComposedCache<Key, Value>() {
             init {
-                require(!hasLoop(), { "Cache creates a circular reference" })
+                require(!hasLoop()) { "Cache creates a circular reference" }
             }
 
             override val parents: List<Cache<*, *>>
                 get() = listOf(this@Cache, b)
 
-            override fun evict(key: Key): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evict", {
-                        it.evict(key)
-                    })
-                    Unit
+            override suspend fun evict(key: Key) {
+                requireNotNull(key)
+                executeInParallel(listOf(this@Cache, b)) {
+                    it.evict(key)
                 }
             }
 
-            override fun get(key: Key): Deferred<Value?> {
-                return GlobalScope.async {
-                    this@Cache.get(key).await() ?: let {
-                        b.get(key).await()?.apply {
-                            this@Cache.set(key, this).await()
-                        }
+            override suspend fun get(key: Key): Value? {
+                requireNotNull(key)
+                return this@Cache.get(key) ?: let {
+                    b.get(key)?.apply {
+                        this@Cache.set(key, this)
                     }
                 }
             }
 
-            override fun set(key: Key, value: Value): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "set", {
-                        it.set(key, value)
-                    })
+            override suspend fun set(key: Key, value: Value) {
+                requireNotNull(key)
+                requireNotNull(value)
 
-                    Unit
+                executeInParallel(listOf(this@Cache, b)) {
+                    it.set(key, value)
                 }
             }
 
-            override fun evictAll(): Deferred<Unit> {
-                return GlobalScope.async {
-                    executeInParallel(listOf(this@Cache, b), "evictAll", {
-                        it.evictAll()
-                    })
-                    Unit
+            override suspend fun evictAll() {
+                executeInParallel(listOf(this@Cache, b)) {
+                    it.evictAll()
                 }
             }
         }
@@ -117,25 +111,21 @@ interface Cache<Key : Any, Value : Any> {
     @Suppress("ReturnCount")
     fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
         return object : MapKeysCache<Key, Value, MappedKey>(this@Cache, transform) {
-            override fun evict(key: MappedKey): Deferred<Unit> {
-                return GlobalScope.async {
-                    val mappedKey = requireNotNull(transform(key)) {
-                        "Required value was null. Key '$key' mapped to null"
-                    }
-                    this@Cache.evict(mappedKey).await()
+            override suspend fun evict(key: MappedKey) {
+                val mappedKey = requireNotNull(transform(key)) {
+                    "Required value was null. Key '$key' mapped to null"
                 }
+                this@Cache.evict(mappedKey)
             }
 
-            override fun set(key: MappedKey, value: Value): Deferred<Unit> {
-                return GlobalScope.async {
-                    val mappedKey = requireNotNull(transform(key)) {
-                        "Required value was null. Key '$key' mapped to null"
-                    }
-                    this@Cache.set(mappedKey, value).await()
+            override suspend fun set(key: MappedKey, value: Value) {
+                val mappedKey = requireNotNull(transform(key)) {
+                    "Required value was null. Key '$key' mapped to null"
                 }
+                return this@Cache.set(mappedKey, value)
             }
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 
@@ -143,7 +133,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map keys from one type to another.
      */
     fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
-            keyTransform(transform::transform)
+        keyTransform(transform::transform)
 
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
@@ -157,7 +147,7 @@ interface Cache<Key : Any, Value : Any> {
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
     fun <MappedValue : Any> valueTransform(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
-            valueTransform(transform::transform)
+        valueTransform(transform::transform)
 
     /**
      * Map values from one type to another and vice-versa.
@@ -165,15 +155,13 @@ interface Cache<Key : Any, Value : Any> {
     fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
             Cache<Key, MappedValue> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
-            override fun evict(key: Key) = this@Cache.evict(key)
+            override suspend fun evict(key: Key) = this@Cache.evict(key)
 
-            override fun set(key: Key, value: MappedValue): Deferred<Unit> {
-                return GlobalScope.async {
-                    this@Cache.set(key, inverseTransform(value)).await()
-                }
+            override suspend fun set(key: Key, value: MappedValue) {
+                return this@Cache.set(key, inverseTransform(value))
             }
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 
@@ -181,64 +169,57 @@ interface Cache<Key : Any, Value : Any> {
      * Map values from one type to another and vice-versa.
      */
     fun <MappedValue : Any> valueTransform(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
-            valueTransform(transform::transform, transform::inverseTransform)
+        valueTransform(transform::transform, transform::inverseTransform)
 
     /**
      * If a get request is already in flight then this ensures the original request is returned
      */
     fun reuseInflight(): Cache<Key, Value> {
         return object : ReuseInflightCache<Key, Value>(this@Cache) {
-            override fun evict(key: Key) = this@Cache.evict(key)
+            override suspend fun evict(key: Key) = this@Cache.evict(key)
 
-            override fun set(key: Key, value: Value) = this@Cache.set(key, value)
+            override suspend fun set(key: Key, value: Value) = this@Cache.set(key, value)
 
-            override fun evictAll(): Deferred<Unit> = this@Cache.evictAll()
+            override suspend fun evictAll() = this@Cache.evictAll()
         }
     }
 
     /**
      * Return data associated with multiple keys.
      */
-    fun batchGet(keys: List<Key>): Deferred<List<Value?>> {
+    suspend fun batchGet(keys: List<Key>): List<Value?> {
+        requireNotNull(keys)
         keys.requireNoNulls()
 
-        return GlobalScope.async {
-            keys.map { this@Cache.get(it) }.map { it.await() }
+        return coroutineScope {
+            keys.map { async(Dispatchers.IO) { this@Cache.get(it) } }.awaitAll()
         }
     }
 
     /**
      * Set data for multiple key/value pairs
      */
-    fun batchSet(values: Map<Key, Value>): Deferred<Unit> {
+    suspend fun batchSet(values: Map<Key, Value>) {
+        requireNotNull(values)
         values.keys.requireNoNulls()
 
-        return GlobalScope.async {
+        coroutineScope {
             values.map { entry: Map.Entry<Key, Value> ->
-                this@Cache.set(entry.key, entry.value)
-            }.forEach { it.await() }
-            Unit
+                async(Dispatchers.IO) { this@Cache.set(entry.key, entry.value) }
+            }.awaitAll()
         }
     }
 
-    private suspend fun <T> executeJobsInParallel(jobs: List<Deferred<T>>, lazyMessage: (index: Int) -> Any): List<T> {
-        jobs.forEach { it.join() }
-
-        val jobsWithExceptions = jobs.filter { it.isCancelled }
-        if (jobsWithExceptions.isNotEmpty()) {
-            val errorMessage = jobsWithExceptions.map { "${lazyMessage(jobs.indexOf(it))}" }.joinToString()
-
-            val exceptions = jobsWithExceptions.map { it.getCompletionExceptionOrNull() }.filterNotNull()
-
-            throw CacheException(errorMessage, exceptions)
+    private suspend fun <K : Any, V : Any, T> executeInParallel(
+        caches: List<Cache<K, V>>,
+        methodCall: suspend (Cache<K, V>) -> T
+    ): List<T> {
+        return coroutineScope {
+            caches.map { async(Dispatchers.IO) { methodCall(it) } }.awaitAll()
         }
-
-        return jobs.map { it.getCompleted() }
     }
+}
 
-    private suspend fun <K : Any, V : Any, T> executeInParallel(caches: List<Cache<K, V>>, message: String,
-                                                                methodCall: (Cache<K, V>) -> Deferred<T>): List<T> {
-        val jobs = caches.map { methodCall(it) }
-        return executeJobsInParallel(jobs, { index -> "${message} failed for ${caches[index]}" })
-    }
+fun <K : Any, V : Any> cache(block: suspend (K) -> V): Fetcher<K, V> = object : Fetcher<K, V> {
+    override suspend fun get(key: K) = block(key)
 }

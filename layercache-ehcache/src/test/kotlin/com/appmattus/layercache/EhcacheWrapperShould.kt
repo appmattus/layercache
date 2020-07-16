@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheManagerBuilder
@@ -25,15 +28,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
-
 
 class EhcacheWrapperShould {
 
-    @Mock
-    private lateinit var ehcache: Ehcache<String, String>
+    private val ehcache = mock<Ehcache<String, String>>()
 
     private lateinit var wrappedCache: Cache<String, String>
 
@@ -41,11 +39,15 @@ class EhcacheWrapperShould {
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
         wrappedCache = EhcacheWrapper(ehcache)
 
         val cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true)
-        integratedCache = Cache.fromEhcache(cacheManager.createCache("myCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))))
+        integratedCache = Cache.fromEhcache(
+            cacheManager.createCache(
+                "myCache",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String::class.java, String::class.java, ResourcePoolsBuilder.heap(10))
+            )
+        )
     }
 
     // get
@@ -53,10 +55,10 @@ class EhcacheWrapperShould {
     fun `get returns value from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.get("key")).thenReturn("value")
+            whenever(ehcache.get("key")).thenReturn("value")
 
             // when we get the value
-            val result = wrappedCache.get("key").await()
+            val result = wrappedCache.get("key")
 
             // then we return the value
             assertEquals("value", result)
@@ -67,10 +69,10 @@ class EhcacheWrapperShould {
     fun `get throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.get("key")).then { throw TestException() }
+            whenever(ehcache.get("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.get("key").await()
+            wrappedCache.get("key")
 
             // then we throw an exception
         }
@@ -83,10 +85,10 @@ class EhcacheWrapperShould {
             // given
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then put is called
-            Mockito.verify(ehcache).put("key", "value")
+            verify(ehcache).put("key", "value")
         }
     }
 
@@ -94,10 +96,10 @@ class EhcacheWrapperShould {
     fun `set throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.put("key", "value")).then { throw TestException() }
+            whenever(ehcache.put("key", "value")).then { throw TestException() }
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then we throw an exception
         }
@@ -110,10 +112,10 @@ class EhcacheWrapperShould {
             // given
 
             // when we evict the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then remove is called
-            Mockito.verify(ehcache).remove("key")
+            verify(ehcache).remove("key")
         }
     }
 
@@ -121,10 +123,10 @@ class EhcacheWrapperShould {
     fun `evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.remove("key")).then { throw TestException() }
+            whenever(ehcache.remove("key")).then { throw TestException() }
 
             // when we evict the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we throw an exception
         }
@@ -137,10 +139,10 @@ class EhcacheWrapperShould {
             // given
 
             // when we evictAll values
-            wrappedCache.evictAll().await()
+            wrappedCache.evictAll()
 
             // then clear is called
-            Mockito.verify(ehcache).clear()
+            verify(ehcache).clear()
         }
     }
 
@@ -148,10 +150,10 @@ class EhcacheWrapperShould {
     fun `evictAll throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(ehcache.clear()).then { throw TestException() }
+            whenever(ehcache.clear()).then { throw TestException() }
 
             // when we evictAll values
-            wrappedCache.evictAll().await()
+            wrappedCache.evictAll()
 
             // then we throw an exception
         }
@@ -165,7 +167,7 @@ class EhcacheWrapperShould {
             // integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             assertNull(result)
@@ -176,10 +178,10 @@ class EhcacheWrapperShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -190,13 +192,13 @@ class EhcacheWrapperShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
-            integratedCache.evict("key").await()
+            integratedCache.evict("key")
 
             // then the value is null
-            assertNull(integratedCache.get("key").await())
+            assertNull(integratedCache.get("key"))
         }
     }
 }

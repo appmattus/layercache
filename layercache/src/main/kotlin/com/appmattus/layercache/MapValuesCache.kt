@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-
 @Suppress("UnnecessaryAbstractClass") // incorrectly reported
 internal abstract class MapValuesCache<Key : Any, Value : Any, MappedValue : Any>(
-        private val cache: Cache<Key, Value>, private val transform: (Value) -> MappedValue) :
-        ComposedCache<Key, MappedValue>() {
+    private val cache: Cache<Key, Value>,
+    private val transform: (Value) -> MappedValue
+) : ComposedCache<Key, MappedValue>() {
+
     final override val parents: List<Cache<*, *>>
         get() = listOf(cache)
 
-    final override fun get(key: Key): Deferred<MappedValue?> {
-        return GlobalScope.async {
-            cache.get(key).await()?.run(transform)
-        }
+    final override suspend fun get(key: Key): MappedValue? {
+        return cache.get(key)?.run(transform)
     }
 }

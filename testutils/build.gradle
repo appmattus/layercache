@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,33 @@ apply plugin: 'kotlin'
 apply plugin: 'jacoco'
 
 dependencies {
-    compile project(':layercache')
-    compile "androidx.annotation:annotation:1.0.0-rc01"
-    compile "junit:junit:4.12"
-    compile 'org.mockito:mockito-core:2.18.3'
-    compile 'com.github.stefanbirkner:system-rules:1.18.0'
+    api project(':layercache')
+    api "androidx.annotation:annotation:1.1.0"
+    api "androidx.test:core:1.2.0"
+    api "junit:junit:4.13"
+    api 'org.mockito:mockito-core:3.4.0'
+    api "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+
+    api 'com.github.stefanbirkner:system-rules:1.19.0'
+
+    Properties localProps = new Properties()
+    File localPropsFile = new File(rootDir, "local.properties")
+    if (localPropsFile.exists()) {
+        localProps.load(localPropsFile.newDataInputStream())
+        compileOnly files("${localProps.getProperty('sdk.dir')}/platforms/android-29/android.jar")
+    } else {
+        compileOnly files("${System.env.ANDROID_HOME}/platforms/android-29/android.jar")
+    }
+
+    //noinspection GradleDependency
+    implementation("org.bouncycastle:bcprov-jdk15on:1.66")
 }
 
 test { finalizedBy jacocoTestReport }
 
 check { //noinspection GroovyAssignabilityCheck
-    finalizedBy rootProject.detektCheck
+    finalizedBy rootProject.tasks.named("detekt")
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

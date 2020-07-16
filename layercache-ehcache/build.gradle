@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 apply plugin: 'kotlin'
 apply from: "$rootDir/jacoco.gradle"
-apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile project(':layercache')
-    compile "org.ehcache:ehcache:3.5.2"
+    api project(':layercache')
+    implementation "org.ehcache:ehcache:3.8.1"
 
-    testCompile project(':testutils')
-    testCompile "org.slf4j:slf4j-nop:1.7.25"
+    testImplementation project(':testutils')
+    testImplementation "org.slf4j:slf4j-nop:1.7.30"
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

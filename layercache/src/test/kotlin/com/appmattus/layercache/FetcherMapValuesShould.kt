@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +16,41 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.atLeastOnce
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.atLeastOnce
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.verifyNoInteractions
 
 class FetcherMapValuesShould {
 
-    @Mock
-    private lateinit var cache: AbstractFetcher<Any, String>
-
-    @Mock
-    private lateinit var function: (String) -> Int
-
-    @Mock
-    private lateinit var functionInverse: (Int) -> String
+    private val cache = mock<AbstractFetcher<Any, String>>()
+    private val function = mock<(String) -> Int>()
+    private val functionInverse = mock<(Int) -> String>()
 
     private lateinit var mappedValuesCache: Fetcher<Any, Int>
-
 
     @Suppress("DEPRECATION")
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java))).thenCallRealMethod()
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(function::class.java), MockitoKotlin.any(functionInverse::class.java))).thenCallRealMethod()
+        whenever(cache.valueTransform(any<(String) -> Int>())).thenCallRealMethod()
+        @Suppress("RemoveExplicitTypeArguments")
+        whenever(cache.valueTransform(any<(String) -> Int>(), any<(Int) -> String>()))
+            .thenCallRealMethod()
 
         mappedValuesCache = cache.valueTransform(function, functionInverse)
 
-        Mockito.verify(cache, atLeastOnce()).valueTransform(MockitoKotlin.any<(String) -> Any>())
-        Mockito.verify(cache, atLeastOnce()).valueTransform(MockitoKotlin.any(), MockitoKotlin.any())
+        verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>())
+        @Suppress("RemoveExplicitTypeArguments")
+        verify(cache, atLeastOnce()).valueTransform(any<(String) -> Int>(), any<(Int) -> String>())
     }
 
     // get
@@ -61,28 +58,27 @@ class FetcherMapValuesShould {
     fun `only invoke function and not inverse function`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then the main function is invoked but the inverse is not
-            Mockito.verify(function).invoke("1")
-            Mockito.verifyZeroInteractions(functionInverse)
+            verify(function).invoke("1")
+            verifyNoInteractions(functionInverse)
         }
     }
-
 
     @Test
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a cache that returns a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { it.getArgument<String>(0).toInt() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { it.getArgument<String>(0).toInt() }
 
             // when we get the value
-            val result = mappedValuesCache.get("key").await()
+            val result = mappedValuesCache.get("key")
 
             // then it is converted to an integer
             assertEquals(1, result)
@@ -94,11 +90,11 @@ class FetcherMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string and transform throws an exception
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
-            Mockito.`when`(function.invoke(Mockito.anyString())).then { throw TestException() }
+            whenever(cache.get("key")).then { "1" }
+            whenever(function.invoke(anyString())).then { throw TestException() }
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }
@@ -108,10 +104,10 @@ class FetcherMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we throw an exception on get
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            whenever(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }
@@ -122,11 +118,11 @@ class FetcherMapValuesShould {
     fun `not interact with parent set`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
-            mappedValuesCache.set("1", 1).await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -134,11 +130,11 @@ class FetcherMapValuesShould {
     fun `not interact with transform during set`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
-            mappedValuesCache.set("1", 1).await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.set("1", 1)
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -147,11 +143,11 @@ class FetcherMapValuesShould {
     fun `not interact with parent evict`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
-            mappedValuesCache.evict("1").await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -159,11 +155,11 @@ class FetcherMapValuesShould {
     fun `not interact with transform during evict`() {
         runBlocking {
             // when we set the value
-            @Suppress("DEPRECATION")
-            mappedValuesCache.evict("1").await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.evict("1")
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 
@@ -172,11 +168,11 @@ class FetcherMapValuesShould {
     fun `not interact with parent evictAll`() {
         runBlocking {
             // when we evictAll values
-            @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyNoMoreInteractions(cache)
+            verifyNoMoreInteractions(cache)
         }
     }
 
@@ -184,11 +180,11 @@ class FetcherMapValuesShould {
     fun `not interact with transform during evictAll`() {
         runBlocking {
             // when we evictAll values
-            @Suppress("DEPRECATION")
-            mappedValuesCache.evictAll().await()
+            @Suppress("DEPRECATION_ERROR")
+            mappedValuesCache.evictAll()
 
             // then the parent cache is not called
-            Mockito.verifyZeroInteractions(function)
+            verifyNoInteractions(function)
         }
     }
 }

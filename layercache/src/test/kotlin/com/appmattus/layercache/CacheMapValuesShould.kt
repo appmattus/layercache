@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,50 +16,39 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
 
 class CacheMapValuesShould {
 
-    @Mock
-    private lateinit var cache: AbstractCache<Any, String>
-
-    private lateinit var mappedValuesCache: Cache<Any, Int>
-    private lateinit var mappedValuesCacheWithError: Cache<Any, Int>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        val f: (String) -> Int = { str: String -> str.toInt() }
-        val fInv: (Int) -> String = { int: Int -> int.toString() }
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(f::class.java), MockitoKotlin.any(fInv::class.java))).thenCallRealMethod()
-        mappedValuesCache = cache.valueTransform(f, fInv)
-
-        val errorF: (String) -> Int = { _: String -> throw TestException() }
-        val errorFInv: (Int) -> String = { _: Int -> throw TestException() }
-        Mockito.`when`(cache.valueTransform(MockitoKotlin.any(errorF::class.java), MockitoKotlin.any(errorFInv::class.java))).thenCallRealMethod()
-        mappedValuesCacheWithError = cache.valueTransform(errorF, errorFInv)
+    private val cache = mock<AbstractCache<Any, String>> {
+        @Suppress("RemoveExplicitTypeArguments")
+        on { valueTransform(any<(String) -> Int>(), any<(Int) -> String>()) }.thenCallRealMethod()
     }
+
+    private val mappedValuesCache: Cache<Any, Int> = cache.valueTransform({ str: String -> str.toInt() }, { int: Int -> int.toString() })
+
+    @Suppress("RedundantLambdaArrow")
+    private val mappedValuesCacheWithError: Cache<Any, Int> =
+        cache.valueTransform({ _: String -> throw TestException() }, { _: Int -> throw TestException() })
 
     // get
     @Test
     fun `map string value in get to int`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            whenever(cache.get("key")).then { "1" }
 
             // when we get the value
-            val result = mappedValuesCache.get("key").await()
+            val result = mappedValuesCache.get("key")
 
             // then it is converted to an integer
             assertEquals(1, result)
@@ -71,10 +60,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { "1" } }
+            whenever(cache.get("key")).then { "1" }
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCacheWithError.get("key").await()
+            mappedValuesCacheWithError.get("key")
 
             // then an exception is thrown
         }
@@ -84,10 +73,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in get`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.get("key")).then { GlobalScope.async { throw TestException() } }
+            whenever(cache.get("key")).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.get("key").await()
+            mappedValuesCache.get("key")
 
             // then an exception is thrown
         }
@@ -98,13 +87,13 @@ class CacheMapValuesShould {
     fun `map int value in set to string`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
+            whenever(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we set the value
-            mappedValuesCache.set("key", 1).await()
+            mappedValuesCache.set("key", 1)
 
             // then it is converted to a string
-            Mockito.verify(cache).set("key", "1")
+            verify(cache).set("key", "1")
         }
     }
 
@@ -112,10 +101,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in function set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
+            whenever(cache.set(anyString(), anyString())).then(Answers.RETURNS_MOCKS)
 
             // when we get the value from a map with exception throwing functions
-            mappedValuesCacheWithError.set("key", 1).await()
+            mappedValuesCacheWithError.set("key", 1)
 
             // then an exception is thrown
         }
@@ -125,10 +114,10 @@ class CacheMapValuesShould {
     fun `throw exception when mapping in set`() {
         runBlocking {
             // given we have a string
-            Mockito.`when`(cache.set(anyString(), anyString())).then { GlobalScope.async { throw TestException() } }
+            whenever(cache.set(anyString(), anyString())).then { throw TestException() }
 
             // when we get the value from a map
-            mappedValuesCache.set("key", 1).await()
+            mappedValuesCache.set("key", 1)
 
             // then an exception is thrown
         }
@@ -139,14 +128,14 @@ class CacheMapValuesShould {
     fun `call evict from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async {} }
+            whenever(cache.evict("key")).then { Unit }
 
             // when we get the value
-            mappedValuesCache.evict("key").await()
+            mappedValuesCache.evict("key")
 
             // then we return the value
-            //Assert.assertEquals("value", result)
-            Mockito.verify(cache).evict("key")
+            // Assert.assertEquals("value", result)
+            verify(cache).evict("key")
         }
     }
 
@@ -154,10 +143,10 @@ class CacheMapValuesShould {
     fun `propagate exception on evict`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache.evict("key")).then { GlobalScope.async { throw TestException() } }
+            whenever(cache.evict("key")).then { throw TestException() }
 
             // when we get the value
-            mappedValuesCache.evict("key").await()
+            mappedValuesCache.evict("key")
 
             // then we throw an exception
         }
@@ -168,13 +157,13 @@ class CacheMapValuesShould {
     fun `call evictAll from cache`() {
         runBlocking {
             // given evictAll is implemented
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async {} }
+            whenever(cache.evictAll()).then { Unit }
 
             // when we evictAll values
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then evictAll is called
-            Mockito.verify(cache).evictAll()
+            verify(cache).evictAll()
         }
     }
 
@@ -182,10 +171,10 @@ class CacheMapValuesShould {
     fun `propagate exception on evictAll`() {
         runBlocking {
             // given evictAll throws an exception
-            Mockito.`when`(cache.evictAll()).then { GlobalScope.async { throw TestException() } }
+            whenever(cache.evictAll()).then { throw TestException() }
 
             // when we evictAll values
-            mappedValuesCache.evictAll().await()
+            mappedValuesCache.evictAll()
 
             // then we throw an exception
         }

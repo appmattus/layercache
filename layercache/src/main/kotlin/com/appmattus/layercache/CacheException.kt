@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package com.appmattus.layercache
  * A cache exception that can hold multiple causes. The first exception is available in cause and subsequent exceptions
  * in suppressed
  */
-class CacheException(message: String, innerExceptions: List<Throwable>) : Exception(message) {
+data class CacheException(override val message: String, val innerExceptions: List<Throwable>) : Exception(message) {
     init {
         require(innerExceptions.isNotEmpty()) { "You must provide at least one Exception" }
 

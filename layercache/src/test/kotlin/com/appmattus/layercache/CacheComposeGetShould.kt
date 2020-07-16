@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,69 +17,53 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
-import org.junit.Before
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.MockitoAnnotations
 
 class CacheComposeGetShould {
 
     @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    @get:Rule
     var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
-
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        Mockito.verify(firstCache).compose(secondCache)
-    }
+    private val firstCache = TestCache<String, String>("firstCache")
+    private val secondCache = TestCache<String, String>("secondCache")
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
-            // when key is null
-            composedCache.get(TestUtils.uninitialized()).await()
+        // when key is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                composedCache.get(TestUtils.uninitialized())
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
     fun `return value from first cache when available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { "value" } }
+            firstCache.getFn = {
+                "value"
+            }
 
             // when we get the value
-            val result = composedCache.get("key").await()
+            val result = composedCache.get("key")
 
             // then we return the value
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -87,30 +71,35 @@ class CacheComposeGetShould {
     fun `not call get on second cache when value available in first cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { "value" } }
+            firstCache.getFn = {
+                "value"
+            }
+            secondCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
-            composedCache.get("key").await()
+            composedCache.get("key")
 
             // then we do not call the second cache
-            Mockito.verifyZeroInteractions(secondCache)
         }
     }
 
     @Test
     fun `return value from second cache when only available in second cache and set on first cache`() {
         runBlocking {
+            executions.expect(1)
+
             // given value available in second cache only
-            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { null } }
-            Mockito.`when`(secondCache.get("key")).then { GlobalScope.async { "value" } }
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async {} }
+            firstCache.getFn = { null }
+            secondCache.getFn = { "value" }
+            firstCache.setFn = { _, _ -> executions.execute() }
 
             // when we get the value
-            val result = composedCache.get("key").await()
+            val result = composedCache.get("key")
 
             // then we return the value and set it in the first cache
-            Assert.assertEquals("value", result)
-            Mockito.verify(firstCache).set("key", "value")
+            assertEquals("value", result)
         }
     }
 
@@ -118,25 +107,30 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when the first cache throws`() {
         runBlocking {
             // given the first cache throws an exception on get
-            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { throw TestException() } }
+            firstCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
-            composedCache.get("key").await()
+            composedCache.get("key")
 
             // then an exception is thrown
         }
     }
 
-
     @Test(expected = TestException::class)
     fun `throw internal exception on get when first cache empty and second cache throws`() {
         runBlocking {
             // given the second cache throws an exception on get
-            Mockito.`when`(firstCache.get(Mockito.anyString())).then { GlobalScope.async { null } }
-            Mockito.`when`(secondCache.get(Mockito.anyString())).then { GlobalScope.async { throw TestException() } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                throw TestException()
+            }
 
             // when we get the value
-            composedCache.get("key").await()
+            composedCache.get("key")
 
             // then an exception is thrown
         }
@@ -146,12 +140,18 @@ class CacheComposeGetShould {
     fun `throw internal exception on get when first cache empty, second cache returns and set on first cache throws`() {
         runBlocking {
             // given value available in second cache only
-            Mockito.`when`(firstCache.get("key")).then { GlobalScope.async { null } }
-            Mockito.`when`(secondCache.get("key")).then { GlobalScope.async { "value" } }
-            Mockito.`when`(firstCache.set(Mockito.anyString(), Mockito.anyString())).then { GlobalScope.async { throw TestException() } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                "value"
+            }
+            firstCache.setFn = { _, _ ->
+                throw TestException()
+            }
 
             // when we get the value
-            composedCache.get("key").await()
+            composedCache.get("key")
 
             // then an exception is thrown
         }
@@ -160,67 +160,93 @@ class CacheComposeGetShould {
     @Test
     fun `throw exception when job cancelled on get and first cache is executing get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
-
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { delay(250) } }
-            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { executions.execute() } }
+            firstCache.getFn = {
+                delay(250)
+                null
+            }
+            secondCache.getFn = {
+                executions.execute()
+                null
+            }
 
             // when we get the value
-            val job = composedCache.get("key")
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on get and second cache is executing get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
-
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { null } }
-            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { delay(250) } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                delay(250)
+                null
+            }
 
             // when we get the value
-            val job = composedCache.get("key")
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on get and first cache is executing set after get`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
-
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.get(anyString())).then { GlobalScope.async { null } }
-            Mockito.`when`(secondCache.get(anyString())).then { GlobalScope.async { "value" } }
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async { delay(250) } }
+            firstCache.getFn = {
+                null
+            }
+            secondCache.getFn = {
+                "value"
+            }
+            firstCache.setFn = { _, _ ->
+                delay(250)
+            }
 
             // when we get the value
-            val job = composedCache.get("key")
+            val job = async(Dispatchers.IO) { composedCache.get("key") }
             delay(50)
             job.cancel()
             yield()
 
             // then get on the second cache is not called and an exception is thrown
-            job.await()
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    job.await()
+                }
+            }
+
+            // expect exception
+            assertThat(throwable.message, StringStartsWith("DeferredCoroutine was cancelled"))
         }
     }
 }

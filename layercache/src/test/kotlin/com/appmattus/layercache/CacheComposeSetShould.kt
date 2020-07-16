@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,87 +16,65 @@
 
 package com.appmattus.layercache
 
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
-import org.hamcrest.core.Is.isA
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.StringStartsWith
-import org.junit.Assert
-import org.junit.Before
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.ExpectedException
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
-import java.util.concurrent.Executors
+import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
 
 class CacheComposeSetShould {
 
     @get:Rule
-    var thrown: ExpectedException = ExpectedException.none()
-
-    @get:Rule
     var executions = ExecutionExpectation()
 
-    @Mock
-    private lateinit var firstCache: AbstractCache<String, String>
-
-    @Mock
-    private lateinit var secondCache: AbstractCache<String, String>
-
-    private lateinit var composedCache: Cache<String, String>
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-        Mockito.`when`(firstCache.compose(secondCache)).thenCallRealMethod()
-        composedCache = firstCache.compose(secondCache)
-        verify(firstCache).compose(secondCache)
-    }
+    private val firstCache = TestCache<String, String>("firstCache")
+    private val secondCache = TestCache<String, String>("secondCache")
+    private val composedCache: Cache<String, String> = firstCache.compose(secondCache)
 
     @Test
     fun `throw exception when key is null`() {
-        runBlocking {
-            // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
-            // when key is null
-            composedCache.set(TestUtils.uninitialized(), "value").await()
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                // when key is null
+                composedCache.set(TestUtils.uninitialized(), "value")
+            }
         }
+
+        // expect exception
+        assertThat(throwable.message, StringStartsWith("Required value was null"))
     }
 
     @Test
     fun `throw exception when value is null`() {
         runBlocking {
+            firstCache.setFn = { _, _ -> }
+            secondCache.setFn = { _, _ -> }
+
+            val throwable = assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    // when value is null
+                    composedCache.set("key", TestUtils.uninitialized())
+                }
+            }
+
             // expect exception
-            thrown.expect(IllegalArgumentException::class.java)
-            thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
-
-            Mockito.`when`(firstCache.set(anyString(), MockitoKotlin.any())).then {
-                GlobalScope.async {
-
-                }
-            }
-            Mockito.`when`(secondCache.set(anyString(), MockitoKotlin.any())).then {
-                GlobalScope.async {
-
-                }
-            }
-
-            // when value is null
-            composedCache.set("key", TestUtils.uninitialized()).await()
+            assertThat(throwable.message, StringStartsWith("Required value was null"))
         }
     }
-
 
     @Test
     fun `execute internal requests on set in parallel`() {
@@ -104,24 +82,20 @@ class CacheComposeSetShould {
             val jobTimeInMillis = 250L
 
             // given we have two caches with a long running job to set a value
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            firstCache.setFn = { _, _ ->
+                delay(jobTimeInMillis)
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                async(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
-                    TestUtils.blockingTask(jobTimeInMillis)
-                }
+            secondCache.setFn = { _, _ ->
+                delay(jobTimeInMillis)
             }
 
             // when we set the value and start the timer
             val start = System.nanoTime()
-            composedCache.set("key", "value").await()
+            composedCache.set("key", "value")
 
             // then set is called in parallel
             val elapsedTimeInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-            Assert.assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
+            assertTrue(elapsedTimeInMillis < (jobTimeInMillis * 2))
         }
     }
 
@@ -129,203 +103,191 @@ class CacheComposeSetShould {
     fun `execute set for each cache`() {
         runBlocking {
             // given we have two caches
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then { GlobalScope.async {} }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then { GlobalScope.async {} }
+            val firstCache = mock<AbstractCache<String, String>> {
+                onBlocking { set(anyString(), anyString()) } doReturn Unit
+            }
+            val secondCache = mock<AbstractCache<String, String>> {
+                onBlocking { set(anyString(), anyString()) } doReturn Unit
+            }
+            whenever(firstCache.compose(secondCache)).thenCallRealMethod()
+            val composedCache = firstCache.compose(secondCache)
+            verify(firstCache).compose(secondCache)
 
             // when we set the value
-            composedCache.set("key", "value").await()
+            composedCache.set("key", "value")
 
             // then set is called on both caches
             verify(firstCache).set("key", "value")
             verify(secondCache).set("key", "value")
-            Mockito.verifyNoMoreInteractions(firstCache)
-            Mockito.verifyNoMoreInteractions(secondCache)
+            verifyNoMoreInteractions(firstCache)
+            verifyNoMoreInteractions(secondCache)
         }
     }
 
     @Test
     fun `throw internal exception on set when the first cache throws`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for firstCache")
-            thrown.expectCause(isA(TestException::class.java))
-            executions.expect(1)
-
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+            firstCache.setFn = { _, _ ->
+                throw TestException()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
+
+                    // then set on the second cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            yield()
-
-            // then set on the second cache still completes and an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on set when the second cache throws`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-            executions.expect(1)
-
             // given the second cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
-                }
+            secondCache.setFn = { _, _ ->
+                throw TestException()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            yield()
-
-            // then an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw internal exception on set when both caches throws`() {
         runBlocking {
-            // expect exception
-            thrown.expect(CacheException::class.java)
-            thrown.expectMessage("set failed for firstCache, set failed for secondCache")
-            thrown.expectCause(isA(TestException::class.java))
-
             // given both caches throw an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
-                }
+            firstCache.setFn = { _, _ ->
+                throw TestException()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    throw TestException()
+            secondCache.setFn = { _, _ ->
+                throw TestException()
+            }
+
+            assertThrows(TestException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    yield()
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            yield()
-
-            // then an exception is thrown
-            job.await()
+            // expect exception
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and first cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of secondCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(250)
-                }
+            firstCache.setFn = { _, _ ->
+                delay(250)
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
+            secondCache.setFn = { _, _ ->
+                executions.execute()
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    delay(50)
+                    job.cancel()
+                    yield()
+
+                    // then set on the second cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            delay(50)
-            job.cancel()
-            yield()
-
-            // then set on the second cache still completes and an exception is thrown
-            job.await()
+            // expect exception and successful execution of secondCache
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and second cache is executing`() {
         runBlocking {
-            // expect exception and successful execution of firstCache
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(1)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    executions.execute()
-                }
+            firstCache.setFn = { _, _ ->
+                executions.execute()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(250)
+            secondCache.setFn = { _, _ ->
+                delay(250)
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
+                    delay(50)
+                    job.cancel()
+                    yield()
+
+                    // then set on the first cache still completes and an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            delay(50)
-            job.cancel()
-            yield()
-
-            // then set on the first cache still completes and an exception is thrown
-            job.await()
+            // expect exception and successful execution of firstCache
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 
     @Test
     fun `throw exception when job cancelled on set and both caches executing`() {
         runBlocking {
-            // expect exception and no execution of caches
-            thrown.expect(CancellationException::class.java)
-            thrown.expectMessage("Job was cancelled")
             executions.expect(0)
 
             // given the first cache throws an exception
-            Mockito.`when`(firstCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
-                    delay(50)
-                    executions.execute()
-                }
+            firstCache.setFn = { _, _ ->
+                delay(250)
+                executions.execute()
             }
-            Mockito.`when`(secondCache.set(anyString(), anyString())).then {
-                GlobalScope.async {
+            secondCache.setFn = { _, _ ->
+                delay(250)
+                executions.execute()
+            }
+
+            val throwable = assertThrows(CancellationException::class.java) {
+                runBlocking {
+                    // when we set the value
+                    val job = async { composedCache.set("key", "value") }
                     delay(50)
-                    executions.execute()
+                    job.cancel()
+                    yield()
+
+                    // then an exception is thrown
+                    job.await()
                 }
             }
 
-            // when we set the value
-            val job = composedCache.set("key", "value")
-            delay(25)
-            job.cancel()
-            yield()
-
-            // then an exception is thrown
-            job.await()
+            // expect exception and no execution of caches
+            assertThat(throwable.message, `is`("DeferredCoroutine was cancelled"))
         }
     }
 }

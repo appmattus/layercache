@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,55 +16,51 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.cache2k.Cache2kBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.ArgumentMatchers.anyString
 import java.util.concurrent.TimeUnit
-
 
 class Cache2kWrapperShould {
 
-    @Mock
-    private lateinit var cache2k: org.cache2k.Cache<String, String>
+    private val cache2k = mock<org.cache2k.Cache<String, String>>()
 
     private lateinit var wrappedCache: Cache<String, String>
 
     private lateinit var integratedCache: Cache<String, String>
 
-    @Mock
-    private lateinit var loaderFetcher: AbstractFetcher<String, String>
+    private val loaderFetcher = mock<AbstractFetcher<String, String>>()
 
     private lateinit var integratedCacheWithLoader: Cache<String, String>
 
     @Before
     fun before() {
-        MockitoAnnotations.initMocks(this)
-        wrappedCache = Cache2kWrapper(cache2k)
+        runBlocking {
+            wrappedCache = Cache2kWrapper(cache2k)
 
-        val cache2k = object : Cache2kBuilder<String, String>() {}
+            val cache2k = object : Cache2kBuilder<String, String>() {}
                 // expire/refresh after 5 minutes
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build()
-        integratedCache = Cache.fromCache2k(cache2k)
+            integratedCache = Cache.fromCache2k(cache2k)
 
+            whenever(loaderFetcher.get(anyString())).then { "hello" }
 
-        Mockito.`when`(loaderFetcher.get(Mockito.anyString())).then { GlobalScope.async { "hello" } }
-
-        val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
-                .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
+            val cache2kWithLoader = object : Cache2kBuilder<String, String>() {}
+                .expireAfterWrite(5, TimeUnit.MINUTES) // expire/refresh after 5 minutes
                 // exceptions
-                .refreshAhead(true)                       // keep fresh when expiring
-                .loader(loaderFetcher.toCache2kLoader())         // auto populating function
+                .refreshAhead(true) // keep fresh when expiring
+                .loader(loaderFetcher.toCache2kLoader()) // auto populating function
                 .build()
-        integratedCacheWithLoader = Cache.fromCache2k(cache2kWithLoader)
+            integratedCacheWithLoader = Cache.fromCache2k(cache2kWithLoader)
+        }
     }
 
     // get
@@ -72,10 +68,10 @@ class Cache2kWrapperShould {
     fun `get returns value from cache`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.get("key")).thenReturn("value")
+            whenever(cache2k.get("key")).thenReturn("value")
 
             // when we get the value
-            val result = wrappedCache.get("key").await()
+            val result = wrappedCache.get("key")
 
             // then we return the value
             assertEquals("value", result)
@@ -86,10 +82,10 @@ class Cache2kWrapperShould {
     fun `get throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.get("key")).then { throw TestException() }
+            whenever(cache2k.get("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.get("key").await()
+            wrappedCache.get("key")
 
             // then we throw an exception
         }
@@ -102,10 +98,10 @@ class Cache2kWrapperShould {
             // given
 
             // when we set the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then put is called
-            Mockito.verify(cache2k).put("key", "value")
+            verify(cache2k).put("key", "value")
         }
     }
 
@@ -113,10 +109,10 @@ class Cache2kWrapperShould {
     fun `set throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.put("key", "value")).then { throw TestException() }
+            whenever(cache2k.put("key", "value")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.set("key", "value").await()
+            wrappedCache.set("key", "value")
 
             // then we throw an exception
         }
@@ -129,11 +125,11 @@ class Cache2kWrapperShould {
             // given
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we return the value
-            //assertEquals("value", result)
-            Mockito.verify(cache2k).remove("key")
+            // assertEquals("value", result)
+            verify(cache2k).remove("key")
         }
     }
 
@@ -141,10 +137,10 @@ class Cache2kWrapperShould {
     fun `evict throws`() {
         runBlocking {
             // given value available in first cache only
-            Mockito.`when`(cache2k.remove("key")).then { throw TestException() }
+            whenever(cache2k.remove("key")).then { throw TestException() }
 
             // when we get the value
-            wrappedCache.evict("key").await()
+            wrappedCache.evict("key")
 
             // then we throw an exception
         }
@@ -157,7 +153,7 @@ class Cache2kWrapperShould {
             // integratedCache
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is null
             assertNull(result)
@@ -168,10 +164,10 @@ class Cache2kWrapperShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we retrieve a value
-            val result = integratedCache.get("key").await()
+            val result = integratedCache.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -182,16 +178,15 @@ class Cache2kWrapperShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCache.set("key", "value").await()
+            integratedCache.set("key", "value")
 
             // when we evict the value
-            integratedCache.evict("key").await()
+            integratedCache.evict("key")
 
             // then the value is null
-            assertNull(integratedCache.get("key").await())
+            assertNull(integratedCache.get("key"))
         }
     }
-
 
     @Test
     fun `return from loader when the cache is empty`() {
@@ -200,7 +195,7 @@ class Cache2kWrapperShould {
             // integratedCacheWithLoader
 
             // when we retrieve a value
-            val result = integratedCacheWithLoader.get("key").await()
+            val result = integratedCacheWithLoader.get("key")
 
             // then the value comes from the loader
             assertEquals("hello", result)
@@ -211,10 +206,10 @@ class Cache2kWrapperShould {
     fun `return value and not from loader when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCacheWithLoader.set("key", "value").await()
+            integratedCacheWithLoader.set("key", "value")
 
             // when we retrieve a value
-            val result = integratedCacheWithLoader.get("key").await()
+            val result = integratedCacheWithLoader.get("key")
 
             // then it is returned
             assertEquals("value", result)
@@ -225,13 +220,13 @@ class Cache2kWrapperShould {
     fun `return value from loader when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            integratedCacheWithLoader.set("key", "value").await()
+            integratedCacheWithLoader.set("key", "value")
 
             // when we evict the value
-            integratedCacheWithLoader.evict("key").await()
+            integratedCacheWithLoader.evict("key")
 
             // then the value comes from the loader
-            assertEquals("hello", integratedCacheWithLoader.get("key").await())
+            assertEquals("hello", integratedCacheWithLoader.get("key"))
         }
     }
 }

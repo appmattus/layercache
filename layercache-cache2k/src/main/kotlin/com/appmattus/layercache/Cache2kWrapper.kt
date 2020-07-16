@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,48 +16,29 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.cache2k.integration.FunctionalCacheLoader
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
- * @property cache  Cache2k cache
+ * @property cache Cache2k cache
  */
-internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) :
-        Cache<Key, Value> {
-    override fun evict(key: Key): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.remove(key)
-        }
-    }
+internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cache2k.Cache<Key, Value>) : Cache<Key, Value> {
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
-            cache.get(key)
-        }
-    }
+    override suspend fun evict(key: Key) = withContext(Dispatchers.IO) { cache.remove(key) }
 
-    override fun set(key: Key, value: Value): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.put(key, value)
-        }
-    }
+    override suspend fun get(key: Key): Value? = withContext(Dispatchers.IO) { cache.get(key) }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
-            cache.clear()
+    override suspend fun set(key: Key, value: Value) = withContext(Dispatchers.IO) { cache.put(key, value) }
 
-            //FunctionalCacheLoader
-        }
-    }
+    override suspend fun evictAll() = withContext(Dispatchers.IO) { cache.clear() }
 }
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
- * @property cache  Cache2k cache
+ * @property cache Cache2k cache
  * @return Cache
  */
 @Suppress("unused", "USELESS_CAST")
@@ -68,9 +49,9 @@ fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cach
  * @return Cache2k loader
  */
 @Suppress("unused")
-fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value> {
+suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value?> {
     return FunctionalCacheLoader { key ->
         // TODO What thread does a cache loader run on?
-        runBlocking { get(key).await() }
+        runBlocking { get(key) }
     }
 }

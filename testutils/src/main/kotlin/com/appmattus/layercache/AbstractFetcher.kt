@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,5 @@
 
 package com.appmattus.layercache
 
-/* Workaround for "Cannot call abstract real method on java object"
-see https://github.com/nhaarman/mockito-kotlin/issues/41 */
+/* Workaround for "Cannot call abstract real method on java object". See https://github.com/nhaarman/mockito-kotlin/issues/41 */
 abstract class AbstractFetcher<Key : Any, Value : Any> : Fetcher<Key, Value>

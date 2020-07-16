@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,24 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply from: "$rootDir/jacoco-android.gradle"
-apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka-android.gradle"
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 28
+        minSdkVersion 19
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -40,7 +44,6 @@ android {
 
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), "$rootDir/proguard-rules.pro"
         }
     }
 
@@ -51,10 +54,7 @@ android {
     }
 
     testBuildType "debug"
-}
-
-tasks.withType(Test) {
-    systemProperty "kotlinx.coroutines.blocking.checker", "disable"
+    testOptions.unitTests.includeAndroidResources = true
 }
 
 repositories {
@@ -62,10 +62,18 @@ repositories {
 }
 
 dependencies {
-    api project(':layercache')
-    implementation 'com.jakewharton:disklrucache:2.0.2'
+    api project(":layercache")
+    implementation "com.jakewharton:disklrucache:2.0.2"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     testImplementation project(':testutils')
-    testImplementation 'org.robolectric:robolectric:3.8'
+    testImplementation "org.robolectric:robolectric:4.3.1"
+    testImplementation "androidx.test.ext:junit-ktx:1.1.1"
+    testImplementation "androidx.test:runner:1.2.0"
+    testImplementation "androidx.security:security-crypto:1.1.0-alpha01"
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from android.sourceSets.main.java.srcDirs
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,18 @@
 
 package com.appmattus.layercache
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.JsonParsingException
+import kotlinx.serialization.json.JsonDecodingException
 import kotlinx.serialization.serializer
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
-import org.junit.Rule
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 class JSONSerializerShould {
-
-    @get:Rule
-    var thrown = ExpectedException.none()
 
     @Serializable
     internal data class ValueClass(val value: Int)
@@ -45,19 +39,22 @@ class JSONSerializerShould {
             val initialCache = object : Cache<String, String> {
                 var lastValue: String? = null
 
-                override fun get(key: String): Deferred<String?> = GlobalScope.async { lastValue }
-                override fun set(key: String, value: String): Deferred<Unit> = GlobalScope.async { lastValue = value }
-                override fun evict(key: String): Deferred<Unit> = TODO("not implemented")
-                override fun evictAll(): Deferred<Unit> = TODO("not implemented")
+                override suspend fun get(key: String): String? = lastValue
+                override suspend fun set(key: String, value: String) {
+                    lastValue = value
+                }
+
+                override suspend fun evict(key: String) = TODO("not implemented")
+                override suspend fun evictAll() = TODO("not implemented")
             }
             val cache: Cache<String, ValueClass> = initialCache.jsonSerializer()
 
             // when we set a data class into it
-            cache.set("a", ValueClass(4)).await()
+            cache.set("a", ValueClass(4))
 
             // then the the original cache contains json and the data object can retrieved from the wrapper
             assertEquals("{\"value\":4}", initialCache.lastValue)
-            assertEquals(4, cache.get("a").await()?.value)
+            assertEquals(4, cache.get("a")?.value)
         }
     }
 
@@ -81,33 +78,37 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform(TestUtils.uninitialized())
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform(TestUtils.uninitialized())
+        assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when parameter to inverseTransform is null`() {
-        thrown.expect(IllegalArgumentException::class.java)
-        thrown.expectMessage(StringStartsWith("Parameter specified as non-null is null"))
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).inverseTransform(TestUtils.uninitialized())
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).inverseTransform(TestUtils.uninitialized())
+        assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
     }
 
     @Test
     fun `throw exception when parameter to transform is not json`() {
-        thrown.expect(JsonParsingException::class.java)
-        thrown.expectMessage(StringStartsWith("Invalid JSON"))
+        val throwable = assertThrows(JsonDecodingException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform("junk")
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform("junk")
+        assertThat(throwable.message, StringStartsWith("Unexpected JSON token"))
     }
 
     @Test
     fun `throw exception when parameter to transform contains field that is not expected`() {
-        thrown.expect(SerializationException::class.java)
-        thrown.expectMessage(StringStartsWith("Strict JSON encountered unknown key"))
+        val throwable = assertThrows(JsonDecodingException::class.java) {
+            JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
+        }
 
-        JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
+        assertThat(throwable.message, StringContains("Encountered an unknown key 'result'"))
     }
 }

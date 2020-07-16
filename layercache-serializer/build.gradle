@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@
 apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
 apply from: "$rootDir/jacoco.gradle"
-apply from: "$rootDir/bintray.gradle"
+apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
 apply from: "$rootDir/dokka.gradle"
 
 dependencies {
-    compile project(':layercache')
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
+    api project(':layercache')
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
-    testCompile project(':testutils')
+    testImplementation project(':testutils')
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
     task.kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"]
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

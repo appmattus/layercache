@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ class ExecutionExpectation : ExternalResource() {
 
     fun expect(target: Int) {
         this.target = target
-        //integer.set(target)
+        // integer.set(target)
     }
 
     override fun after() {
@@ -40,6 +40,6 @@ class ExecutionExpectation : ExternalResource() {
             return
         }
 
-        fail("Expected test to make ${target} executions but actually made ${actual}")
+        fail("Expected test to make $target executions but actually made $actual")
     }
 }

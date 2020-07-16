@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package com.appmattus.layercache
 import android.annotation.TargetApi
 import android.os.Build
 import android.util.LruCache
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Wrapper around Android's built in LruCache
@@ -30,26 +29,26 @@ import kotlinx.coroutines.async
 internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCache<Key, Value>) : Cache<Key, Value> {
     constructor(maxSize: Int) : this(LruCache(maxSize))
 
-    override fun evict(key: Key): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
+    override suspend fun evict(key: Key) {
+        withContext(Dispatchers.IO) {
             cache.remove(key)
         }
     }
 
-    override fun get(key: Key): Deferred<Value?> {
-        return GlobalScope.async {
+    override suspend fun get(key: Key): Value? {
+        return withContext(Dispatchers.IO) {
             cache.get(key)
         }
     }
 
-    override fun set(key: Key, value: Value): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
+    override suspend fun set(key: Key, value: Value) {
+        withContext(Dispatchers.IO) {
             cache.put(key, value)
         }
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
+    override suspend fun evictAll() {
+        withContext(Dispatchers.IO) {
             cache.evictAll()
         }
     }
@@ -57,7 +56,7 @@ internal class LruCacheWrapper<Key : Any, Value : Any>(private val cache: LruCac
 
 /**
  * Create a Cache from Android's built in LruCache
- * @property lruCache   An LruCache
+ * @property lruCache An LruCache
  */
 @Suppress("unused", "USELESS_CAST")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
@@ -65,7 +64,7 @@ fun <Key : Any, Value : Any> Cache.Companion.fromLruCache(lruCache: LruCache<Key
 
 /**
  * Create a Cache from a newly created LruCache
- * @property maxSize    Maximum number of entries
+ * @property maxSize Maximum number of entries
  */
 @Suppress("unused")
 fun <Key : Any, Value : Any> Cache.Companion.createLruCache(maxSize: Int) = Cache.fromLruCache(LruCache<Key, Value>(maxSize))

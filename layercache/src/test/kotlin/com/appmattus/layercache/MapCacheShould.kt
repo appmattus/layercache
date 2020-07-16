@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -36,10 +37,10 @@ class MapCacheShould {
             // given we have an empty cache
 
             // when we retrieve a value
-            val result = mapCache.get("key").await()
+            val result = mapCache.get("key")
 
             // then it is null
-            Assert.assertNull(result)
+            assertNull(result)
         }
     }
 
@@ -47,13 +48,13 @@ class MapCacheShould {
     fun `return value when cache has value`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we retrieve a value
-            val result = mapCache.get("key").await()
+            val result = mapCache.get("key")
 
             // then it is returned
-            Assert.assertEquals("value", result)
+            assertEquals("value", result)
         }
     }
 
@@ -61,13 +62,13 @@ class MapCacheShould {
     fun `return null when the key has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we evict the value
-            mapCache.evict("key").await()
+            mapCache.evict("key")
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key").await())
+            assertNull(mapCache.get("key"))
         }
     }
 
@@ -75,13 +76,13 @@ class MapCacheShould {
     fun `return null when all keys has been evicted`() {
         runBlocking {
             // given we have a cache with a value
-            mapCache.set("key", "value").await()
+            mapCache.set("key", "value")
 
             // when we evict the value
-            mapCache.evictAll().await()
+            mapCache.evictAll()
 
             // then the value is null
-            Assert.assertNull(mapCache.get("key").await())
+            assertNull(mapCache.get("key"))
         }
     }
 }

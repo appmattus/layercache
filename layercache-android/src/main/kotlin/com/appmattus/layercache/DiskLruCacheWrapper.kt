@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Appmattus Limited
+ * Copyright 2020 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
 package com.appmattus.layercache
 
 import com.jakewharton.disklrucache.DiskLruCache
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -27,30 +26,35 @@ import java.io.File
  */
 internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<String, String> {
 
-    override fun evict(key: String): Deferred<Unit> {
-        return GlobalScope.async<Unit> {
+    override suspend fun evict(key: String) {
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
             cache.remove(key)
         }
     }
 
-    override fun get(key: String): Deferred<String?> {
-        return GlobalScope.async {
+    override suspend fun get(key: String): String? {
+        return withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
             cache.get(key)?.getString(0)
         }
     }
 
-    override fun set(key: String, value: String): Deferred<Unit> {
-        return GlobalScope.async {
-            val editor = cache.edit(key)
-            editor.set(0, value)
-            editor.commit()
+    override suspend fun set(key: String, value: String) {
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            cache.edit(key).apply {
+                set(0, value)
+                commit()
+            }
         }
     }
 
-    override fun evictAll(): Deferred<Unit> {
-        return GlobalScope.async {
+    override suspend fun evictAll() {
+        withContext(Dispatchers.IO) {
             // Although setting maxSize to zero will cause the cache to be emptied this happens in a separate thread,
             // by calling flush immediately we ensure this happens in the same call
+            @Suppress("BlockingMethodInNonBlockingContext")
             cache.maxSize.let {
                 cache.maxSize = 0
                 cache.flush()
@@ -62,15 +66,15 @@ internal class DiskLruCacheWrapper(private val cache: DiskLruCache) : Cache<Stri
 
 /**
  * Create a Cache from a DiskLruCache
- * @property diskLruCache   A DiskLruCache
+ * @property diskLruCache A DiskLruCache
  */
 @Suppress("unused", "USELESS_CAST")
 fun Cache.Companion.fromDiskLruCache(diskLruCache: DiskLruCache) = DiskLruCacheWrapper(diskLruCache) as Cache<String, String>
 
 /**
  * Create a Cache from a newly created DiskLruCache
- * @property directory  Directory to create cache in
- * @property maxSize    Maximum number of bytes
+ * @property directory Directory to create cache in
+ * @property maxSize Maximum number of bytes
  */
 @Suppress("unused", "USELESS_CAST")
 fun Cache.Companion.createDiskLruCache(directory: File, maxSize: Long) = fromDiskLruCache(DiskLruCache.open(directory, 1, 1, maxSize))

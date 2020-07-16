@@ -1,0 +1,2 @@
+-keep class com.appmattus.layercache.EncryptionEncryptConnectedTest
+-keep class com.appmattus.layercache.EncryptionEncryptValuesConnectedTest
