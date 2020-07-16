@@ -27,7 +27,7 @@ dokka {
 
         sourceLink {
             path = "$rootDir"
-            url = "https://github.com/appmattus/layercache/blob/master/"
+            url = "https://github.com/appmattus/layercache/blob/main/"
             lineSuffix = "#L"
         }
     }

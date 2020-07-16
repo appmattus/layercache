@@ -1,4 +1,4 @@
-# layercache  ![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/appmattus/layercache/branch/master/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
+# layercache  ![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=main) [![codecov](https://codecov.io/gh/appmattus/layercache/branch/main/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
 
 Caching made simple for Android and Kotlin.
 
