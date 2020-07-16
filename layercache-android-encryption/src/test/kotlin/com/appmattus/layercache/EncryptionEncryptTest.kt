@@ -31,7 +31,7 @@ import org.robolectric.annotation.Config
 import java.security.KeyStore
 
 @RunWith(AndroidJUnit4::class)
-@Config(manifest = Config.NONE, sdk = [19, 21, 22, 23, 24, 25, 26, 27, 28])
+@Config(manifest = Config.NONE, sdk = [21, 22, 23, 24, 25, 26, 27, 28])
 class EncryptionEncryptTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
@@ -39,14 +39,11 @@ class EncryptionEncryptTest {
     private val encrypted = cache.encrypt(appContext)
 
     @Before
-    fun resetKeystore() {
+    fun clearKeys() {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
         keyStore.aliases().toList().forEach { keyStore.deleteEntry(it) }
-    }
 
-    @Before
-    fun resetSharedPreferences() {
         val sharedPreferences = appContext.getSharedPreferences("${appContext.packageName}_preferences", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().commit()
     }
@@ -74,20 +71,6 @@ class EncryptionEncryptTest {
     }
 
     @Test
-    fun fails_decryption_when_key_and_value_keys_removed() {
-        runBlocking {
-            // when we set a value
-            encrypted.set("key", "hello")
-
-            // and clear shared preferences of key key and value key
-            resetSharedPreferences()
-
-            // then no value is returned
-            assertNull(cache.encrypt(appContext).get("key"))
-        }
-    }
-
-    @Test
     fun fails_decryption_when_key_and_value_keys_corrupted() {
         runBlocking {
             // when we set a value
@@ -111,8 +94,7 @@ class EncryptionEncryptTest {
             encrypted.set("key", "hello")
 
             // and clear all stored keys
-            resetSharedPreferences()
-            resetKeystore()
+            clearKeys()
 
             // then no value is returned
             assertNull(cache.encrypt(appContext).get("key"))

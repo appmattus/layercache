@@ -23,12 +23,12 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.appmattus.layercache.AndroidXJUnitRunner"
     }
 
     compileOptions {
@@ -39,6 +39,7 @@ android {
     buildTypes {
         debug {
             multiDexEnabled true
+            multiDexKeepProguard file('multidex-config.pro')
         }
 
         release {
@@ -64,7 +65,7 @@ dependencies {
     api project(':layercache-android')
     compileOnly "androidx.annotation:annotation:1.1.0"
 
-    implementation "com.google.crypto.tink:tink-android:1.4.0-rc2"
+    implementation "com.google.crypto.tink:tink-android:1.4.0"
 
     androidTestImplementation project(':testutils')
     androidTestImplementation "androidx.test.ext:junit-ktx:1.1.1"

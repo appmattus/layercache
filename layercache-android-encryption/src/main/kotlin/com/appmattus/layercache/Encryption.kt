@@ -17,6 +17,7 @@
 package com.appmattus.layercache
 
 import android.content.Context
+import android.os.Build
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.DeterministicAead
 import com.google.crypto.tink.KeysetHandle
@@ -82,11 +83,13 @@ private class Encryption(context: Context, private val fileName: String, keystor
     }
 
     private fun encryptValue(value: String, associatedData: ByteArray): String {
-        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), associatedData))
+        val data = associatedData.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP }
+        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), data))
     }
 
     private fun decryptValue(encryptedValue: String, associatedData: ByteArray): String {
-        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), associatedData).toString(Charsets.UTF_8)
+        val data = associatedData.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP }
+        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), data).toString(Charsets.UTF_8)
     }
 
     fun encrypt(cache: Cache<String, String>): Cache<String, String> = object : Cache<String, String> {
@@ -97,7 +100,8 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 val encryptedValue = cache.get(encryptedKey.base64)
 
                 encryptedValue?.let { decryptValue(encryptedValue, encryptedKey.rawBytes) }
-            } catch (expected: GeneralSecurityException) {
+            } catch (expected: Exception) {
+                expected.printStackTrace()
                 null
             }
         }
@@ -107,14 +111,16 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 val encryptedKey = encryptKey(key)
 
                 cache.set(encryptedKey.base64, encryptValue(value, encryptedKey.rawBytes))
-            } catch (expected: GeneralSecurityException) {
+            } catch (expected: Exception) {
+                expected.printStackTrace()
             }
         }
 
         override suspend fun evict(key: String) = withContext(Dispatchers.IO) {
             try {
                 cache.evict(encryptKey(key).base64)
-            } catch (expected: GeneralSecurityException) {
+            } catch (expected: Exception) {
+                expected.printStackTrace()
             }
         }
 
@@ -132,7 +138,8 @@ private class Encryption(context: Context, private val fileName: String, keystor
 
                     decryptValue(encryptedValue, Base64.decode(salt))
                 }
-            } catch (expected: GeneralSecurityException) {
+            } catch (expected: Exception) {
+                expected.printStackTrace()
                 null
             }
         }
@@ -146,7 +153,8 @@ private class Encryption(context: Context, private val fileName: String, keystor
                 secureRandom.nextBytes(salt)
 
                 cache.set(key, encryptValue(value, salt) + ":" + Base64.encode(salt))
-            } catch (expected: GeneralSecurityException) {
+            } catch (expected: Exception) {
+                expected.printStackTrace()
             }
         }
 
