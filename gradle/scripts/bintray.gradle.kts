@@ -90,7 +90,7 @@ configure<BintrayExtension> {
     setPublications("release")
 
     pkg.apply {
-        repo = "testing"
+        repo = "maven"
         userOrg = "appmattus"
         name = project.name
         desc = "Caching made simple for Android and Java"
