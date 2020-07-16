@@ -31,7 +31,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.28.0'
     }
 }
 
@@ -58,6 +57,7 @@ task clean(type: Delete) {
 }
 
 apply from: "gradle/scripts/detekt.gradle.kts"
+apply from: "gradle/scripts/dependencyUpdates.gradle.kts"
 
 apply plugin: 'org.jetbrains.dokka'
 
@@ -88,24 +88,3 @@ dokka {
 task check {}
 
 check { finalizedBy dokka }
-
-apply plugin: 'com.github.ben-manes.versions'
-
-def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-}
-
-dependencyUpdates {
-    // Disallow release candidates as upgradable versions from stable versions
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (isNonStable(it.candidate.version)) {
-                    reject('Release candidate')
-                }
-            }
-        }
-    }
-}
