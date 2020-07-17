@@ -17,7 +17,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
-apply from: "$rootDir/dokka-android.gradle"
+apply from: "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts"
 
 android {
     compileSdkVersion 30

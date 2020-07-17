@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-apply plugin: 'org.jetbrains.dokka'
+apply<JacocoPlugin>()
 
-dokka {
-    outputFormat = 'html'
-    //noinspection GroovyAssignabilityCheck
-    outputDirectory = "$buildDir/docs/javadoc"
-
-    configuration {
-        cacheRoot = 'default'
-        skipDeprecated = true
-
-        sourceLink {
-            path = "$rootDir"
-            url = "https://github.com/appmattus/layercache/blob/main/"
-            lineSuffix = "#L"
-        }
+val jacocoTask = tasks.withType<JacocoReport> {
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
     }
 }
 
-task dokkaJar(type: Jar, dependsOn: dokka) {
-    archiveClassifier.set("javadoc")
-    from "$buildDir/docs/javadoc"
+tasks.named("check") {
+    finalizedBy(jacocoTask)
 }

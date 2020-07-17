@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-apply plugin: 'org.jetbrains.dokka'
+import org.jetbrains.dokka.gradle.DokkaPlugin
+import org.jetbrains.dokka.gradle.DokkaTask
 
-dokka {
-    outputFormat = 'html'
-    //noinspection GroovyAssignabilityCheck
-    outputDirectory = javadoc.destinationDir
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
+    }
+}
+
+apply<DokkaPlugin>()
+
+val dokka = tasks.named<DokkaTask>("dokka") {
+    outputFormat = "html"
+    outputDirectory = "$buildDir/reports/dokka"
 
     configuration {
-        cacheRoot = 'default'
+        cacheRoot = "default"
         skipDeprecated = true
 
         sourceLink {
@@ -33,7 +44,9 @@ dokka {
     }
 }
 
-task dokkaJar(type: Jar, dependsOn: dokka) {
+project.tasks.create<Jar>("dokkaJar") {
+    dependsOn(dokka)
+
     archiveClassifier.set("javadoc")
-    from javadoc.destinationDir
+    from("$buildDir/reports/dokka")
 }
