@@ -72,7 +72,7 @@ dependencies {
     testImplementation("androidx.security:security-crypto:1.1.0-alpha01")
 }
 
-tasks.create<Jar>("sourcesJar") {
+tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets["main"].java.srcDirs)
 }

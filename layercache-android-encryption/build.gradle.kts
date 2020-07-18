@@ -74,7 +74,7 @@ dependencies {
     androidTestImplementation("androidx.multidex:multidex:2.0.1")
 }
 
-tasks.create<Jar>("sourcesJar") {
+tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets["main"].java.srcDirs)
 }
