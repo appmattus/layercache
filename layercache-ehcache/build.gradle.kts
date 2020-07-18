@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-apply plugin: 'kotlin'
-apply from: "$rootDir/gradle/scripts/jacoco.gradle.kts"
-apply from: "$rootDir/gradle/scripts/bintray.gradle.kts"
-apply from: "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts"
-
-dependencies {
-    api project(':layercache')
-    implementation "org.cache2k:cache2k-api:1.2.4.Final"
-    compileOnly "org.cache2k:cache2k-all:1.2.4.Final"
-
-    testImplementation project(':testutils')
-    testImplementation "org.cache2k:cache2k-all:1.2.4.Final"
-    testImplementation "org.slf4j:slf4j-nop:1.7.30"
+plugins {
+    kotlin("jvm")
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
+apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
+apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
+
+dependencies {
+    api(project(":layercache"))
+    implementation("org.ehcache:ehcache:3.8.1")
+
+    testImplementation(project(":testutils"))
+    testImplementation("org.slf4j:slf4j-nop:1.7.30")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
