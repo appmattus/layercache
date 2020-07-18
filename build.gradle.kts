@@ -26,8 +26,6 @@ plugins {
 buildscript {
     repositories {
         google()
-        jcenter()
-        maven { setUrl("https://plugins.gradle.org/m2/") }
     }
     dependencies {
         classpath("com.android.tools.build:gradle:4.0.1")
