@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-apply plugin: 'jacoco'
+include(
+    "layercache",
+    "layercache-cache2k",
+    "layercache-ehcache",
+    "layercache-serializer",
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled true
-        csv.enabled false
-    }
-}
+    "layercache-android",
+    "layercache-android-encryption",
+    "layercache-android-livedata",
 
-check { finalizedBy jacocoTestReport }
+    "testutils"
+)

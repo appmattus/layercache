@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-include ':layercache'
-include ':layercache-cache2k'
-include ':layercache-ehcache'
-include ':layercache-serializer'
+apply<JacocoPlugin>()
 
-include ':layercache-android'
-include ':layercache-android-encryption'
-include ':layercache-android-livedata'
+val jacocoTask = tasks.withType<JacocoReport> {
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = true
+        csv.isEnabled = false
+    }
+}
 
-include ':testutils'
+tasks.named("check") {
+    finalizedBy(jacocoTask)
+}
