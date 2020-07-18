@@ -1,3 +1,6 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 /*
  * Copyright 2020 Appmattus Limited
  *
@@ -14,36 +17,31 @@
  * limitations under the License.
  */
 
-buildscript {
-    ext.kotlin_version = '1.3.72'
-    ext.coroutines_version = '1.3.8'
-    ext.dokka_version = '0.10.1'
-
-    repositories {
-        google()
-        jcenter()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://kotlin.bintray.com/kotlinx" }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
-    }
+plugins {
+    kotlin("jvm") version "1.3.72" apply false
+    kotlin("plugin.serialization") version "1.3.72"
+    id("org.jetbrains.dokka") version "0.10.1"
 }
 
-allprojects {
+buildscript {
     repositories {
         google()
         jcenter()
-        mavenCentral()
-        maven { url "https://kotlin.bintray.com/kotlinx" }
+        maven { setUrl("https://plugins.gradle.org/m2/") }
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:4.0.1")
     }
 }
 
 subprojects {
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+
+    tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
             allWarningsAsErrors = true
@@ -51,27 +49,26 @@ subprojects {
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.create<Delete>("clean") {
+    delete(rootProject.buildDir)
 }
 
-apply from: "gradle/scripts/detekt.gradle.kts"
-apply from: "gradle/scripts/dependencyUpdates.gradle.kts"
+apply(from = "$rootDir/gradle/scripts/detekt.gradle.kts")
+apply(from = "$rootDir/gradle/scripts/dependencyUpdates.gradle.kts")
 
-apply plugin: 'org.jetbrains.dokka'
-
-dokka {
+val dokka = tasks.named<DokkaTask>("dokka") {
     outputFormat = "html"
     outputDirectory = "$buildDir/reports/dokka"
 
-    subProjects = [
-            "layercache",
-            "layercache-cache2k",
-            "layercache-ehcache",
-            "layercache-serializer",
-            "layercache-android",
-            "layercache-android-encryption"
-    ]
+    subProjects = listOf(
+        "layercache",
+        "layercache-cache2k",
+        "layercache-ehcache",
+        "layercache-serializer",
+        "layercache-android",
+        "layercache-android-encryption",
+        "layercache-android-livedata"
+    )
 
     configuration {
         skipDeprecated = true
@@ -84,6 +81,6 @@ dokka {
     }
 }
 
-task check {}
-
-check { finalizedBy dokka }
+tasks.register("check") {
+    finalizedBy(dokka)
+}

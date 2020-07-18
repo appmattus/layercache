@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-include ':layercache'
-include ':layercache-cache2k'
-include ':layercache-ehcache'
-include ':layercache-serializer'
+include(
+    "layercache",
+    "layercache-cache2k",
+    "layercache-ehcache",
+    "layercache-serializer",
 
-include ':layercache-android'
-include ':layercache-android-encryption'
-include ':layercache-android-livedata'
+    "layercache-android",
+    "layercache-android-encryption",
+    "layercache-android-livedata",
 
-include ':testutils'
+    "testutils"
+)
