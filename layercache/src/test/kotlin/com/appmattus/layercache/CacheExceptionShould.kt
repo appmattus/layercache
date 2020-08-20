@@ -29,7 +29,7 @@ class CacheExceptionShould {
     @Test
     fun `throw exception when exceptions is null`() {
         // when exception list is null
-        val throwable = assertThrows(IllegalArgumentException::class.java) {
+        val throwable = assertThrows(NullPointerException::class.java) {
             CacheException("hi", TestUtils.uninitialized())
         }
 

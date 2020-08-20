@@ -63,7 +63,7 @@ android {
 dependencies {
     api(project(":layercache"))
     implementation("com.jakewharton:disklrucache:2.0.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 
     testImplementation(project(":testutils"))
     testImplementation("org.robolectric:robolectric:4.3.1")

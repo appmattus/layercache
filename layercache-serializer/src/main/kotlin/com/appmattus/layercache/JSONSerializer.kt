@@ -18,21 +18,22 @@ package com.appmattus.layercache
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.serializer
+import kotlin.reflect.typeOf
 
 /**
  * Two-way transform to serialise and deserialise data class objects to String
  */
 internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<Value>) : TwoWayTransform<String, Value> {
-    private val json = Json(JsonConfiguration.Stable)
+    @Suppress("EXPERIMENTAL_API_USAGE")
+    private val json = Json {}
 
     override fun transform(value: String): Value {
-        return json.parse(serializer, value)
+        return json.decodeFromString(serializer, value)
     }
 
     override fun inverseTransform(mappedValue: Value): String {
-        return json.stringify(serializer, mappedValue)
+        return json.encodeToString(serializer, mappedValue)
     }
 }
 
@@ -41,10 +42,12 @@ internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<V
  * @property serializer The Kotlin class serializer to use
  */
 @Suppress("unused")
-fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) = this.valueTransform(JSONSerializer(serializer))
+fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) =
+    this.valueTransform(JSONSerializer(serializer))
 
 /**
  * Two-way transform to serialise and deserialise data class objects to String
  */
-@Suppress("unused")
-inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer() = jsonSerializer(Value::class.serializer())
+@Suppress("unused", "EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer() =
+    jsonSerializer(serializer(typeOf<Value>()) as KSerializer<Value>)

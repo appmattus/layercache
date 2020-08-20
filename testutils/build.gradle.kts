@@ -27,7 +27,7 @@ dependencies {
     api("androidx.annotation:annotation:1.1.0")
     api("androidx.test:core:1.2.0")
     api("junit:junit:4.13")
-    api("org.mockito:mockito-core:3.4.3")
+    api("org.mockito:mockito-core:3.5.2")
     api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 
     api("com.github.stefanbirkner:system-rules:1.19.0")
