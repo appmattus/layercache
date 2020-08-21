@@ -70,7 +70,7 @@ class CacheBatchSetShould {
         // given we have a cache
 
         // when key in values map is null
-        val throwable = assertThrows(IllegalArgumentException::class.java) {
+        val throwable = assertThrows(NullPointerException::class.java) {
             runBlocking {
                 cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
             }

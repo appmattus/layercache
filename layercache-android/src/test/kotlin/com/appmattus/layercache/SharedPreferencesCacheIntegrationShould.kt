@@ -61,7 +61,7 @@ class SharedPreferencesCacheIntegrationShould {
         }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = NullPointerException::class)
     fun return_value_when_cache_has_value_3() {
         runBlocking {
             // given we have a cache with a value

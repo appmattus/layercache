@@ -17,8 +17,8 @@
 package com.appmattus.layercache
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonDecodingException
 import kotlinx.serialization.serializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringContains
@@ -26,6 +26,7 @@ import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import kotlin.reflect.typeOf
 
 class JSONSerializerShould {
 
@@ -60,26 +61,30 @@ class JSONSerializerShould {
 
     @Test
     fun `serialize data class into json`() {
-        val serializer = JSONSerializer(ValueClass::class.serializer())
+        @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+        val serializer = JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>)
         assertEquals("{\"value\":5}", serializer.inverseTransform(ValueClass(5)))
     }
 
     @Test
     fun `deserialize json into data class`() {
-        val serializer = JSONSerializer(ValueClass::class.serializer())
+        @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+        val serializer = JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>)
         assertEquals(ValueClass(5), serializer.transform("{\"value\":5}"))
     }
 
     @Test
     fun `serialize and deserialize between data class and json`() {
-        val serializer = JSONSerializer(ValueClass::class.serializer())
+        @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+        val serializer = JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>)
         assertEquals(ValueClass(6), serializer.transform(serializer.inverseTransform(ValueClass(6))))
     }
 
     @Test
     fun `throw exception when parameter to transform is null`() {
-        val throwable = assertThrows(IllegalArgumentException::class.java) {
-            JSONSerializer(ValueClass::class.serializer()).transform(TestUtils.uninitialized())
+        val throwable = assertThrows(NullPointerException::class.java) {
+            @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+            JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>).transform(TestUtils.uninitialized())
         }
 
         assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
@@ -87,8 +92,9 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to inverseTransform is null`() {
-        val throwable = assertThrows(IllegalArgumentException::class.java) {
-            JSONSerializer(ValueClass::class.serializer()).inverseTransform(TestUtils.uninitialized())
+        val throwable = assertThrows(NullPointerException::class.java) {
+            @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+            JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>).inverseTransform(TestUtils.uninitialized())
         }
 
         assertThat(throwable.message, StringStartsWith("Parameter specified as non-null is null"))
@@ -96,8 +102,9 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform is not json`() {
-        val throwable = assertThrows(JsonDecodingException::class.java) {
-            JSONSerializer(ValueClass::class.serializer()).transform("junk")
+        val throwable = assertThrows(Exception::class.java) {
+            @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+            JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>).transform("junk")
         }
 
         assertThat(throwable.message, StringStartsWith("Unexpected JSON token"))
@@ -105,8 +112,9 @@ class JSONSerializerShould {
 
     @Test
     fun `throw exception when parameter to transform contains field that is not expected`() {
-        val throwable = assertThrows(JsonDecodingException::class.java) {
-            JSONSerializer(ValueClass::class.serializer()).transform("{\"result\":5}")
+        val throwable = assertThrows(Exception::class.java) {
+            @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
+            JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>).transform("{\"result\":5}")
         }
 
         assertThat(throwable.message, StringContains("Encountered an unknown key 'result'"))

@@ -32,7 +32,7 @@ class CacheComposeShould {
 
     @Test
     fun `throw exception when second cache is null`() {
-        val throwable = assertThrows(IllegalArgumentException::class.java) {
+        val throwable = assertThrows(NullPointerException::class.java) {
             object : AbstractCache<String, String>() {
                 override suspend fun get(key: String): String? = null
                 override suspend fun set(key: String, value: String) = Unit
