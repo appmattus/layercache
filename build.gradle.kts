@@ -1,9 +1,3 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
-import java.net.URL
-
 /*
  * Copyright 2020 Appmattus Limited
  *
@@ -20,10 +14,18 @@ import java.net.URL
  * limitations under the License.
  */
 
+import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.appmattus.markdown.rules.LineLengthRule
+import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URL
+
 plugins {
     kotlin("jvm") version "1.4.0" apply false
     kotlin("plugin.serialization") version "1.4.0"
     id("org.jetbrains.dokka") version "1.4.0"
+    id("com.appmattus.markdown") version "0.6.0"
 }
 
 buildscript {
@@ -79,3 +81,9 @@ val dokka = tasks.named<DokkaMultiModuleTask>("dokkaHtmlMultiModule") {
 }
 
 tasks.register("check").dependsOn(dokka)
+
+markdownlint {
+    rules {
+        +LineLengthRule(codeBlocks = false)
+    }
+}
