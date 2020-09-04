@@ -17,6 +17,7 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco-android.gradle.kts")

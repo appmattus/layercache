@@ -1,5 +1,8 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import java.net.URL
 
 /*
  * Copyright 2020 Appmattus Limited
@@ -20,7 +23,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.4.0" apply false
     kotlin("plugin.serialization") version "1.4.0"
-    id("org.jetbrains.dokka") version "0.10.1"
+    id("org.jetbrains.dokka") version "1.4.0"
 }
 
 buildscript {
@@ -45,6 +48,22 @@ subprojects {
             allWarningsAsErrors = true
         }
     }
+
+    tasks.withType<DokkaTask> {
+        outputDirectory.set(buildDir.resolve("reports/dokka"))
+
+        dokkaSourceSets {
+            configureEach {
+                skipDeprecated.set(true)
+
+                sourceLink {
+                    localDirectory.set(rootDir)
+                    remoteUrl.set(URL("https://github.com/appmattus/layercache/blob/main/"))
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {
@@ -54,31 +73,9 @@ tasks.register<Delete>("clean") {
 apply(from = "$rootDir/gradle/scripts/detekt.gradle.kts")
 apply(from = "$rootDir/gradle/scripts/dependencyUpdates.gradle.kts")
 
-val dokka = tasks.named<DokkaTask>("dokka") {
-    outputFormat = "html"
-    outputDirectory = "$buildDir/reports/dokka"
-
-    subProjects = listOf(
-        "layercache",
-        "layercache-cache2k",
-        "layercache-ehcache",
-        "layercache-serializer",
-        "layercache-android",
-        "layercache-android-encryption",
-        "layercache-android-livedata"
-    )
-
-    configuration {
-        skipDeprecated = true
-
-        sourceLink {
-            path = "$rootDir"
-            url = "https://github.com/appmattus/layercache/blob/main/"
-            lineSuffix = "#L"
-        }
-    }
+val dokka = tasks.named<DokkaMultiModuleTask>("dokkaHtmlMultiModule") {
+    outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
+    documentationFileName.set("module.md")
 }
 
-tasks.register("check") {
-    finalizedBy(dokka)
-}
+tasks.register("check").dependsOn(dokka)

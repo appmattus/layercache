@@ -16,6 +16,7 @@
 
 plugins {
     kotlin("jvm")
+    id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
