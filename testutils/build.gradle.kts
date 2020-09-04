@@ -25,9 +25,9 @@ apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
 dependencies {
     api(project(":layercache"))
     api("androidx.annotation:annotation:1.1.0")
-    api("androidx.test:core:1.2.0")
+    api("androidx.test:core:1.3.0")
     api("junit:junit:4.13")
-    api("org.mockito:mockito-core:3.5.2")
+    api("org.mockito:mockito-core:3.5.10")
     /* Objenesis 3.1, a dependency of mockito, is broken in Android connected tests */
     api("org.objenesis:objenesis:2.6!!")
     api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")

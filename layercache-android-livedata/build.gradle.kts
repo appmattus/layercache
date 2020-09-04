@@ -65,9 +65,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
 
     testImplementation(project(":testutils"))
-    testImplementation("org.robolectric:robolectric:4.3.1")
-    testImplementation("androidx.test.ext:junit-ktx:1.1.1")
-    testImplementation("androidx.test:runner:1.2.0")
+    testImplementation("org.robolectric:robolectric:4.4")
+    testImplementation("androidx.test.ext:junit-ktx:1.1.2")
+    testImplementation("androidx.test:runner:1.3.0")
 }
 
 tasks.register<Jar>("sourcesJar") {

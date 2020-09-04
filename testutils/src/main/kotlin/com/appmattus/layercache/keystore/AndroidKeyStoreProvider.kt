@@ -78,7 +78,7 @@ class AndroidKeyStoreProvider : Provider("AndroidKeyStore", 1.0, "") {
 
         override fun engineGetCertificateAlias(cert: Certificate?): String? = wrapped.getCertificateAlias(cert)
 
-        override fun engineGetKey(alias: String?, password: CharArray?): Key? = wrapped.getKey(alias, password)
+        override fun engineGetKey(alias: String?, password: CharArray?): Key? = (storedKeys[alias] as? KeyStore.SecretKeyEntry)?.secretKey
 
         override fun engineGetEntry(p0: String, p1: KeyStore.ProtectionParameter?): KeyStore.Entry? = storedKeys[p0]
 

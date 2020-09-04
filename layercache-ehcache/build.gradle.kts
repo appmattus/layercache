@@ -24,7 +24,7 @@ apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    implementation("org.ehcache:ehcache:3.8.1")
+    implementation("org.ehcache:ehcache:3.9.0")
 
     testImplementation(project(":testutils"))
     testImplementation("org.slf4j:slf4j-nop:1.7.30")

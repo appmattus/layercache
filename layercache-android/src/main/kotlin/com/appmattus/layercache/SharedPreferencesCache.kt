@@ -22,7 +22,8 @@ import android.content.SharedPreferences
  * Any-based value shared preference cache
  */
 fun SharedPreferences.asCache(): Cache<String, Any> {
-    return BaseCache(this,
+    return BaseCache(
+        this,
         { sharedPreferences, key -> sharedPreferences.all[key] },
         { editor, key, value ->
             when (value) {
@@ -34,50 +35,63 @@ fun SharedPreferences.asCache(): Cache<String, Any> {
                 is Float -> editor.putFloat(key, value)
                 else -> error("Only primitive types can be stored in SharedPreferences")
             }
-        })
+        }
+    )
 }
 
 /**
  * String-based value shared preference cache
  */
-fun SharedPreferences.asStringCache(): Cache<String, String> = BaseCache(this,
+fun SharedPreferences.asStringCache(): Cache<String, String> = BaseCache(
+    this,
     { sharedPreferences, key -> sharedPreferences.getString(key, null) },
-    { editor, key, value -> editor.putString(key, value) })
+    { editor, key, value -> editor.putString(key, value) }
+)
 
 /**
  * Set<String>-based value shared preference cache
  */
-fun SharedPreferences.asStringSetCache(): Cache<String, Set<String>> = BaseCache(this,
+fun SharedPreferences.asStringSetCache(): Cache<String, Set<String>> = BaseCache(
+    this,
     { sharedPreferences, key -> sharedPreferences.getStringSet(key, null) },
-    { editor, key, value -> editor.putStringSet(key, value) })
+    { editor, key, value -> editor.putStringSet(key, value) }
+)
 
 /**
  * Int-based value shared preference cache
  */
-fun SharedPreferences.asIntCache(): Cache<String, Int> = BaseCache(this,
+fun SharedPreferences.asIntCache(): Cache<String, Int> = BaseCache(
+    this,
     { sharedPreferences: SharedPreferences, key: String -> sharedPreferences.getInt(key, 0) },
-    { editor, key, value -> editor.putInt(key, value) })
+    { editor, key, value -> editor.putInt(key, value) }
+)
 
 /**
  * Float-based value shared preference cache
  */
-fun SharedPreferences.asFloatCache(): Cache<String, Float> = BaseCache(this,
+fun SharedPreferences.asFloatCache(): Cache<String, Float> = BaseCache(
+    this,
     { sharedPreferences, key -> sharedPreferences.getFloat(key, 0f) },
-    { editor, key, value -> editor.putFloat(key, value) })
+    { editor, key, value -> editor.putFloat(key, value) }
+)
 
 /**
  * Boolean-based value shared preference cache
  */
-fun SharedPreferences.asBooleanCache(): Cache<String, Boolean> = BaseCache(this,
+fun SharedPreferences.asBooleanCache(): Cache<String, Boolean> = BaseCache(
+    this,
     { sharedPreferences, key -> sharedPreferences.getBoolean(key, false) },
-    { editor, key, value -> editor.putBoolean(key, value) })
+    { editor, key, value -> editor.putBoolean(key, value) }
+)
 
 /**
  * Long-based value shared preference cache
  */
-fun SharedPreferences.asLongCache(): Cache<String, Long> = BaseCache(this,
+fun SharedPreferences.asLongCache(): Cache<String, Long> = BaseCache(
+    this,
     { sharedPreferences, key -> sharedPreferences.getLong(key, 0) },
-    { editor, key, value -> editor.putLong(key, value) })
+    { editor, key, value -> editor.putLong(key, value) }
+)
 
 /**
  * Simple cache that stores values associated with keys in a shared preferences file with no expiration or cleanup
