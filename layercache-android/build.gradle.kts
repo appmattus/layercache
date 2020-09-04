@@ -17,6 +17,7 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco-android.gradle.kts")
@@ -66,10 +67,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 
     testImplementation(project(":testutils"))
-    testImplementation("org.robolectric:robolectric:4.3.1")
-    testImplementation("androidx.test.ext:junit-ktx:1.1.1")
-    testImplementation("androidx.test:runner:1.2.0")
-    testImplementation("androidx.security:security-crypto:1.1.0-alpha01")
+    testImplementation("org.robolectric:robolectric:4.4")
+    testImplementation("androidx.test.ext:junit-ktx:1.1.2")
+    testImplementation("androidx.test:runner:1.3.0")
+    testImplementation("androidx.security:security-crypto:1.1.0-alpha02")
 }
 
 tasks.register<Jar>("sourcesJar") {

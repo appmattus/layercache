@@ -1,8 +1,12 @@
-# layercache  ![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=main) [![codecov](https://codecov.io/gh/appmattus/layercache/branch/main/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
+# layercache
+
+![CI](https://github.com/appmattus/layercache/workflows/CI/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/appmattus/layercache/branch/main/graph/badge.svg)](https://codecov.io/gh/appmattus/layercache)
 
 Caching made simple for Android and Kotlin.
 
-An important component of building [offline-first architectures](https://developer.android.com/develop/quality-guidelines/building-for-billions-connectivity.html#network-duplicate) is to implement caching.
+An important component of building [offline-first architectures](https://developer.android.com/develop/quality-guidelines/building-for-billions-connectivity.html#network-duplicate)
+is to implement caching.
 
 > An offline-first architecture initially tries to fetch data from local storage
 > and, failing that, requests the data from the network. After being retrieved
@@ -54,7 +58,8 @@ composedCache: Cache<Key, Value> = firstCache.compose(secondCache)
 #### Transforming values
 
 Transform values between data types. This can be used for serialisation and
-encryption amongst other things. i.e. `Cache<Key, Value> → Cache<Key, MappedValue>`
+encryption amongst other things. i.e.
+`Cache<Key, Value> → Cache<Key, MappedValue>`
 
 For two way transformations:
 
@@ -87,8 +92,10 @@ val valueTransform: Cache<Key, MappedValue> = cache.valueTransform(OneWayTransfo
 implementation("com.appmattus:layercache-android-encryption:<latest-version>")
 ```
 
-There is support for encrypting string keys and string values (in any cache) on Android with the `layercache-android-encryption` module. The
-library is using [Google Tink](https://github.com/google/tink) to perform the encryption using AES-256 SIV for keys and AES-256 GCM for values.
+There is support for encrypting string keys and string values (in any cache) on
+Android with the `layercache-android-encryption` module. The library is using
+[Google Tink](https://github.com/google/tink) to perform the encryption using
+AES-256 SIV for keys and AES-256 GCM for values.
 
 ```kotlin
 // Encrypt key and value when both are strings
@@ -108,7 +115,8 @@ encryptedCache.set("hello", "world")
 
 #### Transforming keys
 
-Transform keys to a different data type. i.e. `Cache<Key, Value> → Cache<MappedKey, Value>`
+Transform keys to a different data type. i.e.
+`Cache<Key, Value> → Cache<MappedKey, Value>`
 
 ```kotlin
 val cache: Cache<Key, Value> = ...
@@ -211,7 +219,8 @@ val longValueCache: Cache<String, Long> =
 implementation("androidx.security:security-crypto:<latest-version>")
 ```
 
-Use Jetpack Security to provide a cache backed by encrypted shared preferences where keys and values are both encrypted.
+Use Jetpack Security to provide a cache backed by encrypted shared preferences
+where keys and values are both encrypted.
 
 ```kotlin
 
@@ -275,7 +284,7 @@ liveDataCache.get("key").observe(owner) { liveDataResult ->
 
 ```
 
-## Download [![Download](https://api.bintray.com/packages/appmattus/maven/layercache/images/download.svg) ](https://bintray.com/appmattus/maven/layercache/_latestVersion)
+## Download [![Download](https://api.bintray.com/packages/appmattus/maven/layercache/images/download.svg)](https://bintray.com/appmattus/maven/layercache/_latestVersion)
 
 Available from jcenter()
 
@@ -304,9 +313,11 @@ dependencies {
 ```
 
 ## Contributing
+
 Please fork this repository and contribute back using [pull requests](https://github.com/appmattus/layercache/pulls).
 
-All contributions, large or small, major features, bug fixes, additional language translations, unit/integration tests are welcomed.
+All contributions, large or small, major features, bug fixes, additional
+language translations, unit/integration tests are welcomed.
 
 ## License [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -314,9 +325,7 @@ Copyright 2020 Appmattus Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
+You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

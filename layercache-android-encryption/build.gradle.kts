@@ -17,6 +17,7 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco-android.gradle.kts")
@@ -69,8 +70,8 @@ dependencies {
     implementation("com.google.crypto.tink:tink-android:1.4.0")
 
     androidTestImplementation(project(":testutils"))
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.1")
-    androidTestImplementation("androidx.test:runner:1.2.0")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.2")
+    androidTestImplementation("androidx.test:runner:1.3.0")
     androidTestImplementation("androidx.multidex:multidex:2.0.1")
 }
 
