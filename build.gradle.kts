@@ -22,8 +22,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 plugins {
-    kotlin("jvm") version "1.4.0" apply false
-    kotlin("plugin.serialization") version "1.4.0"
+    kotlin("jvm") version "1.4.10" apply false
+    kotlin("plugin.serialization") version "1.4.10"
     id("org.jetbrains.dokka") version "1.4.0"
     id("com.appmattus.markdown") version "0.6.0"
 }
