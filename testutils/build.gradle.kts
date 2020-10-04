@@ -27,7 +27,7 @@ dependencies {
     api("androidx.annotation:annotation:1.1.0")
     api("androidx.test:core:1.3.0")
     api("junit:junit:4.13")
-    api("org.mockito:mockito-core:3.5.11")
+    api("org.mockito:mockito-core:3.5.13")
     /* Objenesis 3.1, a dependency of mockito, is broken in Android connected tests */
     api("org.objenesis:objenesis:2.6!!")
     api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
