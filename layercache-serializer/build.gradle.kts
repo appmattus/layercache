@@ -29,7 +29,7 @@ apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
 
     testImplementation(project(":testutils"))
 }
