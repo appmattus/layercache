@@ -25,11 +25,11 @@ apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    implementation("org.cache2k:cache2k-api:1.4.1.Final")
-    compileOnly("org.cache2k:cache2k-all:1.4.1.Final")
+    implementation("org.cache2k:cache2k-api:1.6.0.Final")
+    compileOnly("org.cache2k:cache2k-all:1.6.0.Final")
 
     testImplementation(project(":testutils"))
-    testImplementation("org.cache2k:cache2k-all:1.4.1.Final")
+    testImplementation("org.cache2k:cache2k-all:1.6.0.Final")
     testImplementation("org.slf4j:slf4j-nop:1.7.30")
 }
 
