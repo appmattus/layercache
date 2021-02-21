@@ -41,7 +41,7 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
  * @property cache Cache2k cache
  * @return Cache
  */
-@Suppress("unused", "USELESS_CAST")
+@Suppress("unused")
 public fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cache<Key, Value>): Cache<Key, Value> = Cache2kWrapper(cache)
 
 /**
