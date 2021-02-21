@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco-android.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 android {
     compileSdkVersion(30)
@@ -63,15 +62,10 @@ android {
 
 dependencies {
     api(project(":layercache-android"))
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:${Versions.AndroidX.lifecycle}")
 
     testImplementation(project(":testutils"))
-    testImplementation("org.robolectric:robolectric:4.4")
-    testImplementation("androidx.test.ext:junit-ktx:1.1.2")
-    testImplementation("androidx.test:runner:1.3.0")
-}
-
-tasks.register<Jar>("sourcesJar") {
-    archiveClassifier.set("sources")
-    from(android.sourceSets["main"].java.srcDirs)
+    testImplementation("org.robolectric:robolectric:${Versions.robolectric}")
+    testImplementation("androidx.test.ext:junit-ktx:${Versions.AndroidX.testExtJunit}")
+    testImplementation("androidx.test:runner:${Versions.AndroidX.testRunner}")
 }

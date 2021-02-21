@@ -42,7 +42,7 @@ or watch the talk from [droidcon London 2017](https://skillsmatter.com/skillscas
 ### Base module
 
 ```kotlin
-implementation("com.appmattus:layercache:<latest-version>")
+implementation("com.appmattus.layercache:layercache:<latest-version>")
 ```
 
 #### Composing two caches
@@ -89,7 +89,7 @@ val valueTransform: Cache<Key, MappedValue> = cache.valueTransform(OneWayTransfo
 ##### Encrypting values
 
 ```kotlin
-implementation("com.appmattus:layercache-android-encryption:<latest-version>")
+implementation("com.appmattus.layercache:layercache-android-encryption:<latest-version>")
 ```
 
 There is support for encrypting string keys and string values (in any cache) on
@@ -141,7 +141,7 @@ val newCache: Cache<Key, Value> = cache.reuseInflight()
 ### Serializer module
 
 ```kotlin
-implementation("com.appmattus:layercache-serializer:<latest-version>")
+implementation("com.appmattus.layercache:layercache-serializer:<latest-version>")
 ```
 
 Configures a transformation from JSON to a serialisable data class and
@@ -161,7 +161,7 @@ val objectCache: Cache<Key, Value> = cache.jsonSerializer(Value::class.serialize
 ### Android base module
 
 ```kotlin
-implementation("com.appmattus:layercache-android:<latest-version>")
+implementation("com.appmattus.layercache:layercache-android:<latest-version>")
 ```
 
 #### LruCache
@@ -259,7 +259,7 @@ val longValueCache: Cache<String, Long> =
 ### Android LiveData module
 
 ```kotlin
-implementation("com.appmattus:layercache-android-livedata:<latest-version>")
+implementation("com.appmattus.layercache:layercache-android-livedata:<latest-version>")
 ```
 
 Given a cache we can convert it for use with LiveData. This makes the getter
@@ -284,31 +284,29 @@ liveDataCache.get("key").observe(owner) { liveDataResult ->
 
 ```
 
-## Download [![Download](https://api.bintray.com/packages/appmattus/maven/layercache/images/download.svg)](https://bintray.com/appmattus/maven/layercache/_latestVersion)
-
-Available from jcenter()
+## Download [![Maven Central](https://img.shields.io/maven-central/v/com.appmattus.layercache/layercache)](https://search.maven.org/search?q=g:com.appmattus.layercache)
 
 ```kotlin
 dependencies {
-    implementation("com.appmattus:layercache:<latest-version>")
+    implementation("com.appmattus.layercache:layercache:<latest-version>")
 
     // To use with the Kotlin serializer
-    implementation("com.appmattus:layercache-serializer:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-serializer:<latest-version>")
 
     // Provides support for ehcache
-    implementation("com.appmattus:layercache-ehcache:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-ehcache:<latest-version>")
 
     // Provides support for cache2k
-    implementation("com.appmattus:layercache-cache2k:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-cache2k:<latest-version>")
 
     // Provides LruCache & DiskLruCache support for Android
-    implementation("com.appmattus:layercache-android:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-android:<latest-version>")
 
     // Provides one-line String encryption for Android
-    implementation("com.appmattus:layercache-android-encryption:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-android-encryption:<latest-version>")
 
     // Provides conversion from Cache into LiveData for Android
-    implementation("com.appmattus:layercache-android-livedata:<latest-version>")
+    implementation("com.appmattus.layercache:layercache-android-livedata:<latest-version>")
 }
 ```
 

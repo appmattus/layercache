@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ internal class JSONSerializer<Value : Any>(private val serializer: KSerializer<V
  * @property serializer The Kotlin class serializer to use
  */
 @Suppress("unused")
-fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>) =
+public fun <Key : Any, Value : Any> Cache<Key, String>.jsonSerializer(serializer: KSerializer<Value>): Cache<Key, Value> =
     this.valueTransform(JSONSerializer(serializer))
 
 /**
  * Two-way transform to serialise and deserialise data class objects to String
  */
 @Suppress("unused", "EXPERIMENTAL_API_USAGE_ERROR", "UNCHECKED_CAST")
-inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer() =
+public inline fun <Key : Any, reified Value : Any> Cache<Key, String>.jsonSerializer(): Cache<Key, Value> =
     jsonSerializer(serializer(typeOf<Value>()) as KSerializer<Value>)

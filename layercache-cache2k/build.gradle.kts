@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,20 @@
 
 plugins {
     kotlin("jvm")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    implementation("org.cache2k:cache2k-api:1.6.0.Final")
-    compileOnly("org.cache2k:cache2k-all:1.6.0.Final")
+    implementation("org.cache2k:cache2k-api:${Versions.cache2k}")
+    compileOnly("org.cache2k:cache2k-core:${Versions.cache2k}")
 
     testImplementation(project(":testutils"))
-    testImplementation("org.cache2k:cache2k-all:1.6.0.Final")
-    testImplementation("org.slf4j:slf4j-nop:1.7.30")
+    testImplementation("org.cache2k:cache2k-core:${Versions.cache2k}")
+    testImplementation("org.slf4j:slf4j-nop:${Versions.slf4j}")
 }
 
 java {

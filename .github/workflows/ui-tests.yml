@@ -1,4 +1,4 @@
-name: CI
+name: "UI Tests"
 
 on:
   push:
@@ -9,9 +9,6 @@ on:
   pull_request:
     branches:
     - main
-
-env:
-  CI: "true"
 
 jobs:
   test:

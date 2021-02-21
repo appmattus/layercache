@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.appmattus.layercache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.cache2k.integration.FunctionalCacheLoader
+import org.cache2k.io.CacheLoader
 
 /**
  * Wrapper around Cache2k (https://cache2k.org/)
@@ -42,16 +42,14 @@ internal class Cache2kWrapper<Key : Any, Value : Any>(private val cache: org.cac
  * @return Cache
  */
 @Suppress("unused", "USELESS_CAST")
-fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cache<Key, Value>) = Cache2kWrapper(cache) as Cache<Key, Value>
+public fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache2k.Cache<Key, Value>): Cache<Key, Value> = Cache2kWrapper(cache)
 
 /**
  * Convert a Fetcher into a Cache2k loader. Note the Fetcher should not return null
  * @return Cache2k loader
  */
-@Suppress("unused")
-suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): FunctionalCacheLoader<Key, Value?> {
-    return FunctionalCacheLoader { key ->
-        // TODO What thread does a cache loader run on?
-        runBlocking { get(key) }
-    }
+@Suppress("unused", "TYPE_MISMATCH")
+public suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): CacheLoader<Key, Value?> = CacheLoader { key ->
+    // TODO What thread does a cache loader run on?
+    runBlocking { get(key) }
 }

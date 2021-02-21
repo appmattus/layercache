@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,4 +40,4 @@ internal class EhcacheWrapper<Key : Any, Value : Any>(private val cache: org.ehc
  * @return Cache
  */
 @Suppress("unused", "USELESS_CAST")
-fun <Key : Any, Value : Any> Cache.Companion.fromEhcache(cache: org.ehcache.Cache<Key, Value>) = EhcacheWrapper(cache) as Cache<Key, Value>
+public fun <Key : Any, Value : Any> Cache.Companion.fromEhcache(cache: org.ehcache.Cache<Key, Value>): Cache<Key, Value> = EhcacheWrapper(cache)

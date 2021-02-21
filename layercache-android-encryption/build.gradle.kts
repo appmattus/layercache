@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco-android.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 android {
     compileSdkVersion(30)
@@ -34,7 +33,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "com.appmattus.layercache.AndroidXJUnitRunner"
-        testInstrumentationRunnerArguments = mapOf("notPackage" to "org.bouncycastle")
+        testInstrumentationRunnerArguments["notPackage"] = "org.bouncycastle"
     }
 
     compileOptions {
@@ -65,17 +64,12 @@ android {
 
 dependencies {
     api(project(":layercache-android"))
-    compileOnly("androidx.annotation:annotation:1.1.0")
+    compileOnly("androidx.annotation:annotation:${Versions.AndroidX.annotation}")
 
-    implementation("com.google.crypto.tink:tink-android:1.4.0")
+    implementation("com.google.crypto.tink:tink-android:${Versions.Google.tink}")
 
     androidTestImplementation(project(":testutils"))
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.2")
-    androidTestImplementation("androidx.test:runner:1.3.0")
-    androidTestImplementation("androidx.multidex:multidex:2.0.1")
-}
-
-tasks.register<Jar>("sourcesJar") {
-    archiveClassifier.set("sources")
-    from(android.sourceSets["main"].java.srcDirs)
+    androidTestImplementation("androidx.test.ext:junit-ktx:${Versions.AndroidX.testExtJunit}")
+    androidTestImplementation("androidx.test:runner:${Versions.AndroidX.testRunner}")
+    androidTestImplementation("androidx.multidex:multidex:${Versions.AndroidX.multidex}")
 }

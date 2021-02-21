@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,21 @@
  * limitations under the License.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
 }
 
 apply(plugin = "kotlinx-serialization")
 
 apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.Kotlinx.serialization}")
 
     testImplementation(project(":testutils"))
-}
-
-tasks.withType<KotlinCompile>().all {
-    // kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ImplicitReflectionSerializer"
 }
 
 java {

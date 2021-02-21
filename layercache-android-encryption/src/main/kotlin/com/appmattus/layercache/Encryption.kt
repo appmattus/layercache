@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import android.os.Build
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.DeterministicAead
 import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.AesGcmKeyManager
-import com.google.crypto.tink.config.TinkConfig
 import com.google.crypto.tink.daead.AesSivKeyManager
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient
@@ -67,7 +67,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
     }
 
     init {
-        TinkConfig.register()
+        AeadConfig.register()
     }
 
     private fun encryptKey(key: String): EncryptedKey {
