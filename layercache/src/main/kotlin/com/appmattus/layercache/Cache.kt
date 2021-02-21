@@ -223,3 +223,7 @@ public interface Cache<Key : Any, Value : Any> {
 public fun <K : Any, V : Any> cache(block: suspend (K) -> V): Fetcher<K, V> = object : Fetcher<K, V> {
     override suspend fun get(key: K) = block(key)
 }
+
+public suspend fun <Value : Any> Cache<Unit, Value>.get(): Value? = get(Unit)
+
+public suspend fun <Value : Any> Cache<Unit, Value>.set(value: Value): Unit = set(Unit, value)
