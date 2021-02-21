@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.ui
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-    "testutils",
-
-    "samples:androidApp"
-)
+fun debounce(
+    delayMillis: Long = 300L,
+    scope: CoroutineScope,
+    action: () -> Unit
+): () -> Unit {
+    var debounceJob: Job? = null
+    return {
+        if (debounceJob == null) {
+            debounceJob = scope.launch {
+                action()
+                delay(delayMillis)
+                debounceJob = null
+            }
+        }
+    }
+}

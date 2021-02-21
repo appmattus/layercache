@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/samplesFragment">
+
+    <fragment
+        android:id="@+id/samplesFragment"
+        android:name="com.appmattus.layercache.samples.SamplesFragment"
+        android:label="SamplesFragment">
+        <action
+            android:id="@+id/action_samplesFragment_to_packageInfoFragment"
+            app:destination="@id/packageInfoFragment" />
+        <action
+            android:id="@+id/action_samplesFragment_to_batteryFragment"
+            app:destination="@id/batteryFragment" />
+        <action
+            android:id="@+id/action_samplesFragment_to_connectivityFragment"
+            app:destination="@id/connectivityFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/packageInfoFragment"
+        android:name="com.appmattus.layercache.samples.packageinfo.PackageInfoFragment"
+        android:label="PackageInfoFragment" />
+    <fragment
+        android:id="@+id/batteryFragment"
+        android:name="com.appmattus.layercache.samples.battery.BatteryFragment"
+        android:label="BatteryFragment" />
+    <fragment
+        android:id="@+id/connectivityFragment"
+        android:name="com.appmattus.layercache.samples.connectivity.ConnectivityFragment"
+        android:label="ConnectivityFragment" />
+</navigation>

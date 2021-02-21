@@ -27,32 +27,50 @@ object Versions {
 
     const val bouncyCastle = "1.68"
     const val cache2k = "2.0.0.Final"
+    const val coil = "1.1.1"
     const val coroutines = "1.4.2"
     const val diskLruCache = "2.0.2"
     const val ehcache = "3.9.1"
+    const val groupie = "2.9.0"
+    const val orbitMvi = "3.0.1"
     const val slf4j = "1.7.30"
     const val systemRules = "1.19.0"
 
     const val junit4 = "4.13.2"
+    const val kaspresso = "1.2.0"
+    const val kotest = "4.4.1"
     const val mockito = "3.7.7"
     const val mockitoKotlin = "2.2.0"
     const val objenesis = "2.6"
     const val retrofit = "2.9.0"
     const val robolectric = "4.5.1"
 
-    object AndroidX {
+    const val desugar = "1.1.1"
+    const val leakCanary = "2.6"
 
+    object AndroidX {
         const val annotation = "1.1.0"
+        const val appCompat = "1.2.0"
+        const val constraintLayout = "2.1.0-alpha2"
+        const val fragment = "1.3.0"
+        const val hilt = "1.0.0-alpha02"
         const val lifecycle = "2.3.0"
+        const val navigation = "2.3.3"
+        const val vectorDrawable = "1.1.0"
         const val multidex = "2.0.1"
         const val securityCrypto = "1.1.0-alpha03"
 
+        const val espresso = "3.3.0"
+        const val fragmentTesting = "1.3.0-rc01"
         const val testCore = "1.3.0"
         const val testExtJunit = "1.1.2"
+        const val testRules = "1.3.0"
         const val testRunner = "1.3.0"
     }
 
     object Google {
+        const val dagger = "2.31.1-alpha"
+        const val material = "1.3.0-rc01"
         const val tink = "1.5.0"
     }
 

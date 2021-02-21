@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.packageinfo
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-    "testutils",
-
-    "samples:androidApp"
-)
+@Parcelize
+data class PackageInfoState(
+    val appName: String = "",
+    val packageName: String = "",
+    val version: String = "",
+    val buildNumber: String = ""
+) : Parcelable
