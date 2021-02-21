@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ sealed class LiveDataResult<out Value> {
      * Loading, when a cache execution is in progress and is not yet Success or Failure
      */
     object Loading : LiveDataResult<Nothing>() {
+        @Suppress("unused", "UnusedPrivateMember")
         private fun readResolve(): Any = Loading
     }
 }

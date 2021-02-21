@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package com.appmattus.layercache
  * Simple cache that stores values associated with keys in a map with no expiration or cleanup logic. Use at your own
  * risk.
  */
-class MapCache : Cache<String, String> {
+public class MapCache : Cache<String, String> {
     private val map = mutableMapOf<String, String?>()
 
     override suspend fun get(key: String): String? {

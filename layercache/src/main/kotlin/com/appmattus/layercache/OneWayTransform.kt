@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package com.appmattus.layercache
 /**
  * Represents a one-way transformation.
  */
-interface OneWayTransform<Value, MappedValue> {
+public interface OneWayTransform<Value, MappedValue> {
     /**
      * Transform type from [Value] to [MappedValue].
      */
-    fun transform(value: Value): MappedValue
+    public fun transform(value: Value): MappedValue
 }

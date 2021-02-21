@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,38 +26,38 @@ import kotlinx.coroutines.coroutineScope
  * A standard cache which stores and retrieves data
  */
 @Suppress("TooManyFunctions", "RedundantRequireNotNullCall")
-interface Cache<Key : Any, Value : Any> {
+public interface Cache<Key : Any, Value : Any> {
     /**
      * Companion object for 'static' extension functions
      */
-    companion object Companion
+    public companion object Companion
 
     /**
      * Return the value associated with the key or null if not present
      */
-    suspend fun get(key: Key): Value?
+    public suspend fun get(key: Key): Value?
 
     /**
      * Save the value against the key
      */
-    suspend fun set(key: Key, value: Value)
+    public suspend fun set(key: Key, value: Value)
 
     /**
      * Remove the data associated with the key
      */
-    suspend fun evict(key: Key)
+    public suspend fun evict(key: Key)
 
     /**
      * Remove the data associated with all keys
      */
-    suspend fun evictAll()
+    public suspend fun evictAll()
 
     /**
      * Compose two caches. Try to fetch from the first cache and, failing that, request the data from the second cache.
      * After being retrieved from the second cache, the data is cached in the first cache for future retrieval.
      */
     @Suppress("ReturnCount")
-    fun compose(@NonNull b: Cache<Key, Value>): Cache<Key, Value> {
+    public fun compose(@NonNull b: Cache<Key, Value>): Cache<Key, Value> {
         return object : ComposedCache<Key, Value>() {
             init {
                 require(!hasLoop()) { "Cache creates a circular reference" }
@@ -103,13 +103,13 @@ interface Cache<Key : Any, Value : Any> {
      * Compose two caches. Try to fetch from the first cache and, failing that, request the data from the second cache.
      * After being retrieved from the second cache, the data is cached in the first cache for future retrieval.
      */
-    operator fun plus(b: Cache<Key, Value>) = compose(b)
+    public operator fun plus(b: Cache<Key, Value>): Cache<Key, Value> = compose(b)
 
     /**
      * Map keys from one type to another.
      */
     @Suppress("ReturnCount")
-    fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
+    public fun <MappedKey : Any> keyTransform(transform: (MappedKey) -> Key): Cache<MappedKey, Value> {
         return object : MapKeysCache<Key, Value, MappedKey>(this@Cache, transform) {
             override suspend fun evict(key: MappedKey) {
                 val mappedKey = requireNotNull(transform(key)) {
@@ -132,13 +132,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map keys from one type to another.
      */
-    fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
+    public fun <MappedKey : Any> keyTransform(transform: OneWayTransform<MappedKey, Key>): Cache<MappedKey, Value> =
         keyTransform(transform::transform)
 
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
-    fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue): Fetcher<Key, MappedValue> {
+    public fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue): Fetcher<Key, MappedValue> {
         @Suppress("EmptyClassBlock")
         return object : Fetcher<Key, MappedValue>, MapValuesCache<Key, Value, MappedValue>(this, transform) {}
     }
@@ -146,13 +146,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map values from one type to another. As this is a one way transform calling set on the resulting cache is no-op
      */
-    fun <MappedValue : Any> valueTransform(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
+    public fun <MappedValue : Any> valueTransform(transform: OneWayTransform<Value, MappedValue>): Fetcher<Key, MappedValue> =
         valueTransform(transform::transform)
 
     /**
      * Map values from one type to another and vice-versa.
      */
-    fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
+    public fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
             Cache<Key, MappedValue> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
             override suspend fun evict(key: Key) = this@Cache.evict(key)
@@ -168,13 +168,13 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Map values from one type to another and vice-versa.
      */
-    fun <MappedValue : Any> valueTransform(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
+    public fun <MappedValue : Any> valueTransform(transform: TwoWayTransform<Value, MappedValue>): Cache<Key, MappedValue> =
         valueTransform(transform::transform, transform::inverseTransform)
 
     /**
      * If a get request is already in flight then this ensures the original request is returned
      */
-    fun reuseInflight(): Cache<Key, Value> {
+    public fun reuseInflight(): Cache<Key, Value> {
         return object : ReuseInflightCache<Key, Value>(this@Cache) {
             override suspend fun evict(key: Key) = this@Cache.evict(key)
 
@@ -187,7 +187,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Return data associated with multiple keys.
      */
-    suspend fun batchGet(keys: List<Key>): List<Value?> {
+    public suspend fun batchGet(keys: List<Key>): List<Value?> {
         requireNotNull(keys)
         keys.requireNoNulls()
 
@@ -199,7 +199,7 @@ interface Cache<Key : Any, Value : Any> {
     /**
      * Set data for multiple key/value pairs
      */
-    suspend fun batchSet(values: Map<Key, Value>) {
+    public suspend fun batchSet(values: Map<Key, Value>) {
         requireNotNull(values)
         values.keys.requireNoNulls()
 
@@ -220,6 +220,6 @@ interface Cache<Key : Any, Value : Any> {
     }
 }
 
-fun <K : Any, V : Any> cache(block: suspend (K) -> V): Fetcher<K, V> = object : Fetcher<K, V> {
+public fun <K : Any, V : Any> cache(block: suspend (K) -> V): Fetcher<K, V> = object : Fetcher<K, V> {
     override suspend fun get(key: K) = block(key)
 }

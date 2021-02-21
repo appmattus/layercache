@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.appmattus.markdown.rules.LineLengthRule
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
 
 plugins {
-    kotlin("jvm") version "1.4.10" apply false
-    kotlin("plugin.serialization") version "1.4.10"
-    id("org.jetbrains.dokka") version "1.4.10"
-    id("com.appmattus.markdown") version "0.6.0"
+    kotlin("jvm") version Versions.kotlin apply false
+    kotlin("plugin.serialization") version Versions.kotlin
+    id("com.vanniktech.maven.publish") version Versions.gradleMavenPublishPlugin apply false
+    id("org.jetbrains.dokka") version Versions.dokkaPlugin
+    id("com.appmattus.markdown") version Versions.markdownlintGradlePlugin
 }
 
 buildscript {
@@ -33,7 +35,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:4.0.2")
+        classpath("com.android.tools.build:gradle:${Versions.androidGradlePlugin}")
     }
 }
 
@@ -44,24 +46,44 @@ subprojects {
         mavenCentral()
     }
 
+    plugins.withType<KotlinPluginWrapper> {
+        configure<KotlinProjectExtension> {
+            if (project.name != "testutils") {
+                explicitApi()
+            }
+        }
+    }
+
+    plugins.withType<KotlinAndroidPluginWrapper> {
+        configure<KotlinProjectExtension> {
+            if (project.name != "testutils") {
+                explicitApi()
+            }
+        }
+    }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "1.8"
+            jvmTarget = JavaVersion.VERSION_1_8.toString()
             allWarningsAsErrors = true
         }
     }
 
-    tasks.withType<DokkaTask> {
-        outputDirectory.set(buildDir.resolve("reports/dokka"))
+    version = System.getenv("GITHUB_REF")?.substring(10) ?: System.getProperty("GITHUB_REF")?.substring(10) ?: "unknown"
 
-        dokkaSourceSets {
-            configureEach {
-                skipDeprecated.set(true)
+    plugins.withType<DokkaPlugin> {
+        tasks.withType<DokkaTask>().configureEach {
+            dokkaSourceSets {
+                configureEach {
+                    if (name.startsWith("ios")) {
+                        displayName.set("ios")
+                    }
 
-                sourceLink {
-                    localDirectory.set(rootDir)
-                    remoteUrl.set(URL("https://github.com/appmattus/layercache/blob/main/"))
-                    remoteLineSuffix.set("#L")
+                    sourceLink {
+                        localDirectory.set(rootDir)
+                        remoteUrl.set(java.net.URL("https://github.com/appmattus/layercache/blob/main"))
+                        remoteLineSuffix.set("#L")
+                    }
                 }
             }
         }
@@ -74,12 +96,6 @@ tasks.register<Delete>("clean") {
 
 apply(from = "$rootDir/gradle/scripts/detekt.gradle.kts")
 apply(from = "$rootDir/gradle/scripts/dependencyUpdates.gradle.kts")
-
-val dokka = tasks.named<DokkaMultiModuleTask>("dokkaHtmlMultiModule") {
-    outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
-}
-
-tasks.register("check").dependsOn(dokka)
 
 markdownlint {
     rules {

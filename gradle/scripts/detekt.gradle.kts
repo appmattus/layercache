@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ buildscript {
         maven(url = "https://plugins.gradle.org/m2/")
     }
     dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.14.1")
+        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:${Versions.detektGradlePlugin}")
     }
 }
 
@@ -58,5 +58,5 @@ tasks.named("detekt", Detekt::class.java).configure {
 }
 
 dependencies {
-    "detektPlugins"("io.gitlab.arturbosch.detekt:detekt-formatting:1.14.1")
+    "detektPlugins"("io.gitlab.arturbosch.detekt:detekt-formatting:${Versions.detektGradlePlugin}")
 }

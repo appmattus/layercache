@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ class CacheComposeShould {
 
     @Test
     @Suppress("ThrowsCount")
-    fun `throw exception when parents not overridden?`() {
+    fun `throw exception when parents not overridden`() {
         // given we have a basic composed cache
         val cache = object : ComposedCache<String, String>() {
             override suspend fun get(key: String): String? = throw Exception("Unimplemented")

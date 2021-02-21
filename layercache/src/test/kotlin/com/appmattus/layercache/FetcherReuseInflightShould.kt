@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ class FetcherReuseInflightShould {
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
-            for (i in 1..5) {
+            repeat(5) {
                 jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }
@@ -121,7 +121,7 @@ class FetcherReuseInflightShould {
 
             // when we get the same key 5 times
             val jobs = arrayListOf<Deferred<Any?>>()
-            for (i in 1..5) {
+            repeat(5) {
                 jobs.add(async { reuseInflightCache.get("key") })
             }
             jobs.forEach { it.await() }

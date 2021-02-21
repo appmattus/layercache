@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,19 @@ apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
 
 dependencies {
     api(project(":layercache"))
-    api("androidx.annotation:annotation:1.1.0")
-    api("androidx.test:core:1.3.0")
-    api("junit:junit:4.13")
-    api("org.mockito:mockito-core:3.5.13")
+    api("androidx.annotation:annotation:${Versions.AndroidX.annotation}")
+    api("androidx.test:core:${Versions.AndroidX.testCore}")
+    api("junit:junit:${Versions.junit4}")
+    api("org.mockito:mockito-core:${Versions.mockito}")
     /* Objenesis 3.1, a dependency of mockito, is broken in Android connected tests */
-    api("org.objenesis:objenesis:2.6!!")
-    api("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    api("org.objenesis:objenesis") {
+        version {
+            strictly(Versions.objenesis)
+        }
+    }
+    api("com.nhaarman.mockitokotlin2:mockito-kotlin:${Versions.mockitoKotlin}")
 
-    api("com.github.stefanbirkner:system-rules:1.19.0")
+    api("com.github.stefanbirkner:system-rules:${Versions.systemRules}")
 
     val localProps = Properties()
     val localPropsFile = File(rootDir, "local.properties")
@@ -44,7 +48,7 @@ dependencies {
     }
 
     //noinspection GradleDependency
-    implementation("org.bouncycastle:bcprov-jdk15on:1.66")
+    implementation("org.bouncycastle:bcprov-jdk15on:${Versions.bouncyCastle}")
 }
 
 tasks.named("check") {

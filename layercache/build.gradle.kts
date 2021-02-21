@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,21 @@
 
 plugins {
     kotlin("jvm")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
 }
 
 apply(from = "$rootDir/gradle/scripts/jacoco.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/bintray.gradle.kts")
-apply(from = "$rootDir/gradle/scripts/dokka-javadoc.gradle.kts")
 
 dependencies {
     api(kotlin("stdlib-jdk8"))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
 
-    compileOnly("androidx.annotation:annotation:1.1.0")
+    compileOnly("androidx.annotation:annotation:${Versions.AndroidX.annotation}")
 
     testImplementation(project(":testutils"))
-    testImplementation("com.squareup.retrofit2:retrofit:2.9.0")
-    testImplementation("com.squareup.retrofit2:retrofit-mock:2.9.0")
+    testImplementation("com.squareup.retrofit2:retrofit:${Versions.retrofit}")
+    testImplementation("com.squareup.retrofit2:retrofit-mock:${Versions.retrofit}")
 }
 
 tasks.named("check") {

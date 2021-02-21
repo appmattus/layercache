@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,27 +82,23 @@ class CacheBatchGetShould {
 
     @Test
     fun `execute internal requests in parallel`() {
-        try {
-            runBlocking {
-                // given we start a timer and request the values for 3 keys
-                cache.getFn = {
-                    delay(requestTimeInMills)
-                    "value"
-                }
-
-                val start = System.nanoTime()
-                val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
-
-                // when we wait for the job to complete
-                job.await()
-
-                // then the job completes in less than the time to execute all 3 requests in sequence
-                val executionTimeInMills = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-                assertTrue(executionTimeInMills > requestTimeInMills)
-                assertTrue(executionTimeInMills < (requestTimeInMills * 3))
+        runBlocking {
+            // given we start a timer and request the values for 3 keys
+            cache.getFn = {
+                delay(requestTimeInMills)
+                "value"
             }
-        } catch (e: Throwable) {
-            throw e
+
+            val start = System.nanoTime()
+            val job = async { cache.batchGet(listOf("key1", "key2", "key3")) }
+
+            // when we wait for the job to complete
+            job.await()
+
+            // then the job completes in less than the time to execute all 3 requests in sequence
+            val executionTimeInMills = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
+            assertTrue(executionTimeInMills > requestTimeInMills)
+            assertTrue(executionTimeInMills < (requestTimeInMills * 3))
         }
     }
 
