@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.sharedprefs
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import com.appmattus.layercache.samples.domain.PersonalDetails
 
-    "testutils",
-
-    "samples:androidApp"
+data class SharedPrefsState(
+    val personalDetails: PersonalDetails? = null,
+    val preferences: Map<String, Any?> = emptyMap(),
+    val loadedFrom: String = ""
 )

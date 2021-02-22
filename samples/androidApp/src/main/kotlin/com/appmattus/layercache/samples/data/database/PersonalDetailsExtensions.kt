@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.data.database
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+internal fun PersonalDetails.toDomainEntity() = com.appmattus.layercache.samples.domain.PersonalDetails(
+    name = name,
+    tagline = tagline,
+    location = location,
+    avatarUrl = avatarUrl
+)
 
-    "testutils",
-
-    "samples:androidApp"
+internal fun com.appmattus.layercache.samples.domain.PersonalDetails.toDatabaseEntity() = PersonalDetails(
+    name = name,
+    tagline = tagline,
+    location = location,
+    avatarUrl = avatarUrl
 )

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/samplesFragment">
+
+    <fragment
+        android:id="@+id/samplesFragment"
+        android:name="com.appmattus.layercache.samples.SamplesFragment"
+        android:label="SamplesFragment">
+        <action
+            android:id="@+id/action_samplesFragment_to_sharedPrefsFragment"
+            app:destination="@id/sharedPrefsFragment" />
+        <action
+            android:id="@+id/action_samplesFragment_to_sqlDelightFragment"
+            app:destination="@id/sqlDelightFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sharedPrefsFragment"
+        android:name="com.appmattus.layercache.samples.sharedprefs.SharedPrefsFragment"
+        android:label="SharedPrefsFragment" />
+    <fragment
+        android:id="@+id/sqlDelightFragment"
+        android:name="com.appmattus.layercache.samples.sqldelight.SqlDelightFragment"
+        android:label="SqlDelightFragment" />
+</navigation>

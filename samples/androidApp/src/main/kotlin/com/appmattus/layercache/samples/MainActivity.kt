@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 
-    "testutils",
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
 
-    "samples:androidApp"
-)
+    private val navController by lazy { findNavController(R.id.nav_host_fragment) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.main_activity)
+    }
+
+    override fun onSupportNavigateUp() = navController.navigateUp()
+}

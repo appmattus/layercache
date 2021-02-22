@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.sqldelight
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import com.appmattus.layercache.samples.domain.PersonalDetails
 
-    "testutils",
-
-    "samples:androidApp"
+data class SqlDelightState(
+    val personalDetails: PersonalDetails? = null,
+    val loadedFrom: String = ""
 )

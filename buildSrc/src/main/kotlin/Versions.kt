@@ -30,7 +30,11 @@ object Versions {
     const val coroutines = "1.4.2"
     const val diskLruCache = "2.0.2"
     const val ehcache = "3.9.1"
+    const val groupie = "2.9.0"
+    const val ktor = "1.5.1"
+    const val orbitMvi = "3.0.1"
     const val slf4j = "1.7.30"
+    const val sqlDelight = "1.4.4"
     const val systemRules = "1.19.0"
 
     const val junit4 = "4.13.2"
@@ -40,10 +44,16 @@ object Versions {
     const val retrofit = "2.9.0"
     const val robolectric = "4.5.1"
 
-    object AndroidX {
+    const val desugar = "1.1.1"
 
+    object AndroidX {
         const val annotation = "1.1.0"
+        const val appCompat = "1.2.0"
+        const val constraintLayout = "2.1.0-alpha2"
+        const val fragment = "1.3.0"
+        const val hilt = "1.0.0-alpha02"
         const val lifecycle = "2.3.0"
+        const val navigation = "2.3.3"
         const val multidex = "2.0.1"
         const val securityCrypto = "1.1.0-alpha03"
 
@@ -53,6 +63,8 @@ object Versions {
     }
 
     object Google {
+        const val dagger = "2.31.1-alpha"
+        const val material = "1.3.0-rc01"
         const val tink = "1.5.0"
     }
 

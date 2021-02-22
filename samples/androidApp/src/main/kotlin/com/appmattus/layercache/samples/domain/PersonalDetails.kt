@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.domain
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-    "testutils",
-
-    "samples:androidApp"
-)
+@Parcelize
+@Serializable
+data class PersonalDetails(
+    val name: String,
+    val tagline: String,
+    val location: String,
+    val avatarUrl: String
+) : Parcelable

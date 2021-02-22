@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-    "testutils",
-
-    "samples:androidApp"
-)
+@HiltAndroidApp
+class SamplesApplication : Application()

@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-include(
-    "layercache",
-    "layercache-cache2k",
-    "layercache-ehcache",
-    "layercache-serializer",
+package com.appmattus.layercache.samples.data.network
 
-    "layercache-android",
-    "layercache-android-encryption",
-    "layercache-android-livedata",
+import com.appmattus.layercache.samples.domain.PersonalDetails
+import kotlinx.serialization.Serializable
 
-    "testutils",
-
-    "samples:androidApp"
-)
+@Serializable
+internal data class PersonalDetailsNetworkEntity(
+    val name: String,
+    val tagline: String,
+    val location: String,
+    val avatarUrl: String
+) {
+    fun toDomainEntity(): PersonalDetails = PersonalDetails(
+        name = name,
+        tagline = tagline,
+        location = location,
+        avatarUrl = avatarUrl
+    )
+}
