@@ -14,26 +14,11 @@
  * limitations under the License.
  */
 
-package com.appmattus.layercache.samples.ui
+package com.appmattus.layercache.samples.sqldelight
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.appmattus.layercache.samples.domain.PersonalDetails
 
-fun debounce(
-    delayMillis: Long = 300L,
-    scope: CoroutineScope,
-    action: () -> Unit
-): () -> Unit {
-    var debounceJob: Job? = null
-    return {
-        if (debounceJob == null) {
-            debounceJob = scope.launch {
-                action()
-                delay(delayMillis)
-                debounceJob = null
-            }
-        }
-    }
-}
+data class SqlDelightState(
+    val personalDetails: PersonalDetails? = null,
+    val loadedFrom: String = ""
+)

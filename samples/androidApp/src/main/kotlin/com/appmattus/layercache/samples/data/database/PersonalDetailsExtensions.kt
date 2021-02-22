@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package com.appmattus.layercache.samples.packageinfo
+package com.appmattus.layercache.samples.data.database
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+internal fun PersonalDetails.toDomainEntity() = com.appmattus.layercache.samples.domain.PersonalDetails(
+    name = name,
+    tagline = tagline,
+    location = location,
+    avatarUrl = avatarUrl
+)
 
-@Parcelize
-data class PackageInfoState(
-    val appName: String = "",
-    val packageName: String = "",
-    val version: String = "",
-    val buildNumber: String = ""
-) : Parcelable
+internal fun com.appmattus.layercache.samples.domain.PersonalDetails.toDatabaseEntity() = PersonalDetails(
+    name = name,
+    tagline = tagline,
+    location = location,
+    avatarUrl = avatarUrl
+)

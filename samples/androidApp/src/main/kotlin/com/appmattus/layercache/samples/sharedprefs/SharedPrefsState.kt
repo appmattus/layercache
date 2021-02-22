@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package com.appmattus.layercache.samples.data.database.mapper
+package com.appmattus.layercache.samples.sharedprefs
 
-import com.appmattus.layercache.samples.data.database.PersonalDetails
+import com.appmattus.layercache.samples.domain.PersonalDetails
 
-internal fun PersonalDetails.toDomainEntity() = com.appmattus.layercache.samples.domain.PersonalDetails(
-    name = name,
-    tagline = tagline,
-    location = location,
-    avatarUrl = avatarUrl
-)
-
-internal fun com.appmattus.layercache.samples.domain.PersonalDetails.toDatabaseEntity() = PersonalDetails(
-    name = name,
-    tagline = tagline,
-    location = location,
-    avatarUrl = avatarUrl
+data class SharedPrefsState(
+    val personalDetails: PersonalDetails? = null,
+    val preferences: Map<String, Any?> = emptyMap(),
+    val loadedFrom: String = ""
 )

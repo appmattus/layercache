@@ -58,8 +58,10 @@ dependencies {
 
     implementation("io.ktor:ktor-client-core:${Versions.ktor}")
     implementation("io.ktor:ktor-client-serialization:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-serialization-jvm:${Versions.ktor}")
     implementation("io.ktor:ktor-client-android:${Versions.ktor}")
 
+    implementation("io.ktor:ktor-client-logging:${Versions.ktor}")
 
     // Database
     implementation("com.squareup.sqldelight:runtime:${Versions.sqlDelight}")
@@ -70,9 +72,6 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:${Versions.AndroidX.hilt}")
     implementation("com.google.dagger:hilt-android:${Versions.Google.dagger}")
     kapt("com.google.dagger:hilt-android-compiler:${Versions.Google.dagger}")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:${Versions.Google.dagger}")
-    kaptAndroidTest("com.google.dagger:hilt-android-compiler:${Versions.Google.dagger}")
-    kaptAndroidTest("androidx.hilt:hilt-compiler:${Versions.AndroidX.hilt}")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Versions.desugar}")
 }

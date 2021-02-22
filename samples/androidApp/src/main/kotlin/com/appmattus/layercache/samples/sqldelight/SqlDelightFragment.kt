@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.appmattus.layercache.samples.packageinfo
+package com.appmattus.layercache.samples.sqldelight
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.appmattus.layercache.samples.R
 import com.appmattus.layercache.samples.databinding.RecyclerViewFragmentBinding
+import com.appmattus.layercache.samples.ui.component.ButtonItem
 import com.appmattus.layercache.samples.ui.component.SingleLineTextHeaderItem
 import com.appmattus.layercache.samples.ui.component.TwoLineTextItem
+import com.appmattus.layercache.samples.ui.viewBinding
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import com.xwray.groupie.Section
@@ -36,16 +37,21 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class PackageInfoFragment : Fragment() {
+class SqlDelightFragment : Fragment(R.layout.recycler_view_fragment) {
 
-    private val packageInfoViewModel by viewModels<PackageInfoViewModel>()
+    private val binding by viewBinding<RecyclerViewFragmentBinding>()
 
-    private val packageInfoSection = Section()
+    private val viewModel by viewModels<SqlDelightViewModel>()
 
-    private lateinit var binding: RecyclerViewFragmentBinding
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        RecyclerViewFragmentBinding.inflate(inflater, container, false).also { binding = it }.root
+    private val actionSection = Section().apply {
+        add(ButtonItem("Load data") {
+            viewModel.loadPersonalDetails()
+        })
+        add(ButtonItem("Clear") {
+            viewModel.clear()
+        })
+    }
+    private val personalDetailsSection = Section()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -53,28 +59,30 @@ class PackageInfoFragment : Fragment() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
             adapter = GroupAdapter<GroupieViewHolder>().apply {
-                add(SingleLineTextHeaderItem("Samples > package-info"))
-                add(packageInfoSection)
+                add(SingleLineTextHeaderItem("SqlDelight"))
+                add(actionSection)
+                add(SingleLineTextHeaderItem("Response data"))
+                add(personalDetailsSection)
             }
         }
 
         lifecycleScope.launch {
-            packageInfoViewModel.container.stateFlow.collect(::render)
+            viewModel.container.stateFlow.collect(::render)
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Fix memory leak with RecyclerView
-        binding.recyclerView.adapter = null
-    }
-
-    private fun render(state: PackageInfoState) {
-        listOf(
-            TwoLineTextItem("appName", state.appName),
-            TwoLineTextItem("packageName", state.packageName),
-            TwoLineTextItem("version", state.version),
-            TwoLineTextItem("buildNumber", state.buildNumber)
-        ).let(packageInfoSection::update)
+    private fun render(state: SqlDelightState) {
+        state.personalDetails?.let {
+            listOf(
+                TwoLineTextItem(
+                    primaryText = it.name,
+                    secondaryText = it.tagline
+                ),
+                TwoLineTextItem(
+                    primaryText = "Retrieved from",
+                    secondaryText = state.loadedFrom
+                )
+            ).let(personalDetailsSection::update)
+        } ?: personalDetailsSection.clear()
     }
 }

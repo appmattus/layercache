@@ -16,18 +16,35 @@
 
 package com.appmattus.layercache.samples.data.network
 
+import android.util.Log
 import com.appmattus.layercache.Fetcher
 import com.appmattus.layercache.samples.domain.PersonalDetails
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.features.logging.LogLevel
+import io.ktor.client.features.logging.Logger
+import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import io.ktor.http.Url
 import io.ktor.http.contentType
 
+private object CustomAndroidHttpLogger : Logger {
+    private const val logTag = "CustomAndroidHttpLogger"
+
+    override fun log(message: String) {
+        Log.i(logTag, message)
+    }
+}
+
 class KtorDataSource(
     private val client: HttpClient = HttpClient {
+        install(Logging) {
+            logger = CustomAndroidHttpLogger
+            level = LogLevel.ALL
+        }
+
         install(JsonFeature) {
             serializer = KotlinxSerializer()
         }

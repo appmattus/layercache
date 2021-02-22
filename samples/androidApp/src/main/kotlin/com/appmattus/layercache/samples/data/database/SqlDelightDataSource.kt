@@ -18,12 +18,10 @@ package com.appmattus.layercache.samples.data.database
 
 import android.content.Context
 import com.appmattus.layercache.Cache
-import com.appmattus.layercache.samples.data.database.mapper.toDatabaseEntity
-import com.appmattus.layercache.samples.data.database.mapper.toDomainEntity
 import com.appmattus.layercache.samples.domain.PersonalDetails
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 
-class SqldelightDataSource(context: Context) : Cache<Unit, PersonalDetails> {
+class SqlDelightDataSource(context: Context) : Cache<Unit, PersonalDetails> {
 
     private val database = AppDatabase(AndroidSqliteDriver(AppDatabase.Schema, context, "cache.db"))
 
@@ -31,16 +29,16 @@ class SqldelightDataSource(context: Context) : Cache<Unit, PersonalDetails> {
         database.personalDetailsQueries.personalDetails().executeAsOneOrNull()?.toDomainEntity()
 
     override suspend fun set(key: Unit, value: PersonalDetails) {
-        val entity = value.toDatabaseEntity()
-
         database.personalDetailsQueries.transaction {
-            database.personalDetailsQueries.deletePersonalDetails()
-            database.personalDetailsQueries.insertPersonalDetails(
-                name = entity.name,
-                tagline = entity.tagline,
-                location = entity.location,
-                avatarUrl = entity.avatarUrl
-            )
+            with(value.toDatabaseEntity()) {
+                database.personalDetailsQueries.deletePersonalDetails()
+                database.personalDetailsQueries.insertPersonalDetails(
+                    name = name,
+                    tagline = tagline,
+                    location = location,
+                    avatarUrl = avatarUrl
+                )
+            }
         }
     }
 
