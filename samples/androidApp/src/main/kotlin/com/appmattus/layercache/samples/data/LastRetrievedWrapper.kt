@@ -17,16 +17,9 @@ class LastRetrievedWrapper {
     fun <K : Any, V : Any> Cache<K, V>.wrap(name: String): Cache<K, V> {
         val delegate = this
         return object : Cache<K, V> {
-            override suspend fun get(key: K): V? {
-                println(delegate::class)
-
-                return delegate.get(key)?.also {
-                    println(it)
-                    println(lastRetrieved)
-                    if (lastRetrieved == null) {
-                        println(name)
-                        lastRetrieved = name
-                    }
+            override suspend fun get(key: K): V? = delegate.get(key)?.also {
+                if (lastRetrieved == null) {
+                    lastRetrieved = name
                 }
             }
 
