@@ -46,7 +46,7 @@ class SamplesFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
             adapter = GroupAdapter<GroupieViewHolder>().apply {
                 add(SingleLineTextHeaderItem("Samples"))
-                add(SingleLineTextItem("battery") {
+                add(SingleLineTextItem("cache2k") {
                     findNavController().navigate(R.id.action_samplesFragment_to_batteryFragment)
                 })
 

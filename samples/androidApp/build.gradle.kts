@@ -21,11 +21,16 @@ plugins {
     id("com.squareup.sqldelight")
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
+    kotlin("plugin.serialization")
 }
 
 apply(plugin = "dagger.hilt.android.plugin")
 
 dependencies {
+
+    implementation(project(":layercache"))
+    implementation(project(":layercache-android"))
+    implementation(project(":layercache-android-encryption"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}")
@@ -50,6 +55,11 @@ dependencies {
     // Memory leak detection and fixes
     debugImplementation("com.squareup.leakcanary:leakcanary-android:${Versions.leakCanary}")
     implementation("com.squareup.leakcanary:plumber-android:${Versions.leakCanary}")
+
+    implementation("io.ktor:ktor-client-core:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-serialization:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-android:${Versions.ktor}")
+
 
     // Database
     implementation("com.squareup.sqldelight:runtime:${Versions.sqlDelight}")

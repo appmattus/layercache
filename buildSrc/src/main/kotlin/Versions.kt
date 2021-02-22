@@ -32,6 +32,7 @@ object Versions {
     const val diskLruCache = "2.0.2"
     const val ehcache = "3.9.1"
     const val groupie = "2.9.0"
+    const val ktor = "1.5.1"
     const val orbitMvi = "3.0.1"
     const val slf4j = "1.7.30"
     const val sqlDelight = "1.4.4"
