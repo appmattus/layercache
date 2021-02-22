@@ -17,9 +17,6 @@
 package com.appmattus.layercache.samples.di
 
 import android.content.Context
-import com.appmattus.battery.Battery
-import com.appmattus.connectivity.Connectivity
-import com.appmattus.packageinfo.PackageInfo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,12 +27,12 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object SamplesModule {
 
-    @Provides
-    fun provideBattery(@ApplicationContext context: Context) = Battery(context)
+    //@Provides
+    //fun provideBattery(@ApplicationContext context: Context) = Battery(context)
 
-    @Provides
-    fun provideConnectivity(@ApplicationContext context: Context) = Connectivity(context)
+    //@Provides
+    //fun provideConnectivity(@ApplicationContext context: Context) = Connectivity(context)
 
-    @Provides
-    fun providePackageInfo(@ApplicationContext context: Context) = PackageInfo(context)
+    //@Provides
+    //fun providePackageInfo(@ApplicationContext context: Context) = PackageInfo(context)
 }

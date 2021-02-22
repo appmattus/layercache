@@ -18,6 +18,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("kotlin-parcelize")
+    id("com.squareup.sqldelight")
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
 }
@@ -50,11 +51,18 @@ dependencies {
     debugImplementation("com.squareup.leakcanary:leakcanary-android:${Versions.leakCanary}")
     implementation("com.squareup.leakcanary:plumber-android:${Versions.leakCanary}")
 
+    // Database
+    implementation("com.squareup.sqldelight:runtime:${Versions.sqlDelight}")
+    implementation("com.squareup.sqldelight:android-driver:${Versions.sqlDelight}")
+
     // Dependency Injection
     implementation("androidx.hilt:hilt-lifecycle-viewmodel:${Versions.AndroidX.hilt}")
     kapt("androidx.hilt:hilt-compiler:${Versions.AndroidX.hilt}")
     implementation("com.google.dagger:hilt-android:${Versions.Google.dagger}")
     kapt("com.google.dagger:hilt-android-compiler:${Versions.Google.dagger}")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:${Versions.Google.dagger}")
+    kaptAndroidTest("com.google.dagger:hilt-android-compiler:${Versions.Google.dagger}")
+    kaptAndroidTest("androidx.hilt:hilt-compiler:${Versions.AndroidX.hilt}")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Versions.desugar}")
 }
@@ -93,5 +101,11 @@ android {
 
     sourceSets.all {
         java.srcDir("src/$name/kotlin")
+    }
+}
+
+sqldelight {
+    database("AppDatabase") {
+        packageName = "com.appmattus.layercache.samples.data.database"
     }
 }

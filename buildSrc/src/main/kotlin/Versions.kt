@@ -34,6 +34,7 @@ object Versions {
     const val groupie = "2.9.0"
     const val orbitMvi = "3.0.1"
     const val slf4j = "1.7.30"
+    const val sqlDelight = "1.4.4"
     const val systemRules = "1.19.0"
 
     const val junit4 = "4.13.2"

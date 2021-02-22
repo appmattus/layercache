@@ -1,0 +1,17 @@
+
+CREATE TABLE personalDetails (
+  name TEXT NOT NULL,
+  tagline TEXT NOT NULL,
+  location TEXT NOT NULL,
+  avatarUrl TEXT NOT NULL
+);
+
+personalDetails:
+SELECT * FROM personalDetails;
+
+insertPersonalDetails:
+INSERT INTO personalDetails
+VALUES (?, ?, ?, ?);
+
+deletePersonalDetails:
+DELETE FROM personalDetails;

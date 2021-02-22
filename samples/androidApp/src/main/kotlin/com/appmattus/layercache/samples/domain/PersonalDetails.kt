@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 
-package com.appmattus.layercache.samples.battery
+package com.appmattus.layercache.samples.domain
 
-import android.os.Parcel
 import android.os.Parcelable
-import com.appmattus.battery.ChargingStatus
-import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.TypeParceler
 
 @Parcelize
-@TypeParceler<ChargingStatus, ChargingStatusParceler>()
-data class BatteryState(
-    val batteryLevel: Int = -1,
-    val chargingStatus: ChargingStatus = ChargingStatus(ChargingStatus.Status.Unavailable)
+data class PersonalDetails(
+    val name: String,
+    val tagline: String,
+    val location: String,
+    val avatarUrl: String
 ) : Parcelable
-
-private object ChargingStatusParceler : Parceler<ChargingStatus> {
-    override fun create(parcel: Parcel) = ChargingStatus(ChargingStatus.Status.values()[parcel.readInt()])
-
-    override fun ChargingStatus.write(parcel: Parcel, flags: Int) {
-        parcel.writeInt(status.ordinal)
-    }
-}

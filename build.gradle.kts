@@ -38,6 +38,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:${Versions.androidGradlePlugin}")
         classpath("com.google.dagger:hilt-android-gradle-plugin:${Versions.Google.dagger}")
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.AndroidX.navigation}")
+        classpath("com.squareup.sqldelight:gradle-plugin:${Versions.sqlDelight}")
     }
 }
 

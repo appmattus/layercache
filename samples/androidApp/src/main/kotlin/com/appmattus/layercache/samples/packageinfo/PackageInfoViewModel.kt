@@ -18,7 +18,6 @@ package com.appmattus.layercache.samples.packageinfo
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.appmattus.packageinfo.PackageInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.orbitmvi.orbit.Container
@@ -29,7 +28,7 @@ import org.orbitmvi.orbit.viewmodel.container
 
 @HiltViewModel
 class PackageInfoViewModel @Inject constructor(
-    private val packageInfo: PackageInfo,
+    //private val packageInfo: PackageInfo,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), ContainerHost<PackageInfoState, Unit> {
 
@@ -38,7 +37,7 @@ class PackageInfoViewModel @Inject constructor(
     }
 
     private fun loadPackageInfo() = intent {
-        val appName = packageInfo.appName ?: "n/a"
+        /*val appName = packageInfo.appName ?: "n/a"
         val packageName = packageInfo.packageName ?: "n/a"
         val version = packageInfo.version ?: "n/a"
         val buildNumber = packageInfo.buildNumber ?: "n/a"
@@ -50,6 +49,6 @@ class PackageInfoViewModel @Inject constructor(
                 version = version,
                 buildNumber = buildNumber,
             )
-        }
+        }*/
     }
 }
