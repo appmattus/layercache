@@ -21,7 +21,6 @@ plugins {
     id("com.squareup.sqldelight")
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
-    kotlin("plugin.serialization")
 }
 
 apply(plugin = "dagger.hilt.android.plugin")
@@ -39,6 +38,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.AndroidX.lifecycle}")
+    implementation("androidx.lifecycle:lifecycle-common-java8:${Versions.AndroidX.lifecycle}")
     implementation("androidx.navigation:navigation-fragment-ktx:${Versions.AndroidX.navigation}")
     implementation("androidx.navigation:navigation-ui-ktx:${Versions.AndroidX.navigation}")
     implementation("org.orbit-mvi:orbit-viewmodel:${Versions.orbitMvi}")
