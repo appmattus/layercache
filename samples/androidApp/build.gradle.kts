@@ -47,21 +47,13 @@ dependencies {
     implementation("com.google.android.material:material:${Versions.Google.material}")
     implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appCompat}")
     implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraintLayout}")
-    implementation("androidx.vectordrawable:vectordrawable:${Versions.AndroidX.vectorDrawable}")
     implementation("com.xwray:groupie:${Versions.groupie}")
     implementation("com.xwray:groupie-viewbinding:${Versions.groupie}")
-    implementation("io.coil-kt:coil-svg:${Versions.coil}")
-
-    // Memory leak detection and fixes
-    debugImplementation("com.squareup.leakcanary:leakcanary-android:${Versions.leakCanary}")
-    implementation("com.squareup.leakcanary:plumber-android:${Versions.leakCanary}")
 
     implementation("io.ktor:ktor-client-core:${Versions.ktor}")
     implementation("io.ktor:ktor-client-serialization:${Versions.ktor}")
     implementation("io.ktor:ktor-client-serialization-jvm:${Versions.ktor}")
     implementation("io.ktor:ktor-client-android:${Versions.ktor}")
-
-    implementation("io.ktor:ktor-client-logging:${Versions.ktor}")
 
     // Database
     implementation("com.squareup.sqldelight:runtime:${Versions.sqlDelight}")
