@@ -21,6 +21,7 @@ plugins {
     id("com.squareup.sqldelight")
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
+    kotlin("plugin.serialization")
 }
 
 apply(plugin = "dagger.hilt.android.plugin")
