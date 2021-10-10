@@ -202,6 +202,7 @@ public interface Cache<Key : Any, Value : Any> {
     public suspend fun batchSet(values: Map<Key, Value>) {
         requireNotNull(values)
         values.keys.requireNoNulls()
+        values.values.requireNoNulls()
 
         coroutineScope {
             values.map { entry: Map.Entry<Key, Value> ->

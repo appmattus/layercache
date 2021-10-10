@@ -49,6 +49,7 @@ dependencies {
 
     //noinspection GradleDependency
     implementation("org.bouncycastle:bcprov-jdk15on:${Versions.bouncyCastle}")
+    implementation("org.bouncycastle:bcpkix-jdk15on:${Versions.bouncyCastle}")
 }
 
 tasks.named("check") {

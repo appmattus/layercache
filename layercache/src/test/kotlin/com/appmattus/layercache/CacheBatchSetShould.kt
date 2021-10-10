@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,15 +69,15 @@ class CacheBatchSetShould {
     fun `throw exception when value in entry in values map is null`() {
         // given we have a cache
 
-        // when key in values map is null
-        val throwable = assertThrows(NullPointerException::class.java) {
+        // when value in values map is null
+        val throwable = assertThrows(IllegalArgumentException::class.java) {
             runBlocking {
                 cache.batchSet(mapOf(Pair("key1", "value1"), Pair("key2", TestUtils.uninitialized()), Pair("key3", "value3")))
             }
         }
 
         // then exception is thrown
-        assertTrue(throwable.message!!.startsWith("Parameter specified as non-null is null"))
+        assertTrue(throwable.message!!.startsWith("null element found in"))
     }
 
     @Test(expected = CancellationException::class)

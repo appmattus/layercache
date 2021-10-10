@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,15 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.appmattus.layercache.keystore.RobolectricKeyStore
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.Mockito.mockStatic
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
@@ -39,28 +42,47 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
-    private val masterKey = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+    private val masterKey by lazy { MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build() }
 
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "test",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    private val sharedPreferences by lazy {
+        EncryptedSharedPreferences.create(
+            context,
+            "test",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
-    private lateinit var stringCache: Cache<String, String>
-    private lateinit var intCache: Cache<String, Int>
+    private val stringCache: Cache<String, String> by lazy {
+        sharedPreferences.asStringCache().also {
+            runBlocking {
+                it.evictAll()
+            }
+        }
+    }
+
+    private val intCache: Cache<String, Int> by lazy {
+        sharedPreferences.asIntCache().also {
+            runBlocking {
+                it.evictAll()
+            }
+        }
+    }
+
+    private lateinit var jce: MockedStatic<out Any>
 
     @Before
-    fun before() {
-        stringCache = sharedPreferences.asStringCache()
-        intCache = sharedPreferences.asIntCache()
-
-        runBlocking {
-            stringCache.evictAll()
-            intCache.evictAll()
+    fun setup() {
+        // Disable
+        jce = mockStatic(Class.forName("javax.crypto.JceSecurity")) {
+            if (it.method.name == "getVerificationResult") null else it.callRealMethod()
         }
+    }
+
+    @After
+    fun tearDown() {
+        jce.close()
     }
 
     @Test
@@ -145,7 +167,7 @@ class EncryptedSharedPreferencesCacheIntegrationShould {
     companion object {
         @JvmStatic
         @BeforeClass
-        fun beforeClass() {
+        public fun beforeClass() {
             RobolectricKeyStore.setup
         }
     }
