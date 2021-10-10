@@ -26,6 +26,11 @@ plugins {
 
 apply(plugin = "dagger.hilt.android.plugin")
 
+repositories {
+    // Necessary for the version of groupie currently used
+    jcenter()
+}
+
 dependencies {
 
     implementation(project(":layercache"))
@@ -68,11 +73,11 @@ dependencies {
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 30
     defaultConfig {
         applicationId = "com.appmattus.layercache.samples"
-        minSdkVersion(21)
-        targetSdkVersion(30)
+        minSdk = 21
+        targetSdk = 30
         versionCode = 1
         versionName = "1.0"
         vectorDrawables.useSupportLibrary = true

@@ -21,14 +21,10 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
-
-tasks.withType(KotlinCompile::class.java).all {
+tasks.withType<KotlinCompile>().all {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
