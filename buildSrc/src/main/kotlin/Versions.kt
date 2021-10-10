@@ -16,7 +16,7 @@
 
 object Versions {
 
-    const val kotlin = "1.5.0"
+    const val kotlin = "1.5.31"
 
     const val androidGradlePlugin = "7.0.2"
     const val detektGradlePlugin = "1.16.0"
@@ -26,8 +26,8 @@ object Versions {
     const val dokkaPlugin = "1.4.32"
 
     const val bouncyCastle = "1.69"
-    const val cache2k = "2.0.0.Final"
-    const val coroutines = "1.4.3"
+    const val cache2k = "2.2.1.Final"
+    const val coroutines = "1.5.2"
     const val diskLruCache = "2.0.2"
     const val ehcache = "3.9.6"
     const val groupie = "2.9.0"

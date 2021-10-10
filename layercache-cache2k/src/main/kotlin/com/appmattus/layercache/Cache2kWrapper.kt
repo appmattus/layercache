@@ -48,8 +48,8 @@ public fun <Key : Any, Value : Any> Cache.Companion.fromCache2k(cache: org.cache
  * Convert a Fetcher into a Cache2k loader. Note the Fetcher should not return null
  * @return Cache2k loader
  */
-@Suppress("unused", "TYPE_MISMATCH")
-public suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): CacheLoader<Key, Value?> = CacheLoader { key ->
+@Suppress("unused")
+public suspend fun <Key : Any, Value : Any> Fetcher<Key, Value>.toCache2kLoader(): CacheLoader<Key, Value> = CacheLoader { key ->
     // TODO What thread does a cache loader run on?
-    runBlocking { get(key) }
+    runBlocking { get(key) ?: throw NullPointerException("") }
 }
