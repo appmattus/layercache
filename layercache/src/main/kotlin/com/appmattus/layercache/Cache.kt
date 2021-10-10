@@ -152,8 +152,10 @@ public interface Cache<Key : Any, Value : Any> {
     /**
      * Map values from one type to another and vice-versa.
      */
-    public fun <MappedValue : Any> valueTransform(transform: (Value) -> MappedValue, inverseTransform: (MappedValue) -> Value):
-            Cache<Key, MappedValue> {
+    public fun <MappedValue : Any> valueTransform(
+        transform: (Value) -> MappedValue,
+        inverseTransform: (MappedValue) -> Value
+    ): Cache<Key, MappedValue> {
         return object : MapValuesCache<Key, Value, MappedValue>(this@Cache, transform) {
             override suspend fun evict(key: Key) = this@Cache.evict(key)
 
