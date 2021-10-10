@@ -19,7 +19,7 @@ object Versions {
     const val kotlin = "1.5.31"
 
     const val androidGradlePlugin = "7.0.2"
-    const val detektGradlePlugin = "1.16.0"
+    const val detektGradlePlugin = "1.18.1"
     const val gradleVersionsPlugin = "0.36.0"
     const val markdownlintGradlePlugin = "0.6.0"
     const val gradleMavenPublishPlugin = "0.15.0"
