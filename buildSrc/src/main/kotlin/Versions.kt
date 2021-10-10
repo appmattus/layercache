@@ -23,7 +23,7 @@ object Versions {
     const val gradleVersionsPlugin = "0.36.0"
     const val markdownlintGradlePlugin = "0.6.0"
     const val gradleMavenPublishPlugin = "0.15.0"
-    const val dokkaPlugin = "1.4.32"
+    const val dokkaPlugin = "1.5.31"
 
     const val bouncyCastle = "1.69"
     const val cache2k = "2.2.1.Final"
@@ -32,7 +32,7 @@ object Versions {
     const val ehcache = "3.9.6"
     const val groupie = "2.9.0"
     const val ktor = "1.6.4"
-    const val orbitMvi = "3.1.1"
+    const val orbitMvi = "4.2.0"
     const val slf4j = "1.7.32"
     const val sqlDelight = "1.5.1"
     const val systemRules = "1.19.0"
@@ -49,25 +49,25 @@ object Versions {
     object AndroidX {
         const val annotation = "1.2.0"
         const val appCompat = "1.3.1"
-        const val constraintLayout = "2.1.0-alpha2"
+        const val constraintLayout = "2.1.1"
         const val fragment = "1.3.6"
         const val lifecycle = "2.3.1"
         const val navigation = "2.3.5"
         const val multidex = "2.0.1"
         const val securityCrypto = "1.1.0-alpha03"
 
-        const val testCore = "1.3.0"
+        const val testCore = "1.4.0"
         const val testExtJunit = "1.1.3"
         const val testRunner = "1.4.0"
     }
 
     object Google {
-        const val dagger = "2.38.1"
+        const val dagger = "2.39.1"
         const val material = "1.4.0"
-        const val tink = "1.5.0"
+        const val tink = "1.6.1"
     }
 
     object Kotlinx {
-        const val serialization = "1.2.0"
+        const val serialization = "1.3.0"
     }
 }

@@ -17,12 +17,10 @@
 package com.appmattus.layercache
 
 import android.content.Context
-import android.os.Build
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.DeterministicAead
+import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.KeysetHandle
-import com.google.crypto.tink.aead.AesGcmKeyManager
-import com.google.crypto.tink.daead.AesSivKeyManager
 import com.google.crypto.tink.daead.DeterministicAeadConfig
 import com.google.crypto.tink.hybrid.HybridConfig
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
@@ -50,7 +48,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
 
     private val deterministicAead: DeterministicAead by lazy {
         val daeadKeysetHandle: KeysetHandle = AndroidKeysetManager.Builder()
-            .withKeyTemplate(AesSivKeyManager.aes256SivTemplate())
+            .withKeyTemplate(KeyTemplates.get("AES256_SIV"))
             .withSharedPref(context, KEY_KEYSET_ALIAS, fileName)
             .withMasterKeyUri(AndroidKeystoreKmsClient.PREFIX + keystoreAlias)
             .build().keysetHandle
@@ -60,7 +58,7 @@ private class Encryption(context: Context, private val fileName: String, keystor
 
     private val aead: Aead by lazy {
         val aeadKeysetHandle: KeysetHandle = AndroidKeysetManager.Builder()
-            .withKeyTemplate(AesGcmKeyManager.aes256GcmTemplate())
+            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
             .withSharedPref(context, VALUE_KEYSET_ALIAS, fileName)
             .withMasterKeyUri(AndroidKeystoreKmsClient.PREFIX + keystoreAlias)
             .build().keysetHandle
@@ -87,13 +85,11 @@ private class Encryption(context: Context, private val fileName: String, keystor
     }
 
     private fun encryptValue(value: String, associatedData: ByteArray): String {
-        val data = associatedData.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP }
-        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), data))
+        return Base64.encode(aead.encrypt(value.toByteArray(Charsets.UTF_8), associatedData))
     }
 
     private fun decryptValue(encryptedValue: String, associatedData: ByteArray): String {
-        val data = associatedData.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP }
-        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), data).toString(Charsets.UTF_8)
+        return aead.decrypt(Base64.decode(encryptedValue, Base64.DEFAULT), associatedData).toString(Charsets.UTF_8)
     }
 
     fun encrypt(cache: Cache<String, String>): Cache<String, String> = object : Cache<String, String> {
