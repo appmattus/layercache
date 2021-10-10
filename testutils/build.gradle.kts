@@ -34,7 +34,7 @@ dependencies {
             strictly(Versions.objenesis)
         }
     }
-    api("com.nhaarman.mockitokotlin2:mockito-kotlin:${Versions.mockitoKotlin}")
+    api("org.mockito.kotlin:mockito-kotlin:${Versions.mockitoKotlin}")
 
     api("com.github.stefanbirkner:system-rules:${Versions.systemRules}")
 

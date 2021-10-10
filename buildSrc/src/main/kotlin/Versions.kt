@@ -38,8 +38,8 @@ object Versions {
     const val systemRules = "1.19.0"
 
     const val junit4 = "4.13.2"
-    const val mockito = "3.9.0"
-    const val mockitoKotlin = "2.2.0"
+    const val mockito = "4.0.0"
+    const val mockitoKotlin = "3.2.0"
     const val objenesis = "2.6"
     const val retrofit = "2.9.0"
     const val robolectric = "4.6.1"
