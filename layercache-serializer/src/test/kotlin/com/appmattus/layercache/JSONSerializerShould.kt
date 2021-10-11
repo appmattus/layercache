@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.AnyOf
 import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringStartsWith
 import org.junit.Assert.assertEquals
@@ -107,7 +108,10 @@ class JSONSerializerShould {
             JSONSerializer(serializer(typeOf<ValueClass>()) as KSerializer<ValueClass>).transform("junk")
         }
 
-        assertThat(throwable.message, StringStartsWith("Unexpected JSON token"))
+        assertThat(
+            throwable.message,
+            AnyOf(listOf(StringStartsWith("Unexpected JSON token"), StringStartsWith("Expected start of the object")))
+        )
     }
 
     @Test

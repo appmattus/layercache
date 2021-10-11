@@ -15,6 +15,8 @@
  */
 
 import com.appmattus.markdown.rules.LineLengthRule
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost.DEFAULT
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
@@ -45,7 +47,6 @@ buildscript {
 subprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
 
@@ -73,6 +74,12 @@ subprojects {
     }
 
     version = System.getenv("GITHUB_REF")?.substring(10) ?: System.getProperty("GITHUB_REF")?.substring(10) ?: "unknown"
+
+    plugins.withId("com.vanniktech.maven.publish.base") {
+        configure<MavenPublishBaseExtension> {
+            publishToMavenCentral(DEFAULT, System.getenv("SONATYPE_REPOSITORY_ID"))
+        }
+    }
 
     plugins.withType<DokkaPlugin> {
         tasks.withType<DokkaTask>().configureEach {

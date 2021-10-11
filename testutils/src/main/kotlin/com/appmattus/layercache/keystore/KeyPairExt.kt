@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Appmattus Limited
+ * Copyright 2021 Appmattus Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package com.appmattus.layercache.keystore
 
-import sun.security.x509.AlgorithmId
-import sun.security.x509.CertificateAlgorithmId
-import sun.security.x509.CertificateSerialNumber
-import sun.security.x509.CertificateValidity
-import sun.security.x509.CertificateVersion
-import sun.security.x509.CertificateX509Key
-import sun.security.x509.X500Name
-import sun.security.x509.X509CertImpl
-import sun.security.x509.X509CertInfo
+import org.bouncycastle.asn1.x500.X500Name
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
+import org.bouncycastle.cert.X509v3CertificateBuilder
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
+import org.bouncycastle.crypto.util.PrivateKeyFactory
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
+import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import java.math.BigInteger
 import java.security.KeyPair
 import java.security.SecureRandom
@@ -33,26 +33,27 @@ import java.util.Date
 
 @Suppress("MagicNumber")
 internal fun KeyPair.toCertificate(): X509Certificate? {
+
     val from = Date()
     val to = Date(from.time + 365L * 1000L * 24L * 60L * 60L)
-    val interval = CertificateValidity(from, to)
 
     val serialNumber = BigInteger(64, SecureRandom())
     val owner = X500Name("cn=Unknown")
-    val sigAlgId = AlgorithmId(AlgorithmId.md5WithRSAEncryption_oid)
 
-    val info = X509CertInfo().apply {
-        set(X509CertInfo.VALIDITY, interval)
-        set(X509CertInfo.SERIAL_NUMBER, CertificateSerialNumber(serialNumber))
-        set(X509CertInfo.SUBJECT, owner)
-        set(X509CertInfo.ISSUER, owner)
-        set(X509CertInfo.KEY, CertificateX509Key(public))
-        set(X509CertInfo.VERSION, CertificateVersion(CertificateVersion.V3))
-        set(X509CertInfo.ALGORITHM_ID, CertificateAlgorithmId(sigAlgId))
-    }
+    val sigAlgId: AlgorithmIdentifier = DefaultSignatureAlgorithmIdentifierFinder().find("MD5withRSA")
+    val digAlgId = DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId)
+    val privateKeyAsymKeyParam = PrivateKeyFactory.createKey(private.encoded)
 
-    return X509CertImpl(info).apply {
-        // Sign the cert to identify the algorithm that's used.
-        sign(private, "SHA256WithRSA")
-    }
+    val sigGen = BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(privateKeyAsymKeyParam)
+
+    val holder = X509v3CertificateBuilder(
+        owner,
+        serialNumber,
+        from,
+        to,
+        owner,
+        SubjectPublicKeyInfo.getInstance(public.encoded)
+    ).build(sigGen)
+
+    return JcaX509CertificateConverter().setProvider("BC").getCertificate(holder)
 }

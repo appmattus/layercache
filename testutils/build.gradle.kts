@@ -34,7 +34,7 @@ dependencies {
             strictly(Versions.objenesis)
         }
     }
-    api("com.nhaarman.mockitokotlin2:mockito-kotlin:${Versions.mockitoKotlin}")
+    api("org.mockito.kotlin:mockito-kotlin:${Versions.mockitoKotlin}")
 
     api("com.github.stefanbirkner:system-rules:${Versions.systemRules}")
 
@@ -49,6 +49,7 @@ dependencies {
 
     //noinspection GradleDependency
     implementation("org.bouncycastle:bcprov-jdk15on:${Versions.bouncyCastle}")
+    implementation("org.bouncycastle:bcpkix-jdk15on:${Versions.bouncyCastle}")
 }
 
 tasks.named("check") {

@@ -26,6 +26,11 @@ plugins {
 
 apply(plugin = "dagger.hilt.android.plugin")
 
+repositories {
+    // Necessary for the version of groupie currently used
+    jcenter()
+}
+
 dependencies {
 
     implementation(project(":layercache"))
@@ -61,20 +66,18 @@ dependencies {
     implementation("com.squareup.sqldelight:android-driver:${Versions.sqlDelight}")
 
     // Dependency Injection
-    implementation("androidx.hilt:hilt-lifecycle-viewmodel:${Versions.AndroidX.hilt}")
-    kapt("androidx.hilt:hilt-compiler:${Versions.AndroidX.hilt}")
     implementation("com.google.dagger:hilt-android:${Versions.Google.dagger}")
-    kapt("com.google.dagger:hilt-android-compiler:${Versions.Google.dagger}")
+    kapt("com.google.dagger:hilt-compiler:${Versions.Google.dagger}")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Versions.desugar}")
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 30
     defaultConfig {
         applicationId = "com.appmattus.layercache.samples"
-        minSdkVersion(21)
-        targetSdkVersion(30)
+        minSdk = 21
+        targetSdk = 30
         versionCode = 1
         versionName = "1.0"
         vectorDrawables.useSupportLibrary = true
