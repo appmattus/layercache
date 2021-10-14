@@ -17,19 +17,39 @@
 package com.appmattus.layercache.samples
 
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.appmattus.layercache.samples.sharedprefs.SharedPrefsScreen
+import com.appmattus.layercache.samples.sharedprefs.SharedPrefsViewModel
+import com.appmattus.layercache.samples.sqldelight.SqlDelightScreen
+import com.appmattus.layercache.samples.sqldelight.SqlDelightViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val navController by lazy { findNavController(R.id.nav_host_fragment) }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
-    }
 
-    override fun onSupportNavigateUp() = navController.navigateUp()
+        setContent {
+            val navController = rememberNavController()
+            NavHost(navController, startDestination = "main") {
+                composable("main") {
+                    MainScreen(navController = navController)
+                }
+                composable("sharedPrefs") {
+                    val viewModel by viewModels<SharedPrefsViewModel>()
+                    SharedPrefsScreen(viewModel = viewModel)
+                }
+                composable("sqlDelight") {
+                    val viewModel by viewModels<SqlDelightViewModel>()
+                    SqlDelightScreen(viewModel = viewModel)
+                }
+            }
+        }
+    }
 }

@@ -56,6 +56,11 @@ object Versions {
         const val multidex = "2.0.1"
         const val securityCrypto = "1.1.0-alpha03"
 
+        const val compose = "1.0.3"
+        const val activityCompose = "1.3.1"
+        const val lifecycleViewmodelCompose = "1.0.0-alpha07"
+        const val navigationCompose = "2.4.0-alpha06"
+
         const val testCore = "1.4.0"
         const val testExtJunit = "1.1.3"
         const val testRunner = "1.4.0"
