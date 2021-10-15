@@ -26,11 +26,6 @@ plugins {
 
 apply(plugin = "dagger.hilt.android.plugin")
 
-repositories {
-    // Necessary for the version of groupie currently used
-    jcenter()
-}
-
 dependencies {
 
     implementation(project(":layercache"))
@@ -45,16 +40,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.AndroidX.lifecycle}")
     implementation("androidx.lifecycle:lifecycle-common-java8:${Versions.AndroidX.lifecycle}")
-    implementation("androidx.navigation:navigation-fragment-ktx:${Versions.AndroidX.navigation}")
-    implementation("androidx.navigation:navigation-ui-ktx:${Versions.AndroidX.navigation}")
     implementation("org.orbit-mvi:orbit-viewmodel:${Versions.orbitMvi}")
 
     // UI
     implementation("com.google.android.material:material:${Versions.Google.material}")
     implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appCompat}")
-    implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraintLayout}")
-    implementation("com.xwray:groupie:${Versions.groupie}")
-    implementation("com.xwray:groupie-viewbinding:${Versions.groupie}")
 
     implementation("io.ktor:ktor-client-core:${Versions.ktor}")
     implementation("io.ktor:ktor-client-serialization:${Versions.ktor}")
@@ -68,6 +58,15 @@ dependencies {
     // Dependency Injection
     implementation("com.google.dagger:hilt-android:${Versions.Google.dagger}")
     kapt("com.google.dagger:hilt-compiler:${Versions.Google.dagger}")
+
+    implementation("androidx.compose.ui:ui:${Versions.AndroidX.compose}")
+    implementation("androidx.compose.ui:ui-tooling:${Versions.AndroidX.compose}")
+    implementation("androidx.compose.foundation:foundation:${Versions.AndroidX.compose}")
+    implementation("androidx.compose.material:material:${Versions.AndroidX.compose}")
+    implementation("androidx.activity:activity-compose:${Versions.AndroidX.activityCompose}")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.AndroidX.lifecycleViewmodelCompose}")
+    implementation("androidx.compose.runtime:runtime-livedata:${Versions.AndroidX.compose}")
+    implementation("androidx.navigation:navigation-compose:${Versions.AndroidX.navigationCompose}")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Versions.desugar}")
 }
@@ -99,9 +98,14 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.1.0-alpha05"
+    }
+
     buildFeatures {
         buildConfig = true
         viewBinding = true
+        compose = true
     }
 
     sourceSets.all {
